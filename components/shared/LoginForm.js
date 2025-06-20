@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Config from '../../config/config.js'; 
 import {
   View,
   Text,
@@ -26,7 +27,7 @@ export default function LoginForm() {
   const [successMessage, setSuccessMessage] = useState("")
   const [fadeAnim] = useState(new Animated.Value(0))
 
-  const API_URL = "http://192.168.100.22:5214/api/auth"
+  const API_AUTH_BASE_URL = `${Config.API_BASE_URL}/auth`; 
 
   const showSuccess = (message) => {
     setSuccessMessage(message)
@@ -58,7 +59,8 @@ export default function LoginForm() {
     setLoading(true)
 
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      // Usamos API_AUTH_BASE_URL y solo agregamos /login
+      const response = await fetch(`${API_AUTH_BASE_URL}/login`, { // <--- CAMBIO AQUÍ
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -72,26 +74,26 @@ export default function LoginForm() {
       const data = await response.json()
 
       if (data.success) {
-        // Guardar datos
         await AsyncStorage.setItem("authToken", data.data.token)
         await AsyncStorage.setItem("userData", JSON.stringify(data.data.user))
 
-        // Mostrar notificación de éxito
         const userName = data.data.user.firstName
           ? `${data.data.user.firstName} ${data.data.user.lastName || ""}`.trim()
           : data.data.user.email
 
         showSuccess(`¡Bienvenido ${userName}!`)
 
-        // Limpiar campos
         setEmail("")
         setPassword("")
 
-        // Aquí puedes navegar a la siguiente pantalla
         // navigation.navigate('Home')
+      } else {
+        console.error("Error de autenticación:", data.message || "Credenciales incorrectas");
+        // Aquí podrías mostrar un mensaje de error al usuario
       }
     } catch (error) {
-      console.log("Error de conexión")
+      console.error("Error de conexión:", error); // Log más detallado del error
+      // Aquí podrías mostrar un mensaje de error de conexión al usuario
     } finally {
       setLoading(false)
     }
@@ -99,7 +101,6 @@ export default function LoginForm() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Notificación de éxito */}
       {showSuccessNotification && (
         <Animated.View style={[styles.successNotification, { opacity: fadeAnim }]}>
           <View style={styles.successContent}>
