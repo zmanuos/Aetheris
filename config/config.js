@@ -1,6 +1,6 @@
 // Configuracion Global
 const port = 5214;
-const ip = "192.168.100.22"; 
+const ip = "172.18.2.165"; 
 
 const Config = {
   API_BASE_URL: `http://${ip}:${port}/api`,
