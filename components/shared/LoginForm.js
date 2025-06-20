@@ -119,7 +119,7 @@ export default function LoginForm() {
           >
             <View style={styles.innerContainer}>
               <View style={styles.logoContainer}>
-                <Image source={require("../assets/images/ahorasi.png")} style={styles.logo} resizeMode="contain" />
+                <Image source={require("../../assets/images/ahorasi.png")} style={styles.logo} resizeMode="contain" />
               </View>
 
               <View style={styles.form}>
