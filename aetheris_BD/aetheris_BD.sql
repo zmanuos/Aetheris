@@ -56,11 +56,10 @@ CREATE TABLE AREA (
 -- Dispositivos - Estado de los dispositivos.
 CREATE TABLE DISPOSITIVO (
     id_dispositivo INT AUTO_INCREMENT PRIMARY KEY,
-    direccion_MAC VARCHAR(15) UNIQUE,
+    direccion_MAC VARCHAR(30) UNIQUE,
     estado BOOLEAN DEFAULT TRUE,
     fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
 
 -- Residentes - Info del residente
 CREATE TABLE RESIDENTE (
@@ -121,8 +120,10 @@ CREATE TABLE ALERTA (
     id_alerta INT AUTO_INCREMENT PRIMARY KEY,
     id_residente INT,
     id_alerta_tipo INT,
+    id_area INT, -- NUEVO: Relación con la tabla AREA
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     mensaje VARCHAR(255),
     FOREIGN KEY (id_residente) REFERENCES RESIDENTE(id_residente),
-    FOREIGN KEY (id_alerta_tipo) REFERENCES ALERTA_TIPO(id_alerta_tipo)
+    FOREIGN KEY (id_alerta_tipo) REFERENCES ALERTA_TIPO(id_alerta_tipo),
+    FOREIGN KEY (id_area) REFERENCES AREA(id_area) -- Clave foránea nueva
 );

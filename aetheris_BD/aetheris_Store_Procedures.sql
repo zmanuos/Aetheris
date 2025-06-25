@@ -19,7 +19,7 @@ BEGIN
     INSERT INTO USUARIO (usuario, contra, email, rol)
     VALUES (
         nuevo_id,
-        SHA2(contrasena, 256),
+        contrasena,
         email,
         2
     );
@@ -53,7 +53,7 @@ BEGIN
     INSERT INTO USUARIO (usuario, contra, email, rol)
     VALUES (
         nuevo_id,
-        SHA2(contrasena, 256),
+        contrasena
         email,
         3
     );

@@ -2,10 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using BackendAetheris.Data;
 
-namespace BackendAetheris.Config
-{
     public static class AppConfig
     {
         public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
@@ -64,4 +61,3 @@ namespace BackendAetheris.Config
             app.MapControllers();
         }
     }
-}

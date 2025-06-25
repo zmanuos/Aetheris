@@ -7,6 +7,7 @@ UPDATE ASILO
 SET cantidad_empleados = cantidad_empleados + 1;
 // DELIMITER ;
 
+
 -- Actualizar cantidad de empleados al cambiar el estado del personal
 DELIMITER //
 CREATE TRIGGER total_empleados
