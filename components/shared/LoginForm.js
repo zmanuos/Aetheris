@@ -1,3 +1,4 @@
+// AETHERIS/components/shared/LoginForm.js
 "use client"
 
 import { useState } from "react"
@@ -21,21 +22,36 @@ export default function LoginForm({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
 
-  const STATIC_EMAIL = "1";
-  const STATIC_PASSWORD = "1";
-  const STATIC_ROLE = "admin";
+  // Credenciales estáticas de ejemplo
+  // Usuario Familiar
+  const FAMILY_EMAIL = "1";
+  const FAMILY_PASSWORD = "1";
+  const FAMILY_ROLE = "admin";
+
+  // Nuevo Usuario Administrador
+  const ADMIN_EMAIL = "2"; // Puedes cambiar este email
+  const ADMIN_PASSWORD = "2"; // Puedes cambiar esta contraseña
+  const ADMIN_ROLE = "family";
 
   const handleSubmit = () => {
-    setError("");
+    setError(""); // Limpiar errores previos
 
-    if (email === STATIC_EMAIL && password === STATIC_PASSWORD) {
-      console.log("Login successful!");
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      // Credenciales de Admin
+      console.log("Login successful! Role: Admin");
       if (onLoginSuccess) {
-        onLoginSuccess(STATIC_ROLE);
+        onLoginSuccess(ADMIN_ROLE); // Pasa el rol de 'admin'
+      }
+    } else if (email === FAMILY_EMAIL && password === FAMILY_PASSWORD) {
+      // Credenciales de Familiar
+      console.log("Login successful! Role: Family");
+      if (onLoginSuccess) {
+        onLoginSuccess(FAMILY_ROLE); // Pasa el rol de 'family'
       }
     } else {
+      // Credenciales incorrectas para ambos
       console.log("Login failed: Invalid credentials");
-      setError("ID o contraseña incorrectos.");
+      setError("ID o contraseña incorrectos."); // Mensaje de error para el usuario
     }
   };
 

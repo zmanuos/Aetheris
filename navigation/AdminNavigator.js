@@ -1,9 +1,9 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-// Importa los componentes de UI/navegación
+// UI
 import Header from '../components/navigation/Header';
-import SideMenu from '../components/navigation/SideMenu'; // Asegúrate de que esta ruta sea correcta
+import SideMenu from '../components/navigation/SideMenu'; 
 
 // Importa todas tus pantallas
 import HomeScreen from '../screens/admin/HomeScreen';
@@ -15,12 +15,11 @@ import CheckupReportsScreen from '../screens/admin/CheckupReportsScreen';
 const Drawer = createDrawerNavigator();
 
 // MODIFICACIÓN CLAVE: AdminNavigator debe recibir 'onLogout'
-const AdminNavigator = ({ onLogout }) => { // <--- Recibe onLogout aquí
+const AdminNavigator = ({ onLogout }) => { 
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      // MODIFICACIÓN: Pasa onLogout a SideMenu
-      drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} />} // <--- Pasa onLogout aquí
+      drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} />} 
       screenOptions={({ navigation, route }) => ({
         drawerType: 'permanent',
         drawerStyle: {
@@ -41,7 +40,6 @@ const AdminNavigator = ({ onLogout }) => { // <--- Recibe onLogout aquí
         ),
       })}
     >
-      {/* Pantallas de nivel superior en el Drawer */}
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'HOME' }} />
       <Drawer.Screen name="Residents" component={ResidentsScreen} options={{ title: 'RESIDENTES' }} />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />

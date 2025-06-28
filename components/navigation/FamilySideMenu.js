@@ -1,9 +1,11 @@
+// AETHERIS/components/navigation/FamilySideMenu.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, Image } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigationState } from '@react-navigation/native';
 
+// Colores (pueden ser los mismos que en el SideMenu de admin si lo deseas)
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
@@ -14,21 +16,20 @@ const VERY_LIGHT_GRAY = '#eee';
 const BACKGROUND_LIGHT = '#fcfcfc';
 const HOVER_EFFECT_COLOR = '#e6e6e6';
 
+// ***** MENÚ ÍTEMS ESPECÍFICOS PARA EL FAMILIAR *****
 const menuItems = [
-  { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
-  { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
-  { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
-    { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
-    { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
+  { id: 'FamilyDashboard', title: 'Dashboard', icon: 'speedometer-outline', type: 'item' },
+  { id: 'HistoryCategory', title: 'Historial', icon: 'time-outline', type: 'category', subItems: [
+    { id: 'HeartRateHistory', title: 'Ritmo Cardíaco', icon: 'heart-outline', type: 'subitem' },
+    { id: 'WeeklyCheckupsHistory', title: 'Chequeos Semanales', icon: 'calendar-outline', type: 'subitem' },
   ]},
-  { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
-  { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
+  { id: 'AsylumInfo', title: 'Información del Asilo', icon: 'information-circle-outline', type: 'item' },
 ];
 
-const SideMenu = ({ navigation, onLogout }) => { 
+const FamilySideMenu = ({ navigation, onLogout }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const state = useNavigationState(state => state);
-  const currentRouteName = state ? state.routes[state.index].name : 'Home';
+  const currentRouteName = state ? state.routes[state.index].name : 'FamilyDashboard'; // Cambia la ruta inicial aquí si es necesario
 
   const getIsCategoryActive = (categoryId, subItems) => {
     return subItems.some(subItem => subItem.id === currentRouteName);
@@ -59,12 +60,13 @@ const SideMenu = ({ navigation, onLogout }) => {
 
   const handleNavigation = (routeName) => {
     navigation.navigate(routeName);
+    // navigation.closeDrawer(); // Descomenta si quieres que el drawer se cierre al navegar
   };
 
   const handleLogoutPress = () => {
     if (onLogout) {
-      onLogout(); 
-      navigation.closeDrawer(); 
+      onLogout();
+      navigation.closeDrawer();
     }
   };
 
@@ -373,4 +375,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SideMenu;
+export default FamilySideMenu; 

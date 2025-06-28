@@ -1,66 +1,53 @@
-// navigation/FamilyNavigator.js
+// AETHERIS/navigation/FamilyNavigator.js
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createDrawerNavigator } from '@react-navigation/drawer';
 
-const FamilyStack = createStackNavigator();
-const FamilyTabs = createBottomTabNavigator();
+// Importa los componentes de UI/navegación
+import Header from '../components/navigation/Header'; 
+import FamilySideMenu from '../components/navigation/FamilySideMenu'; 
 
-// --- Navegación por Stack para cada pestaña ---
+// Importa las pantallas específicas del familiar
+import FamilyDashboardScreen from '../screens/family/FamilyDashboardScreen';
+import HeartRateHistoryScreen from '../screens/family/HeartRateHistoryScreen';
+import WeeklyCheckupsHistoryScreen from '../screens/family/WeeklyCheckupsHistoryScreen';
+import AsylumInfoScreen from '../screens/family/AsylumInfoScreen';
 
-const DashboardFamilyStack = () => (
-  <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-    <FamilyStack.Screen name="FamilyDashboard" component={FamilyDashboardScreen} />
-    {/* Aquí podrías tener pantallas de detalle para elementos del dashboard familiar */}
-  </FamilyStack.Navigator>
-);
 
-const ResidentInfoFamilyStack = () => (
-  <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-    <FamilyStack.Screen name="ResidentInfo" component={ResidentInfoScreen} />
-    {/* Detalles del residente */}
-  </FamilyStack.Navigator>
-);
+const Drawer = createDrawerNavigator();
 
-const VisitsFamilyStack = () => (
-  <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-    <FamilyStack.Screen name="Visits" component={VisitsScreen} />
-    {/* Detalles de visitas, agendar visita, etc. */}
-  </FamilyStack.Navigator>
-);
-
-const NotificationsFamilyStack = () => (
-  <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-    <FamilyStack.Screen name="Notifications" component={NotificationsScreen} />
-    {/* Pantalla de detalle de notificación si aplica */}
-  </FamilyStack.Navigator>
-);
-
-const ProfileFamilyStack = () => (
-  <FamilyStack.Navigator screenOptions={{ headerShown: false }}>
-    <FamilyStack.Screen name="Profile" component={ProfileScreen} />
-    {/* Edición de perfil, configuración personal */}
-  </FamilyStack.Navigator>
-);
-
-const FamilyNavigator = () => {
+// MODIFICACIÓN CLAVE: FamilyNavigator debe recibir 'onLogout'
+const FamilyNavigator = ({ onLogout }) => { 
   return (
-    <FamilyTabs.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => (
-          <TabBarIcon name={route.name} focused={focused} color={color} size={size} />
+    <Drawer.Navigator
+      initialRouteName="FamilyDashboard" 
+      // MODIFICACIÓN: Pasa onLogout al FamilySideMenu
+      drawerContent={(props) => <FamilySideMenu {...props} onLogout={onLogout} />} 
+      screenOptions={({ navigation, route }) => ({
+        drawerType: 'permanent',
+        drawerStyle: {
+          width: 260,
+          backgroundColor: '#fcfcfc',
+          shadowColor: '#000',
+          shadowOffset: { width: 6, height: 0 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          elevation: 8,
+        },
+        headerShown: true,
+        header: ({ options }) => (
+          <Header
+            title={options.title || route.name}
+            onMenuPress={() => navigation.toggleDrawer()}
+          />
         ),
-        tabBarActiveTintColor: 'blue', // Ajusta los colores a tu estilo
-        tabBarInactiveTintColor: 'gray',
       })}
     >
-      <FamilyTabs.Screen name="Inicio" component={DashboardFamilyStack} />
-      <FamilyTabs.Screen name="Residente" component={ResidentInfoFamilyStack} />
-      <FamilyTabs.Screen name="Visitas" component={VisitsFamilyStack} />
-      <FamilyTabs.Screen name="Notificaciones" component={NotificationsFamilyStack} />
-      <FamilyTabs.Screen name="Perfil" component={ProfileFamilyStack} />
-    </FamilyTabs.Navigator>
+      {/* Pantallas para el familiar */}
+      <Drawer.Screen name="FamilyDashboard" component={FamilyDashboardScreen} options={{ title: 'DASHBOARD FAMILIAR' }} />
+      <Drawer.Screen name="HeartRateHistory" component={HeartRateHistoryScreen} options={{ title: 'RITMO CARDÍACO' }} />
+      <Drawer.Screen name="WeeklyCheckupsHistory" component={WeeklyCheckupsHistoryScreen} options={{ title: 'CHEQUEOS SEMANALES' }} />
+      <Drawer.Screen name="AsylumInfo" component={AsylumInfoScreen} options={{ title: 'INFO DEL ASILO' }} />
+    </Drawer.Navigator>
   );
 };
 

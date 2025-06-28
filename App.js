@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import AuthNavigator from './navigation/AuthNavigator';
 import AdminNavigator from './navigation/AdminNavigator';
+import FamilyNavigator from './navigation/FamilyNavigator'; 
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,11 +15,13 @@ export default function App() {
   const handleLoginSuccess = (role) => {
     setIsAuthenticated(true);
     setUserRole(role);
+    console.log("App.js: Login successful, isAuthenticated:", true, "userRole:", role); // Puedes dejar este log para verificar el rol
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUserRole(null);
+    console.log("App.js: Logged out"); // Puedes dejar este log para verificar el logout
   };
 
   const renderAppNavigator = () => {
@@ -26,8 +29,10 @@ export default function App() {
       return <AuthNavigator onLoginSuccess={handleLoginSuccess} />;
     } else if (userRole === 'admin') {
       return <AdminNavigator onLogout={handleLogout} />;
+    } else if (userRole === 'family') { // <-- Nueva condición para el rol "family"
+      return <FamilyNavigator onLogout={handleLogout} />;
     }
-    return null;
+    return null; // En caso de un rol no reconocido o si no está autenticado y no es un rol específico.
   };
 
   return (
