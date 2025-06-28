@@ -5,12 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using BackendAetheris.Data;
-using BackendAetheris.Models.Users;
-using BackendAetheris.Models.Shared;
 
-namespace BackendAetheris.Controllers
-{
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
@@ -165,4 +160,3 @@ namespace BackendAetheris.Controllers
             return tokenHandler.WriteToken(token);
         }
     }
-}

@@ -15,14 +15,29 @@ import {
 import { LinearGradient } from "expo-linear-gradient"
 import { Ionicons } from "@expo/vector-icons"
 
-export default function LoginForm() {
+export default function LoginForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState("")
+
+  const STATIC_EMAIL = "1";
+  const STATIC_PASSWORD = "1";
+  const STATIC_ROLE = "admin";
 
   const handleSubmit = () => {
-    console.log("Login attempt:", { email, password })
-  }
+    setError("");
+
+    if (email === STATIC_EMAIL && password === STATIC_PASSWORD) {
+      console.log("Login successful!");
+      if (onLoginSuccess) {
+        onLoginSuccess(STATIC_ROLE);
+      }
+    } else {
+      console.log("Login failed: Invalid credentials");
+      setError("ID o contraseña incorrectos.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -74,6 +89,8 @@ export default function LoginForm() {
                     </TouchableOpacity>
                   </View>
                 </View>
+
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
                 <TouchableOpacity style={styles.loginButton} onPress={handleSubmit} activeOpacity={0.8}>
                   <Text style={styles.loginButtonText}>LOG IN</Text>
@@ -195,4 +212,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6B7280",
   },
+  errorText: {
+    color: 'red',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 10,
+  }
 });

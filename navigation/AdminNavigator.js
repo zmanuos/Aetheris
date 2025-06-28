@@ -1,62 +1,53 @@
-// navigation/AdminNavigator.js
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-const AdminStack = createStackNavigator();
-const AdminDrawer = createDrawerNavigator();
+// Importa los componentes de UI/navegación
+import Header from '../components/navigation/Header';
+import SideMenu from '../components/navigation/SideMenu'; // Asegúrate de que esta ruta sea correcta
 
-// --- Navegación por Stack para cada sección principal si es necesario ---
-// Puedes anidar stacks dentro del Drawer para tener navegación interna en cada sección.
+// Importa todas tus pantallas
+import HomeScreen from '../screens/admin/HomeScreen';
+import ResidentsScreen from '../screens/admin/ResidentsScreen';
+import CreateConsultasScreen from '../screens/admin/CreateConsultasScreen';
+import ConsultasHistoryScreen from '../screens/admin/ConsultasHistory';
+import CheckupReportsScreen from '../screens/admin/CheckupReportsScreen';
 
-const DashboardStack = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
-    {/* Podrías añadir más pantallas relacionadas con el dashboard aquí */}
-  </AdminStack.Navigator>
-);
+const Drawer = createDrawerNavigator();
 
-const ResidentsStack = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="ResidentsManagement" component={ResidentsManagementScreen} />
-    {/* Por ejemplo, una pantalla de detalle de residente: */}
-    {/* <AdminStack.Screen name="ResidentDetail" component={ResidentDetailScreen} /> */}
-  </AdminStack.Navigator>
-);
-
-const UsersStack = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="UsersManagement" component={UsersManagementScreen} />
-    {/* Por ejemplo, una pantalla de detalle de usuario: */}
-    {/* <AdminStack.Screen name="UserDetail" component={UserDetailScreen} /> */}
-  </AdminStack.Navigator>
-);
-
-const ReportsStack = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="Reports" component={ReportsScreen} />
-  </AdminStack.Navigator>
-);
-
-const SettingsStack = () => (
-  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
-    <AdminStack.Screen name="Settings" component={SettingsScreen} />
-  </AdminStack.Navigator>
-);
-
-const AdminNavigator = () => {
+// MODIFICACIÓN CLAVE: AdminNavigator debe recibir 'onLogout'
+const AdminNavigator = ({ onLogout }) => { // <--- Recibe onLogout aquí
   return (
-    <AdminDrawer.Navigator
-      initialRouteName="Dashboard"
-      screenOptions={{ headerShown: false }} // Controla si el header de la navegación principal se muestra
-      drawerContent={props => <CustomDrawerContent {...props} />} // Si usas un componente de cajón personalizado
+    <Drawer.Navigator
+      initialRouteName="Home"
+      // MODIFICACIÓN: Pasa onLogout a SideMenu
+      drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} />} // <--- Pasa onLogout aquí
+      screenOptions={({ navigation, route }) => ({
+        drawerType: 'permanent',
+        drawerStyle: {
+          width: 260,
+          backgroundColor: '#fcfcfc',
+          shadowColor: '#000',
+          shadowOffset: { width: 6, height: 0 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          elevation: 8,
+        },
+        headerShown: true,
+        header: ({ options }) => (
+          <Header
+            title={options.title || route.name}
+            onMenuPress={() => navigation.toggleDrawer()}
+          />
+        ),
+      })}
     >
-      <AdminDrawer.Screen name="Dashboard" component={DashboardStack} />
-      <AdminDrawer.Screen name="Residentes" component={ResidentsStack} />
-      <AdminDrawer.Screen name="Usuarios" component={UsersStack} />
-      <AdminDrawer.Screen name="Reportes" component={ReportsStack} />
-      <AdminDrawer.Screen name="Configuración" component={SettingsStack} />
-    </AdminDrawer.Navigator>
+      {/* Pantallas de nivel superior en el Drawer */}
+      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'HOME' }} />
+      <Drawer.Screen name="Residents" component={ResidentsScreen} options={{ title: 'RESIDENTES' }} />
+      <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
+      <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
+      <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
+    </Drawer.Navigator>
   );
 };
 

@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using BackendAetheris.Models.Users;
 
-namespace BackendAetheris.Data
-{
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
@@ -16,4 +13,3 @@ namespace BackendAetheris.Data
                 .IsUnique();
         }
     }
-}
