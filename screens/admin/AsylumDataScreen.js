@@ -1,12 +1,13 @@
-// AETHERIS/screens/family/FamilyDashboardScreen.js
+// AETHERIS/screens/admin/AsylumDataScreen.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function FamilyDashboardScreen() {
+export default function AsylumDataScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dashboard Familiar</Text>
-      <Text>Aquí se mostrará el ritmo cardíaco, gráficas, temperatura y humedad del asilo, y últimos chequeos semanales.</Text>
+      <Text style={styles.title}>Datos del Asilo</Text>
+      <Text>El administrador puede configurar y actualizar información general del asilo (dirección, contacto, etc.).</Text>
+      {/* Aquí iría la lógica para editar datos del asilo */}
     </View>
   );
 }

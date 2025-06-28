@@ -1,3 +1,4 @@
+// AETHERIS/components/navigation/SideMenu.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Pressable, Image } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -14,7 +15,22 @@ const VERY_LIGHT_GRAY = '#eee';
 const BACKGROUND_LIGHT = '#fcfcfc';
 const HOVER_EFFECT_COLOR = '#e6e6e6';
 
-const menuItems = [
+// ***** MENÚ ÍTEMS PARA ADMIN *****
+const adminMenuItems = [
+  { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
+  { id: 'EmployeeManagement', title: 'Empleados', icon: 'person-add-outline', type: 'item' }, // <-- Admin
+  { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
+  { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
+    { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
+    { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
+  ]},
+  { id: 'AsylumData', title: 'Datos del Asilo', icon: 'business-outline', type: 'item' }, // <-- Admin
+  { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
+  { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
+];
+
+// ***** MENÚ ÍTEMS PARA EMPLOYEE (son los mismos que tenías para Admin antes, pero sin los nuevos de Admin) *****
+const employeeMenuItems = [
   { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
   { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
   { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
@@ -25,17 +41,34 @@ const menuItems = [
   { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
 ];
 
-const SideMenu = ({ navigation, onLogout }) => { 
+// ***** MENÚ ÍTEMS PARA FAMILY *****
+const familyMenuItems = [
+  { id: 'FamilyDashboard', title: 'Home', icon: 'home-outline', type: 'item' },
+  { id: 'AsylumInfo', title: 'Info del Asilo', icon: 'information-circle-outline', type: 'item' },
+];
+
+
+// MODIFICACIÓN CLAVE: SideMenu ahora recibe 'userRole'
+const SideMenu = ({ navigation, onLogout, userRole }) => {
   const [expandedCategory, setExpandedCategory] = useState(null);
   const state = useNavigationState(state => state);
-  const currentRouteName = state ? state.routes[state.index].name : 'Home';
+  const currentRouteName = state ? state.routes[state.index].name : 'Home'; 
+
+  let currentMenuItems = [];
+  if (userRole === 'admin') {
+    currentMenuItems = adminMenuItems;
+  } else if (userRole === 'employee') {
+    currentMenuItems = employeeMenuItems;
+  } else if (userRole === 'family') {
+    currentMenuItems = familyMenuItems;
+  }
 
   const getIsCategoryActive = (categoryId, subItems) => {
     return subItems.some(subItem => subItem.id === currentRouteName);
   };
 
   useEffect(() => {
-    const parentOfActiveSubItem = menuItems.find(item =>
+    const parentOfActiveSubItem = currentMenuItems.find(item =>
       item.type === 'category' && item.subItems.some(subItem => subItem.id === currentRouteName)
     );
 
@@ -44,27 +77,27 @@ const SideMenu = ({ navigation, onLogout }) => {
         setExpandedCategory(parentOfActiveSubItem.id);
       }
     } else {
-      const isCurrentRouteATopLevelItem = menuItems.some(item =>
+      const isCurrentRouteATopLevelItem = currentMenuItems.some(item =>
         item.id === currentRouteName && item.type === 'item'
       );
       if (!isCurrentRouteATopLevelItem && expandedCategory !== null) {
         setExpandedCategory(null);
       }
     }
-  }, [currentRouteName]);
+  }, [currentRouteName, userRole]);
 
   const toggleCategory = (categoryId) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
   };
 
   const handleNavigation = (routeName) => {
-    navigation.navigate(routeName);
+    navigation.navigate(routeName, { userRole: userRole });
   };
 
   const handleLogoutPress = () => {
     if (onLogout) {
-      onLogout(); 
-      navigation.closeDrawer(); 
+      onLogout();
+      navigation.closeDrawer();
     }
   };
 
@@ -189,7 +222,7 @@ const SideMenu = ({ navigation, onLogout }) => {
           <Text style={styles.menuHeaderText}>NAVEGACIÓN PRINCIPAL</Text>
         </View>
         <FlatList
-          data={menuItems}
+          data={currentMenuItems} 
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
@@ -206,6 +239,7 @@ const SideMenu = ({ navigation, onLogout }) => {
   );
 };
 
+// ... (Los estilos de StyleSheet.create permanecen exactamente igual) ...
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -373,4 +407,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SideMenu;
+
+export default SideMenu; // Exporta el SideMenu unificado

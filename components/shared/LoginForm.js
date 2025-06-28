@@ -23,37 +23,43 @@ export default function LoginForm({ onLoginSuccess }) {
   const [error, setError] = useState("")
 
   // Credenciales estáticas de ejemplo
-  // Usuario Familiar
   const FAMILY_EMAIL = "1";
   const FAMILY_PASSWORD = "1";
   const FAMILY_ROLE = "admin";
 
-  // Nuevo Usuario Administrador
-  const ADMIN_EMAIL = "2"; // Puedes cambiar este email
-  const ADMIN_PASSWORD = "2"; // Puedes cambiar esta contraseña
-  const ADMIN_ROLE = "family";
+  const ADMIN_EMAIL = "2";
+  const ADMIN_PASSWORD = "2";
+  const ADMIN_ROLE = "employee";
+
+  const EMPLOYEE_EMAIL = "3";
+  const EMPLOYEE_PASSWORD = "3";
+  const EMPLOYEE_ROLE = "family";
+
 
   const handleSubmit = () => {
-    setError(""); // Limpiar errores previos
+    setError("");
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      // Credenciales de Admin
       console.log("Login successful! Role: Admin");
       if (onLoginSuccess) {
-        onLoginSuccess(ADMIN_ROLE); // Pasa el rol de 'admin'
+        onLoginSuccess(ADMIN_ROLE);
+      }
+    } else if (email === EMPLOYEE_EMAIL && password === EMPLOYEE_PASSWORD) { // <-- Lógica para empleado
+      console.log("Login successful! Role: Employee");
+      if (onLoginSuccess) {
+        onLoginSuccess(EMPLOYEE_ROLE);
       }
     } else if (email === FAMILY_EMAIL && password === FAMILY_PASSWORD) {
-      // Credenciales de Familiar
       console.log("Login successful! Role: Family");
       if (onLoginSuccess) {
-        onLoginSuccess(FAMILY_ROLE); // Pasa el rol de 'family'
+        onLoginSuccess(FAMILY_ROLE);
       }
     } else {
-      // Credenciales incorrectas para ambos
       console.log("Login failed: Invalid credentials");
-      setError("ID o contraseña incorrectos."); // Mensaje de error para el usuario
+      setError("ID o contraseña incorrectos.");
     }
   };
+
 
   return (
     <SafeAreaView style={styles.container}>

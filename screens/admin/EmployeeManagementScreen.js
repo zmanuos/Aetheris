@@ -1,12 +1,13 @@
-// AETHERIS/screens/family/FamilyDashboardScreen.js
+// AETHERIS/screens/admin/EmployeeManagementScreen.js
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function FamilyDashboardScreen() {
+export default function EmployeeManagementScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Dashboard Familiar</Text>
-      <Text>Aquí se mostrará el ritmo cardíaco, gráficas, temperatura y humedad del asilo, y últimos chequeos semanales.</Text>
+      <Text style={styles.title}>Administración de Empleados</Text>
+      <Text>Aquí el administrador puede ver, añadir, editar o eliminar empleados.</Text>
+      {/* Aquí iría la lógica para listar/gestionar empleados */}
     </View>
   );
 }

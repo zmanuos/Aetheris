@@ -1,25 +1,29 @@
+// AETHERIS/navigation/AdminNavigator.js
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 
-// UI
 import Header from '../components/navigation/Header';
 import SideMenu from '../components/navigation/SideMenu'; 
 
-// Importa todas tus pantallas
-import HomeScreen from '../screens/admin/HomeScreen';
-import ResidentsScreen from '../screens/admin/ResidentsScreen';
-import CreateConsultasScreen from '../screens/admin/CreateConsultasScreen';
-import ConsultasHistoryScreen from '../screens/admin/ConsultasHistory';
-import CheckupReportsScreen from '../screens/admin/CheckupReportsScreen';
+// Importa las pantallas comunes (que pueden tener lógica condicional interna si es necesario)
+import HomeScreen from '../screens/employee/HomeScreen';
+import ResidentsScreen from '../screens/employee/ResidentsScreen';
+import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
+import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
+import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen';
+
+// Importa las NUEVAS pantallas específicas de Admin
+import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen';
+import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
 
 const Drawer = createDrawerNavigator();
 
-// MODIFICACIÓN CLAVE: AdminNavigator debe recibir 'onLogout'
-const AdminNavigator = ({ onLogout }) => { 
+const AdminNavigator = ({ onLogout, userRole }) => { // Recibe userRole aquí
   return (
     <Drawer.Navigator
       initialRouteName="Home"
-      drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} />} 
+      // Pasa onLogout Y userRole al SideMenu UNIFICADO
+      drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} userRole={userRole} />}
       screenOptions={({ navigation, route }) => ({
         drawerType: 'permanent',
         drawerStyle: {
@@ -40,11 +44,16 @@ const AdminNavigator = ({ onLogout }) => {
         ),
       })}
     >
-      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'HOME' }} />
+      {/* Pantallas comunes para Admin y Employee */}
+      <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
       <Drawer.Screen name="Residents" component={ResidentsScreen} options={{ title: 'RESIDENTES' }} />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
       <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
+
+      {/* NUEVAS Pantallas ESPECÍFICAS DE ADMIN */}
+      <Drawer.Screen name="EmployeeManagement" component={EmployeeManagementScreen} options={{ title: 'GESTIÓN EMPLEADOS' }} />
+      <Drawer.Screen name="AsylumData" component={AsylumDataScreen} options={{ title: 'DATOS DEL ASILO' }} />
     </Drawer.Navigator>
   );
 };
