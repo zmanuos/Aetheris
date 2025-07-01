@@ -28,7 +28,7 @@ CREATE TABLE USUARIO (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
     usuario INT UNIQUE,
     contra VARCHAR(256) NOT NULL,
-    email VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
     rol INT,
     CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     isActive BOOLEAN DEFAULT TRUE,
@@ -69,7 +69,7 @@ CREATE TABLE RESIDENTE (
     fecha_nacimiento DATE,
     genero VARCHAR(10),
     telefono VARCHAR(15),
-    dispositivo INT,
+    dispositivo INT UNIQUE DEFAULT NULL,
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (dispositivo) REFERENCES DISPOSITIVO(id_dispositivo)
@@ -120,7 +120,7 @@ CREATE TABLE ALERTA (
     id_alerta INT AUTO_INCREMENT PRIMARY KEY,
     id_residente INT,
     id_alerta_tipo INT,
-    id_area INT, -- NUEVO: Relación con la tabla AREA
+    id_area INT,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     mensaje VARCHAR(255),
     FOREIGN KEY (id_residente) REFERENCES RESIDENTE(id_residente),

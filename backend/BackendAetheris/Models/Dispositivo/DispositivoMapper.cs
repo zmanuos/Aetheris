@@ -25,8 +25,6 @@ public class DispositivoMapper
     private bool _estado;
     private DateTime _fecha_asignacion;
 
-
-
      */
 
     public static Dispositivo ToObject(DataRow row)

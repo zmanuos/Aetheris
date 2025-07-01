@@ -3,172 +3,104 @@
   "WorkspaceRootPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta\\alertamapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta\\alertamapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\familiar\\familiar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\familiar\\familiar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta\\alerta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta\\alerta.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta_tipo\\alertatipo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta_tipo\\alertatipo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\residente\\residentemapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\residente\\residentemapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\postmodels\\familiarpost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\postmodels\\familiarpost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\residente\\residente.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\residente\\residente.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuariomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuariomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\familiar\\familiarmapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\familiar\\familiarmapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\chequeo\\chequeomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\chequeo\\chequeomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta\\alertalistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta\\alertalistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\areacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\areacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\postmodels\\residentepost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\postmodels\\residentepost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\familiarcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\familiarcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta_tipo\\alertatipomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta_tipo\\alertatipomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\personalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\personalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta_tipo\\alertatiporesponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta_tipo\\alertatiporesponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\postmodels\\personalpost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\postmodels\\personalpost.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\alertacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\alertacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\personal\\personal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\personal\\personal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\dispositivonotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\dispositivonotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\residentecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\residentecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\chequeonotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\chequeonotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\dispositivocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\dispositivocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\areanotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\areanotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\alertanotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\alertanotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\usuariocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\usuariocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\dataaccess\\sqlserverconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\dataaccess\\sqlserverconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\chequeocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\chequeocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\alerta\\alertaresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\alerta\\alertaresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\asilocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\asilocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\area\\area.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\area\\area.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\personalnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\personalnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\area\\arealistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\area\\arealistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\asilo\\asilo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\asilo\\asilo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\area\\arearesponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\area\\arearesponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\putmodels\\dispositivoput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\putmodels\\dispositivoput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\area\\areamapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\area\\areamapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\putmodels\\asiloput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\putmodels\\asiloput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\familiar\\familiarlistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\familiar\\familiarlistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\familiar\\familiar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\familiar\\familiar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\familiar\\familiarresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\familiar\\familiarresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\chequeo\\chequeoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\chequeo\\chequeoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\chequeo\\chequeolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\chequeo\\chequeolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\chequeo\\chequeo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\chequeo\\chequeo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\residente\\residentelistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\residente\\residentelistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\residentenotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\residentenotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\familiarnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\familiarnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\usuarionotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\usuarionotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\parentesco\\parentescoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\parentesco\\parentescoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\parentesco\\parentescomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\parentesco\\parentescomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\parentesco\\parentesco.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\parentesco\\parentesco.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuariomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuariomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuariolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuariolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuario.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\areacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\areacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\asilo\\asilomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\asilo\\asilomapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\asilo\\asiloresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\asilo\\asiloresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\rol\\rolresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -183,24 +115,16 @@
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\rol\\rol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\personalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\personalcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\dispositivocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\dispositivocontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\alertacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\alertacontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\usuario\\usuarioresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\usuario\\usuarioresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\dataaccess\\sqlserverconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\dataaccess\\sqlserverconnection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\personal\\personalresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\personal\\personalresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\personal\\personalmapper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -211,88 +135,12 @@
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\personal\\personallistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\personal\\personal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\personal\\personal.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\residentenotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\residentenotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\residentecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\residentecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivolistresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\dispositivo\\dispositivoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\dispositivo\\dispositivoresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\residente\\residenteresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\residente\\residenteresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\config\\appconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\config\\appconfig.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\viewmodels\\messageresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\viewmodels\\messageresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\viewmodels\\jsonresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\viewmodels\\jsonresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\shared\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\shared\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\data\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\users\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\users\\userresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\users\\userresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\users\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\users\\registerrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\users\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\users\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\categories\\category.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\categories\\category.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\models\\login\\categories\\categoryrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\models\\login\\categories\\categoryrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\exceptions\\familiarnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\exceptions\\familiarnotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -302,768 +150,402 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 4,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "FamiliarMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Familiar\\FamiliarMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\FamiliarMapper.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAQwCIAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:23:26.275Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "UsuarioMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:01:50.542Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Residente.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\Residente.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Residente\\Residente.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\Residente.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Residente\\Residente.cs",
-              "ViewState": "AgIAABcAAAAAAAAAAAAQwB4AAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T14:13:47.282Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "ResidenteMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Residente\\ResidenteMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Residente\\ResidenteMapper.cs",
-              "ViewState": "AgIAABoAAAAAAAAAAAAiwCYAAAAdAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T14:13:41.446Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AlertaTipo.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipo.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipo.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipo.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipo.cs",
-              "ViewState": "AgIAACYAAAAAAAAAAAASwDkAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:00:43.66Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Alerta.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\Alerta.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta\\Alerta.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\Alerta.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta\\Alerta.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAAAmwDQAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:17:30.824Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AlertaMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta\\AlertaMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta\\AlertaMapper.cs",
-              "ViewState": "AgIAACsAAAAAAAAAAAAawCMAAAA1AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:20:06.555Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "DispositivoMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
-              "ViewState": "AgIAAB0AAAAAAAAAAAAQwCQAAABGAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:06:55.156Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "Dispositivo.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAADwvzsAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T14:58:11.203Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "ChequeoMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Chequeo\\ChequeoMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Chequeo\\ChequeoMapper.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAABfAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:33:18.301Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 10,
-              "Title": "AlertaListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta\\AlertaListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta\\AlertaListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:18:02.093Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "AreaController.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AreaController.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AreaController.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AreaController.cs",
-              "RelativeToolTip": "BackendAetheris\\Controllers\\AreaController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:15:14.1Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "FamiliarController.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\FamiliarController.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\FamiliarController.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\FamiliarController.cs",
-              "RelativeToolTip": "BackendAetheris\\Controllers\\FamiliarController.cs",
-              "ViewState": "AgIAAAgAAAAAAAAAAADgvxYAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:22:22.243Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "AlertaTipoResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAIAAAALAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:01:20.756Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "AlertaTipoMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta_tipo\\AlertaTipoMapper.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:01:35.353Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 16,
-              "Title": "DispositivoNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\DispositivoNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\DispositivoNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\DispositivoNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\DispositivoNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAcAAAAqAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:12:42.743Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 15,
-              "Title": "AlertaController.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AlertaController.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AlertaController.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AlertaController.cs",
-              "RelativeToolTip": "BackendAetheris\\Controllers\\AlertaController.cs",
-              "ViewState": "AgIAAAcAAAAAAAAAAAAAAB8AAAAAAAAAAAAAAA==",
+              "DocumentIndex": 6,
+              "Title": "PersonalPost.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\PersonalPost.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\PostModels\\PersonalPost.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\PersonalPost.cs",
+              "RelativeToolTip": "BackendAetheris\\PostModels\\PersonalPost.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:27:16.522Z",
+              "WhenOpened": "2025-07-01T03:52:24.503Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 17,
-              "Title": "ChequeoNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ChequeoNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\ChequeoNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ChequeoNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\ChequeoNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:37:54.344Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 18,
-              "Title": "AreaNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\AreaNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\AreaNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\AreaNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\AreaNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:22:41.26Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 19,
-              "Title": "AlertaNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\AlertaNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\AlertaNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\AlertaNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\AlertaNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:22:22.467Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 20,
-              "Title": "ChequeoController.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ChequeoController.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\ChequeoController.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ChequeoController.cs",
-              "RelativeToolTip": "BackendAetheris\\Controllers\\ChequeoController.cs",
-              "ViewState": "AgIAAA0AAAAAAAAAAAAqwB8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:38:30.729Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 21,
-              "Title": "AlertaResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Alerta\\AlertaResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Alerta\\AlertaResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Alerta\\AlertaResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:17:45.768Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 23,
-              "Title": "PersonalNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\PersonalNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\PersonalNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\PersonalNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\PersonalNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:38:55.099Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 24,
-              "Title": "AreaListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Area\\AreaListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Area\\AreaListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:13:38.15Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 22,
-              "Title": "Area.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\Area.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Area\\Area.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\Area.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Area\\Area.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAEoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:13:22.65Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 25,
-              "Title": "AreaResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Area\\AreaResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Area\\AreaResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:11:36.633Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 26,
-              "Title": "AreaMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Area\\AreaMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Area\\AreaMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Area\\AreaMapper.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-25T17:13:43.972Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 27,
-              "Title": "FamiliarListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Familiar\\FamiliarListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\FamiliarListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:22:52.172Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 28,
-              "Title": "Familiar.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\Familiar.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Familiar\\Familiar.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\Familiar.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\Familiar.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAASwBAAAAAUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:22:16.073Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 29,
-              "Title": "FamiliarResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Familiar\\FamiliarResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\FamiliarResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\FamiliarResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:24:15.854Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 30,
-              "Title": "ChequeoResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Chequeo\\ChequeoResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Chequeo\\ChequeoResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAA6wA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:36:51.306Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 31,
-              "Title": "ChequeoListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Chequeo\\ChequeoListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\ChequeoListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Chequeo\\ChequeoListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:31:16.235Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 32,
-              "Title": "Chequeo.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\Chequeo.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Chequeo\\Chequeo.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Chequeo\\Chequeo.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Chequeo\\Chequeo.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACYAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T17:36:46.555Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 33,
-              "Title": "ResidenteListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Residente\\ResidenteListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Residente\\ResidenteListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T14:13:46.914Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 34,
-              "Title": "ResidenteNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:13:26.573Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 35,
-              "Title": "FamiliarNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:23:05.289Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 36,
-              "Title": "UsuarioNotFoundException.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\UsuarioNotFoundException.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\UsuarioNotFoundException.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\UsuarioNotFoundException.cs",
-              "RelativeToolTip": "BackendAetheris\\Exceptions\\UsuarioNotFoundException.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:02:23.578Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 37,
-              "Title": "ParentescoResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\ParentescoResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Parentesco\\ParentescoResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\ParentescoResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\ParentescoResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:19:51.693Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 38,
-              "Title": "ParentescoMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\ParentescoMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Parentesco\\ParentescoMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\ParentescoMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\ParentescoMapper.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAQwAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:19:38.123Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 39,
-              "Title": "Parentesco.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\Parentesco.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Parentesco\\Parentesco.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Parentesco\\Parentesco.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\Parentesco.cs",
-              "ViewState": "AgIAACgAAAAAAAAAAAAQwD4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:19:27.151Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 44,
-              "Title": "Rol.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\Rol.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\Rol.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\Rol.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\Rol.cs",
-              "ViewState": "AgIAACgAAAAAAAAAAAAQwD4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:07:28.45Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 43,
-              "Title": "RolMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\RolMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\RolMapper.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAQwAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:07:41.174Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 42,
-              "Title": "RolResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\RolResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\RolResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:08:00.076Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 40,
-              "Title": "UsuarioListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:02:08.667Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 41,
-              "Title": "Usuario.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\Usuario.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\Usuario.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\Usuario.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\Usuario.cs",
-              "ViewState": "AgIAAEAAAAAAAAAAAAAYwDkAAAAXAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:01:41.027Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 46,
-              "Title": "DispositivoController.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\DispositivoController.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\DispositivoController.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\DispositivoController.cs",
-              "RelativeToolTip": "BackendAetheris\\Controllers\\DispositivoController.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAADgvw4AAABKAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:12:03.826Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 45,
+              "DocumentIndex": 5,
               "Title": "PersonalController.cs",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\PersonalController.cs",
               "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\PersonalController.cs",
               "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\PersonalController.cs",
               "RelativeToolTip": "BackendAetheris\\Controllers\\PersonalController.cs",
-              "ViewState": "AgIAAA8AAAAAAAAAAAAAABYAAAALAAAAAAAAAA==",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAqwCQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:38:12.588Z"
+              "WhenOpened": "2025-06-26T17:31:56.221Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 47,
-              "Title": "UsuarioResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\UsuarioResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\UsuarioResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAAAAAAAAAAAAA==",
+              "DocumentIndex": 3,
+              "Title": "ResidentePost.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\ResidentePost.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\PostModels\\ResidentePost.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\ResidentePost.cs",
+              "RelativeToolTip": "BackendAetheris\\PostModels\\ResidentePost.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T16:02:01.083Z"
+              "WhenOpened": "2025-07-01T07:00:39.439Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 48,
-              "Title": "SqlServerConnection.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\DataAccess\\SqlServerConnection.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\DataAccess\\SqlServerConnection.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\DataAccess\\SqlServerConnection.cs",
-              "RelativeToolTip": "BackendAetheris\\DataAccess\\SqlServerConnection.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 0,
+              "Title": "Familiar.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\Familiar.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Familiar\\Familiar.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Familiar\\Familiar.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\Familiar.cs",
+              "ViewState": "AgIAAGUAAAAAAAAAAAAwwHUAAAAzAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T16:57:00.149Z"
+              "WhenOpened": "2025-06-26T15:53:37.545Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 49,
-              "Title": "PersonalResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\PersonalResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "DocumentIndex": 4,
+              "Title": "FamiliarController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\FamiliarController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\FamiliarController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\FamiliarController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\FamiliarController.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAUwCgAAAA+AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:33:10.859Z"
+              "WhenOpened": "2025-06-26T17:27:47.606Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 51,
-              "Title": "PersonalListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "Residente.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\Residente.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Residente\\Residente.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\Residente.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Residente\\Residente.cs",
+              "ViewState": "AgIAAIkAAAAAAAAAAAAUwIAAAABBAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:28:49.501Z"
+              "WhenOpened": "2025-06-26T16:04:41.088Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 52,
+              "DocumentIndex": 1,
+              "Title": "FamiliarPost.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\FamiliarPost.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\PostModels\\FamiliarPost.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PostModels\\FamiliarPost.cs",
+              "RelativeToolTip": "BackendAetheris\\PostModels\\FamiliarPost.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAPAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-07-01T07:27:32.268Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "Dispositivo.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\Dispositivo.cs",
+              "ViewState": "AgIAAFUAAAAAAAAAAAAowFoAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-30T16:39:21.714Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
               "Title": "Personal.cs",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\Personal.cs",
               "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\Personal.cs",
               "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\Personal.cs",
               "RelativeToolTip": "BackendAetheris\\Models\\Personal\\Personal.cs",
-              "ViewState": "AgIAAEYAAAAAAAAAAAAYwGcAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAQwBIAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:28:53.853Z"
+              "WhenOpened": "2025-06-26T17:25:04.082Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 50,
-              "Title": "PersonalMapper.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
-              "ViewState": "AgIAACQAAAAAAAAAAADwv0kAAAAOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:33:53.759Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 53,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\appsettings.json",
-              "RelativeDocumentMoniker": "BackendAetheris\\appsettings.json",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\appsettings.json",
-              "RelativeToolTip": "BackendAetheris\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABOAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-23T16:40:50.781Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 55,
-              "Title": "DispositivoListResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoListResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\DispositivoListResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoListResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\DispositivoListResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAQAAABUAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:05:19.938Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 56,
-              "Title": "DispositivoResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\DispositivoResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\DispositivoResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:10:22.022Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 54,
+              "DocumentIndex": 8,
               "Title": "ResidenteController.cs",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ResidenteController.cs",
               "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\ResidenteController.cs",
               "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ResidenteController.cs",
               "RelativeToolTip": "BackendAetheris\\Controllers\\ResidenteController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAbAAAAAAAAAA==",
+              "ViewState": "AgIAAB8AAAAAAAAAAAAUwCYAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T14:21:42.446Z"
+              "WhenOpened": "2025-06-26T16:08:43.571Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 57,
-              "Title": "ResidenteResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Residente\\ResidenteResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Residente\\ResidenteResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\Residente\\ResidenteResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAArAAAAAAAAAA==",
+              "DocumentIndex": 9,
+              "Title": "DispositivoController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\DispositivoController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\DispositivoController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\DispositivoController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\DispositivoController.cs",
+              "ViewState": "AgIAAB4AAAAAAAAAAAAiwCMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-24T15:11:27.769Z"
+              "WhenOpened": "2025-06-26T17:27:42.892Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 58,
+              "DocumentIndex": 13,
+              "Title": "ChequeoController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ChequeoController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\ChequeoController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\ChequeoController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\ChequeoController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T17:27:37.424Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "UsuarioController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\UsuarioController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\UsuarioController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\UsuarioController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\UsuarioController.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAAACgAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T15:24:10.349Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "AsiloController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AsiloController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AsiloController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AsiloController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\AsiloController.cs",
+              "ViewState": "AgIAAA0AAAAAAAAAAADgvxcAAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:52:04.512Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SqlServerConnection.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\DataAccess\\SqlServerConnection.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\DataAccess\\SqlServerConnection.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\DataAccess\\SqlServerConnection.cs",
+              "RelativeToolTip": "BackendAetheris\\DataAccess\\SqlServerConnection.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAAAswFQAAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T16:07:59.275Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "DispositivoMapper.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Dispositivo\\DispositivoMapper.cs",
+              "ViewState": "AgIAABoAAAAAAAAAAAAQwBoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-30T17:07:49.969Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "Usuario.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\Usuario.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\Usuario.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\Usuario.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\Usuario.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFwAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T17:01:11.195Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "Asilo.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\Asilo.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Asilo\\Asilo.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\Asilo.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Asilo\\Asilo.cs",
+              "ViewState": "AgIAAFEAAAAAAAAAAAAgwFoAAAAuAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:33:13.543Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "RolResponse.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolResponse.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\RolResponse.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolResponse.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\RolResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:33:58.166Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "AsiloPut.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PutModels\\AsiloPut.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\PutModels\\AsiloPut.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PutModels\\AsiloPut.cs",
+              "RelativeToolTip": "BackendAetheris\\PutModels\\AsiloPut.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAgAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:57:17.79Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "DispositivoPut.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PutModels\\DispositivoPut.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\PutModels\\DispositivoPut.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\PutModels\\DispositivoPut.cs",
+              "RelativeToolTip": "BackendAetheris\\PutModels\\DispositivoPut.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAQAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-30T16:30:37.871Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "AsiloResponse.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\AsiloResponse.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Asilo\\AsiloResponse.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\AsiloResponse.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Asilo\\AsiloResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:40:25.602Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "UsuarioListResponse.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\UsuarioListResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T17:01:29.904Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "UsuarioMapper.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Usuario\\UsuarioMapper.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAiwBIAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:59:35.487Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "RolMapper.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolMapper.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\RolMapper.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\RolMapper.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\RolMapper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:33:46.969Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "AsiloMapper.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\AsiloMapper.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Asilo\\AsiloMapper.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Asilo\\AsiloMapper.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Asilo\\AsiloMapper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:32:45.117Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "Rol.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\Rol.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Rol\\Rol.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Rol\\Rol.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Rol\\Rol.cs",
+              "ViewState": "AgIAABsAAAAAAAAAAAAowBkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-27T16:33:04.574Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "AreaController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AreaController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AreaController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AreaController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\AreaController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T17:27:24.205Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
               "Title": "AuthController.cs",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AuthController.cs",
               "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AuthController.cs",
               "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AuthController.cs",
               "RelativeToolTip": "BackendAetheris\\Controllers\\AuthController.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAAAAABgAAAAPAAAAAAAAAA==",
+              "ViewState": "AgIAAEcAAAAAAAAAAAAwwAkAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T16:37:21.103Z"
+              "WhenOpened": "2025-06-26T17:27:29.023Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 59,
-              "Title": "AppConfig.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Config\\AppConfig.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Config\\AppConfig.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Config\\AppConfig.cs",
-              "RelativeToolTip": "BackendAetheris\\Config\\AppConfig.cs",
-              "ViewState": "AgIAAAUAAAAAAAAAAAAxwBAAAABIAAAAAAAAAA==",
+              "DocumentIndex": 29,
+              "Title": "AlertaController.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AlertaController.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Controllers\\AlertaController.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Controllers\\AlertaController.cs",
+              "RelativeToolTip": "BackendAetheris\\Controllers\\AlertaController.cs",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAxwAMAAAALAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T16:36:54.391Z"
+              "WhenOpened": "2025-06-26T17:27:18.038Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 63,
+              "DocumentIndex": 31,
+              "Title": "PersonalMapper.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAUwB0AAAAGAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-06-26T17:24:37.232Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
               "Title": "BackendAetheris.csproj",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
               "RelativeDocumentMoniker": "BackendAetheris\\BackendAetheris.csproj",
@@ -1071,151 +553,43 @@
               "RelativeToolTip": "BackendAetheris\\BackendAetheris.csproj",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-06-23T17:21:30.993Z"
+              "WhenOpened": "2025-06-26T15:25:02.589Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 61,
-              "Title": "JsonResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\ViewModels\\JsonResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\ViewModels\\JsonResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\ViewModels\\JsonResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\ViewModels\\JsonResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:22:48.182Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 60,
-              "Title": "MessageResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\ViewModels\\MessageResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\ViewModels\\MessageResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\ViewModels\\MessageResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\ViewModels\\MessageResponse.cs",
+              "DocumentIndex": 32,
+              "Title": "PersonalListResponse.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
+              "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalListResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:22:50.296Z"
+              "WhenOpened": "2025-06-26T17:25:01.861Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 65,
-              "Title": "AppDbContext.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Data\\AppDbContext.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Data\\AppDbContext.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Data\\AppDbContext.cs",
-              "RelativeToolTip": "BackendAetheris\\Data\\AppDbContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 33,
+              "Title": "ResidenteNotFoundException.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
+              "RelativeToolTip": "BackendAetheris\\Exceptions\\ResidenteNotFoundException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:00:12.46Z"
+              "WhenOpened": "2025-06-26T15:53:24.276Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 62,
-              "Title": "ApiResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Shared\\ApiResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Shared\\ApiResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Shared\\ApiResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Shared\\ApiResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAYAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 34,
+              "Title": "FamiliarNotFoundException.cs",
+              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
+              "RelativeDocumentMoniker": "BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
+              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
+              "RelativeToolTip": "BackendAetheris\\Exceptions\\FamiliarNotFoundException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:06:25.772Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 66,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\User.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Users\\User.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\User.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Users\\User.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:08:45.049Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 64,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Program.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Program.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Program.cs",
-              "RelativeToolTip": "BackendAetheris\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:16:17.026Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 67,
-              "Title": "UserResponse.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\UserResponse.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Users\\UserResponse.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\UserResponse.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Users\\UserResponse.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:07:29.634Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 68,
-              "Title": "RegisterRequest.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\RegisterRequest.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Users\\RegisterRequest.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\RegisterRequest.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Users\\RegisterRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:06:49.106Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 69,
-              "Title": "LoginRequest.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\LoginRequest.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Users\\LoginRequest.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Users\\LoginRequest.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Users\\LoginRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:06:37.82Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 70,
-              "Title": "Category.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Categories\\Category.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Categories\\Category.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Categories\\Category.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Categories\\Category.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABcAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:05:56.036Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 71,
-              "Title": "CategoryRequest.cs",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Categories\\CategoryRequest.cs",
-              "RelativeDocumentMoniker": "BackendAetheris\\Models\\login\\Categories\\CategoryRequest.cs",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Models\\login\\Categories\\CategoryRequest.cs",
-              "RelativeToolTip": "BackendAetheris\\Models\\login\\Categories\\CategoryRequest.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-23T17:07:49.031Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 72,
-              "Title": "launchSettings.json",
-              "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Properties\\launchSettings.json",
-              "RelativeDocumentMoniker": "BackendAetheris\\Properties\\launchSettings.json",
-              "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\Properties\\launchSettings.json",
-              "RelativeToolTip": "BackendAetheris\\Properties\\launchSettings.json",
-              "ViewState": "AgIAABUAAAAAAAAAAAAAAAYAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-06-23T16:36:46.667Z"
+              "WhenOpened": "2025-06-26T15:53:22.831Z"
             }
           ]
         }

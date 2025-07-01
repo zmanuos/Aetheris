@@ -15,6 +15,14 @@ public class Residente
 
     private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
 
+    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto);";
+
+    private static string AsignarDispositivo = "UPDATE RESIDENTE SET dispositivo = @dispositivo WHERE id_residente = @id_residente";
+
+    private static string updateTelefono = "UPDATE RESIDENTE SET telefono = @telefono WHERE id_residente = @id";
+
+    private static string updateEstado = "UPDATE RESIDENTE SET activo = not activo WHERE id_residente = @id";
+
 
     #endregion
 
@@ -109,10 +117,57 @@ public class Residente
         }
     }
 
+    public static int Post(ResidentePost residente)
+    {
+        int result = 0;
+
+        MySqlCommand command = new MySqlCommand(insert);
+
+        command.Parameters.AddWithValue("@nombre", residente.nombre);
+        command.Parameters.AddWithValue("@apellido", residente.apellido);
+        command.Parameters.AddWithValue("@fecha_nacimiento", residente.fechaNacimiento);
+        command.Parameters.AddWithValue("@foto", residente.foto);
+        command.Parameters.AddWithValue("@genero", residente.genero);
+        command.Parameters.AddWithValue("@telefono", residente.telefono);
+
+
+        result = SqlServerConnection.ExecuteCommand(command);
+        return result;
+    }
+
+
+
+
+    public static int Update(int residente, int dispositivo)
+    {
+        int result = 0;
+
+        MySqlCommand command = new MySqlCommand(AsignarDispositivo);
+        command.Parameters.AddWithValue("@dispositivo", dispositivo);
+        command.Parameters.AddWithValue("@id_residente", residente);
+
+        return result = SqlServerConnection.ExecuteCommand(command);
+    }
+
+    public static bool UpdateTelefono(int id, string nuevoTelefono)
+    {
+        MySqlCommand command = new MySqlCommand(updateTelefono);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@telefono", nuevoTelefono);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdateEstado(int id)
+    {
+        MySqlCommand command = new MySqlCommand(updateEstado);
+        command.Parameters.AddWithValue("@id", id);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
     #endregion
 
     #region x
- 
-  
+
+
     #endregion
 }
