@@ -45,7 +45,6 @@ public class Parentesco
 
     #region Methods
 
-    // NUEVO MÉTODO: Para obtener todos los parentescos
     public static List<Parentesco> Get()
     {
         MySqlCommand command = new MySqlCommand(selectAll);

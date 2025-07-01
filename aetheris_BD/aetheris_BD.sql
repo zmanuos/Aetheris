@@ -49,6 +49,7 @@ CREATE TABLE PERSONAL (
     fecha_nacimiento DATE,
     genero VARCHAR(10),
     telefono VARCHAR(15),
+    firebase_uid VARCHAR(28) UNIQUE,
     activo BOOLEAN DEFAULT FALSE
 );
 
@@ -74,12 +75,8 @@ CREATE TABLE RESIDENTE (
     fecha_nacimiento DATE,
     genero VARCHAR(10),
     telefono VARCHAR(15),
-<<<<<<< HEAD
     dispositivo INT,
     id_foto VARCHAR(255) DEFAULT 'default',
-=======
-    dispositivo INT UNIQUE DEFAULT NULL,
->>>>>>> 22b546b82f5b1d9fe5f8c30c1799cbc4f2314ed1
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (dispositivo) REFERENCES DISPOSITIVO(id_dispositivo)
@@ -102,11 +99,13 @@ CREATE TABLE FAMILIAR (
     fecha_nacimiento DATE,
     genero VARCHAR(10),
     telefono VARCHAR(15),
-    id_residente INT, -- residente del cual es responsable el Familiar
+    id_residente INT,
     id_parentesco INT,
+    firebase_uid VARCHAR(28) UNIQUE, 
     FOREIGN KEY (id_parentesco) REFERENCES PARENTESCO(id_parentesco),
     FOREIGN KEY (id_residente) REFERENCES RESIDENTE(id_residente)
 );
+
 
 -- Chequeo - Datos de los sensores
 CREATE TABLE CHEQUEO (
