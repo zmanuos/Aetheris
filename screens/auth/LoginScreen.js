@@ -1,11 +1,13 @@
+// AETHERIS/screens/auth/LoginScreen.js
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import LoginForm from '../../components/shared/LoginForm';
 
-export default function LoginScreen() {
+
+export default function LoginScreen({ onLoginSuccess }) {
   return (
     <View style={styles.container}>
-      <LoginForm />
+      <LoginForm onLoginSuccess={onLoginSuccess} />
     </View>
   );
 }
