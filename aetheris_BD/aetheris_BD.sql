@@ -23,6 +23,11 @@ CREATE TABLE ROL (
 );
 
 
+INSERT INTO ROL (nombre) VALUES
+('Administrador'),
+('Empleado'),
+('Familiar');
+
 -- Usuarios - Login.
 CREATE TABLE USUARIO (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,10 +75,12 @@ CREATE TABLE RESIDENTE (
     genero VARCHAR(10),
     telefono VARCHAR(15),
     dispositivo INT,
+    id_foto VARCHAR(255) DEFAULT 'default',
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (dispositivo) REFERENCES DISPOSITIVO(id_dispositivo)
 );
+
 
 -- Medicamentos
 -- Padecimientos

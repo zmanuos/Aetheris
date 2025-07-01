@@ -1,4 +1,4 @@
-// AETHERIS/screens/employee/ResidentsScreen.js
+// AETHERIS/screens/admin/ResidentManagementScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -10,27 +10,17 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-  TextInput,
+  TextInput, // Necesario para la barra de búsqueda (aunque solo placeholder por ahora)
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Importa el componente de tarjeta desde la nueva ubicación compartida
-import ResidentCard from '../../components/shared/ResidentCard';
+import Config from '../../config/config';
+import ResidentCard from '../../components/ResidentCard';
 
-// Si en el futuro necesitas Firebase o Config para cargar datos reales, descomenta e importa:
-// import { auth, db } from '../../config/firebaseConfig';
-// import { createUserWithEmailAndPassword } from 'firebase/auth';
-// import { setDoc, doc } from 'firebase/firestore';
-// import Config from '../../config/config'; // Si vas a cargar desde API
-
-// Definimos esta constante aquí para que sea consistente con el cálculo en ResidentCard
-// Este es el padding que tendrá el contenedor de la grilla en la pantalla
-const GRID_CONTAINER_PADDING = 10;
-
-export default function ResidentsScreen() {
-  // Estados para la carga y errores (se mantienen para la estructura, pero no se usarán con datos estáticos)
-  const [isLoading, setIsLoading] = useState(false); // Falso inicialmente para datos estáticos
-  const [fetchError, setFetchError] = useState(''); // Vacío inicialmente para datos estáticos
+export default function ResidentManagementScreen() {
+  // Estados para la carga y errores (aún se mantienen para la estructura, pero no se usarán con datos estáticos)
+  const [isLoading, setIsLoading] = useState(false); // No cargamos, así que falso
+  const [fetchError, setFetchError] = useState(''); // No hay error de fetch con datos estáticos
 
   // Datos estáticos de residentes
   const [residents, setResidents] = useState([
@@ -61,7 +51,7 @@ export default function ResidentsScreen() {
       telefono: '5522334455',
       activo: true,
       nombre_area: 'Ala B - Hab. 5',
-      ultima_frecuencia_cardiaca: 95,
+      ultima_frecuencia_cardiaca: 95, // Un poco alta para simular "Media"
       historial_frecuencia_cardiaca: [88, 92, 95, 90, 93, 94, 95],
       estado_salud_general: 'Media',
       fecha_ingreso: '2019-05-20T00:00:00Z',
@@ -77,9 +67,9 @@ export default function ResidentsScreen() {
       fecha_nacimiento: '1950-01-05T00:00:00Z',
       genero: 'Femenino',
       telefono: '5533445566',
-      activo: false,
+      activo: false, // Inactivo para mostrar un caso
       nombre_area: 'Ala C - Hab. 10',
-      ultima_frecuencia_cardiaca: 58,
+      ultima_frecuencia_cardiaca: 58, // Baja para simular "Baja"
       historial_frecuencia_cardiaca: [65, 60, 58, 62, 59, 60, 58],
       estado_salud_general: 'Baja',
       fecha_ingreso: '2021-09-01T00:00:00Z',
@@ -126,6 +116,36 @@ export default function ResidentsScreen() {
     },
   ]);
 
+  // Las funciones fetchResidents y useEffect ya no son necesarias para datos estáticos
+  // pero las mantengo comentadas para cuando quieras volver a la carga real.
+  // const API_URL = Config.API_BASE_URL;
+  // const fetchResidents = async () => {
+  //   setIsLoading(true);
+  //   setFetchError('');
+  //   try {
+  //     const response = await fetch(`${API_URL}/Residente`);
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       throw new Error(errorData.message || 'Error al cargar residentes del backend.');
+  //     }
+  //     const data = await response.json();
+  //     if (data && data.residents) {
+  //       setResidents(data.residents);
+  //     } else {
+  //       setResidents(data.data || data);
+  //     }
+  //     console.log("Residentes cargados:", data);
+  //   } catch (error) {
+  //     console.error("Error al cargar residentes:", error.message);
+  //     setFetchError('No se pudieron cargar los residentes. Intenta de nuevo más tarde.');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+  // useEffect(() => {
+  //   // fetchResidents(); // Comenta esta línea para usar datos estáticos
+  // }, []);
+
   const handleAddNewResident = () => {
     Alert.alert('Funcionalidad', 'Navegar a la pantalla de añadir nuevo residente.');
   };
@@ -152,6 +172,8 @@ export default function ResidentsScreen() {
           text: 'Eliminar',
           onPress: () => {
             Alert.alert('Eliminado', `Residente ${id} eliminado (simulado).`);
+            // Aquí podrías filtrar los datos estáticos para simular la eliminación
+            // setResidents(prevResidents => prevResidents.filter(r => r.id_residente !== id));
           },
           style: 'destructive',
         },
@@ -172,7 +194,7 @@ export default function ResidentsScreen() {
       <View style={styles.searchFilterContainer}>
         <View style={styles.searchInputContainer}>
           <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
+          <TextInput // Usamos TextInput para la búsqueda
             style={styles.searchInput}
             placeholder="Buscar residente..."
             placeholderTextColor="#9CA3AF"
@@ -200,8 +222,6 @@ export default function ResidentsScreen() {
                 onDelete={handleDeleteResident}
                 onViewProfile={handleViewProfile}
                 onHistory={handleHistory}
-                // Pasamos el padding del contenedor a la tarjeta para el cálculo preciso
-                gridContainerPadding={GRID_CONTAINER_PADDING}
               />
             ))}
           </View>
@@ -271,7 +291,7 @@ const styles = StyleSheet.create({
   searchIcon: {
     marginRight: 8,
   },
-  searchInput: {
+  searchInput: { // Estilo para el TextInput de búsqueda
     flex: 1,
     fontSize: 16,
     color: '#333',
@@ -289,13 +309,12 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+    padding: 10,
   },
   residentsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    // Usamos space-between para empujar las tarjetas a los extremos y dejar el gap en el medio
-    justifyContent: 'space-between',
-    paddingHorizontal: GRID_CONTAINER_PADDING, // Usamos la constante definida arriba
+    justifyContent: 'space-around',
   },
   loadingIndicator: {
     marginTop: 50,
