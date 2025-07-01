@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9313fa4c022b8e1caead6fae16c0537fb3c2e43d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1d033354f5031b013a12276614985b95e705d4fb")]
 [assembly: System.Reflection.AssemblyProductAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

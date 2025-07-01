@@ -3,11 +3,11 @@
   "WorkspaceRootPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
       "RelativeMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|solutionrelative:backendaetheris\\backendaetheris.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
     },
     {
       "AbsoluteMoniker": "D:0:0:{60F6DA65-2865-9CEE-7147-7A987E053611}|BackendAetheris\\BackendAetheris.csproj|c:\\users\\elihu\\onedrive\\documentos\\xampp\\htdocs\\aetheris\\backend\\backendaetheris\\controllers\\residentecontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -193,17 +193,21 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 4,
           "Children": [
             {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Microsoft.Common.CurrentVersion.targets",
               "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
               "ToolTip": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
               "RelativeToolTip": "..\\..\\..\\..\\..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
-              "ViewState": "AgIAABIGAAAAAAAAAAAiwBwGAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAACEWAAAAAAAAAAAuwC0WAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
               "WhenOpened": "2025-07-01T20:00:19.885Z",
               "EditorCaption": ""
@@ -218,8 +222,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Residente\\ResidenteResponse.cs",
               "ViewState": "AgIAAAUAAAAAAAAAAAA7wA0AAABHAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:57:00.487Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:57:00.487Z"
             },
             {
               "$type": "Document",
@@ -231,25 +234,20 @@
               "RelativeToolTip": "BackendAetheris\\Controllers\\ResidenteController.cs",
               "ViewState": "AgIAABoAAAAAAAAAAAAnwCwAAAB2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T16:08:43.571Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T16:08:43.571Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "BackendAetheris.csproj",
               "DocumentMoniker": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
               "RelativeDocumentMoniker": "BackendAetheris\\BackendAetheris.csproj",
               "ToolTip": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
               "RelativeToolTip": "BackendAetheris\\BackendAetheris.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAUAAAAAAAAAAAAqwBsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
               "WhenOpened": "2025-06-26T15:25:02.589Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
             },
             {
               "$type": "Document",
@@ -261,8 +259,7 @@
               "RelativeToolTip": "BackendAetheris\\Controllers\\ParentescoController.cs",
               "ViewState": "AgIAAA0AAAAAAAAAAAAnwBYAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:36:53.032Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:36:53.032Z"
             },
             {
               "$type": "Document",
@@ -274,8 +271,7 @@
               "RelativeToolTip": "BackendAetheris\\DataAccess\\SqlServerConnection.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAB8AAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T16:07:59.275Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T16:07:59.275Z"
             },
             {
               "$type": "Document",
@@ -287,8 +283,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Residente\\Residente.cs",
               "ViewState": "AgIAAHYAAAAAAAAAAAAowIIAAABJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T16:04:41.088Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T16:04:41.088Z"
             },
             {
               "$type": "Document",
@@ -300,8 +295,7 @@
               "RelativeToolTip": "BackendAetheris\\Controllers\\AlertaController.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAnwBcAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T17:27:18.038Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T17:27:18.038Z"
             },
             {
               "$type": "Document",
@@ -313,8 +307,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Personal\\PersonalMapper.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAUwB0AAAAGAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T17:24:37.232Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T17:24:37.232Z"
             },
             {
               "$type": "Document",
@@ -326,8 +319,7 @@
               "RelativeToolTip": "BackendAetheris\\Exceptions\\ParentescoNotFoundException.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:55:21.894Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:55:21.894Z"
             },
             {
               "$type": "Document",
@@ -339,8 +331,7 @@
               "RelativeToolTip": "BackendAetheris\\Exceptions\\AlertaNotFoundException.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:54:38.526Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:54:38.526Z"
             },
             {
               "$type": "Document",
@@ -352,8 +343,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\Parentesco.cs",
               "ViewState": "AgIAAC8AAAAAAAAAAAAQwDgAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:40:35.407Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:40:35.407Z"
             },
             {
               "$type": "Document",
@@ -365,8 +355,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\Familiar.cs",
               "ViewState": "AgIAAHEAAAAAAAAAAAAkwIIAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T15:53:37.545Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T15:53:37.545Z"
             },
             {
               "$type": "Document",
@@ -378,8 +367,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\FamiliarListResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:46:11.395Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:46:11.395Z"
             },
             {
               "$type": "Document",
@@ -391,8 +379,7 @@
               "RelativeToolTip": "BackendAetheris\\Controllers\\FamiliarController.cs",
               "ViewState": "AgIAAA8AAAAAAAAAAAAkwB0AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T17:27:47.606Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T17:27:47.606Z"
             },
             {
               "$type": "Document",
@@ -404,8 +391,7 @@
               "RelativeToolTip": "BackendAetheris\\Controllers\\PersonalController.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAAH4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T17:31:56.221Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T17:31:56.221Z"
             },
             {
               "$type": "Document",
@@ -417,8 +403,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\ParentescoMapper.cs",
               "ViewState": "AgIAAAUAAAAAAAAAAAAswBAAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:40:36.695Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:40:36.695Z"
             },
             {
               "$type": "Document",
@@ -430,8 +415,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Familiar\\FamiliarMapper.cs",
               "ViewState": "AgIAABkAAAAAAAAAAAAgwBoAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:39:19.632Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:39:19.632Z"
             },
             {
               "$type": "Document",
@@ -443,8 +427,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\ParentescoListResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:49:30.08Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:49:30.08Z"
             },
             {
               "$type": "Document",
@@ -456,8 +439,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Parentesco\\ParentescoResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T19:40:39.321Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T19:40:39.321Z"
             },
             {
               "$type": "Document",
@@ -469,8 +451,7 @@
               "RelativeToolTip": "BackendAetheris\\Models\\Personal\\Personal.cs",
               "ViewState": "AgIAAH4AAAAAAAAAAAAiwIMAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-06-26T17:25:04.082Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-06-26T17:25:04.082Z"
             },
             {
               "$type": "Document",
@@ -482,8 +463,7 @@
               "RelativeToolTip": "BackendAetheris\\PostModels\\FamiliarPost.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAA4wA8AAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T07:27:32.268Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T07:27:32.268Z"
             },
             {
               "$type": "Document",
@@ -495,8 +475,7 @@
               "RelativeToolTip": "BackendAetheris\\PostModels\\PersonalPost.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T03:52:24.503Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T03:52:24.503Z"
             },
             {
               "$type": "Document",
@@ -508,8 +487,7 @@
               "RelativeToolTip": "BackendAetheris\\PostModels\\ResidentePost.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAkAAAAoAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-07-01T07:00:39.439Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-07-01T07:00:39.439Z"
             },
             {
               "$type": "Document",
