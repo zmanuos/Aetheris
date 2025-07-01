@@ -39,8 +39,6 @@ public class PersonalController : ControllerBase
         }
     }
 
-<<<<<<< HEAD
-    // NUEVO: Método para crear un nuevo Personal
     [HttpPost]
     public ActionResult CreatePersonal([FromBody] PersonalCreateDto personalDto)
     {
@@ -93,8 +91,7 @@ public class PersonalController : ControllerBase
             return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al crear el empleado: {ex.Message}", MessageType.CriticalError));
         }
     }
-}
-=======
+
     [HttpPost]
     public ActionResult Post([FromForm] PersonalPost personal)
     {
@@ -139,4 +136,3 @@ public class PersonalController : ControllerBase
 
 
 }
->>>>>>> 22b546b82f5b1d9fe5f8c30c1799cbc4f2314ed1
