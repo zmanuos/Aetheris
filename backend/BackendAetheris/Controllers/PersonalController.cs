@@ -80,7 +80,7 @@ public class PersonalController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("/personal")]
     public ActionResult Post([FromForm] PersonalPost personal)
     {
         if (!ModelState.IsValid)

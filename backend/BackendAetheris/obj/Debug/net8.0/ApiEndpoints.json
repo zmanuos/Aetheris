@@ -305,6 +305,11 @@
         "Name": "parentesco",
         "Type": "System.Int32",
         "IsRequired": false
+      },
+      {
+        "Name": "firebase_uid",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
@@ -347,6 +352,32 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "ParentescoController",
+    "Method": "Get",
+    "RelativePath": "api/Parentesco",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ParentescoController",
+    "Method": "Get",
+    "RelativePath": "api/Parentesco/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "PersonalController",
     "Method": "Get",
     "RelativePath": "api/Personal",
@@ -358,46 +389,16 @@
   },
   {
     "ContainingType": "PersonalController",
-    "Method": "Post",
+    "Method": "CreatePersonal",
     "RelativePath": "api/Personal",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "nombre",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "apellido",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "fechaNacimiento",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "genero",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "telefono",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "email",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "contra",
-        "Type": "System.String",
-        "IsRequired": false
+        "Name": "personalDto",
+        "Type": "PersonalCreateDto",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []
@@ -618,6 +619,52 @@
         "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PersonalController",
+    "Method": "Post",
+    "RelativePath": "personal",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "nombre",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "apellido",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "fechaNacimiento",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "genero",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "telefono",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "email",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "contra",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
