@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Parentesco.cs (Versión Actualizada)
+using System;
+using System.Collections.Generic; // Necesario para List
 using System.Data;
 using MySql.Data.MySqlClient;
 
@@ -6,6 +8,7 @@ public class Parentesco
 {
     #region Statements
 
+    private static string selectAll = "SELECT id_parentesco, parentesco FROM PARENTESCO"; // ¡NUEVO! Para obtener todos
     private static string select = "SELECT id_parentesco, parentesco FROM PARENTESCO WHERE id_parentesco = @ID";
 
     #endregion
@@ -42,6 +45,24 @@ public class Parentesco
 
     #region Methods
 
+    // NUEVO MÉTODO: Para obtener todos los parentescos
+    public static List<Parentesco> Get()
+    {
+        MySqlCommand command = new MySqlCommand(selectAll);
+        DataTable table = SqlServerConnection.ExecuteQuery(command);
+        List<Parentesco> parentescos = new List<Parentesco>();
+        foreach (DataRow row in table.Rows)
+        {
+            parentescos.Add(new Parentesco
+            {
+                id = Convert.ToInt32(row["id_parentesco"]),
+                nombre = row["parentesco"].ToString()
+            });
+        }
+        return parentescos;
+    }
+
+    // Tu método Get(int id) existente
     public static Parentesco Get(int id)
     {
         MySqlCommand command = new MySqlCommand(select);
@@ -50,6 +71,8 @@ public class Parentesco
 
         if (table.Rows.Count > 0)
         {
+            // Asegúrate de que ParentescoMapper.ToObject esté definido y mapee correctamente
+            // O puedes hacer el mapeo aquí mismo como en Get() si no usas un mapper
             return ParentescoMapper.ToObject(table.Rows[0]);
         }
         else

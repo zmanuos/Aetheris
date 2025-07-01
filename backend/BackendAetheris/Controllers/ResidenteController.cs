@@ -35,22 +35,22 @@ public class ResidenteController : ControllerBase
     }
 
 
-    [HttpPost]
-    public ActionResult Post([FromForm]ResidentePost residente)
+[HttpPost]
+public ActionResult Post([FromForm]ResidentePost residente)
+{
+    try
     {
-        try
-        {
-            int result = Residente.Post(residente);
-            if (result > 0)
-                return Ok(MessageResponse.GetReponse(0, "Se ha registrado el residente exitosamente", MessageType.Success));
-            else
-                return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el residente", MessageType.Warning));
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
-        }
+        int result = Residente.Post(residente); 
+        if (result > 0)
+            return Ok(MessageResponse.GetReponse(0, "Se ha registrado el residente exitosamente", MessageType.Success, new { id_residente = result }));
+        else
+            return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el residente", MessageType.Warning));
     }
+    catch (Exception ex)
+    {
+        return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
+    }
+}
 
 
     [HttpPut("{residente}/{dispositivo}")]
