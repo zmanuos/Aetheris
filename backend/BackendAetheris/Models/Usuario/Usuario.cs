@@ -9,6 +9,7 @@ public class Usuario
 
     private static string selectAll = "SELECT id_usuario, usuario, contra, email, rol, CreatedAt, isActive FROM USUARIO";
     private static string select = "SELECT id_usuario, usuario, contra, email, rol, CreatedAt, isActive FROM USUARIO WHERE id_usuario = @ID";
+    private static string UpdateEstado = "UPDATE USUARIOS SET estado = NOT estado WHERE id_usuario = @id";
 
     #endregion
 
@@ -84,6 +85,15 @@ public class Usuario
         {
             throw new UsuarioNotFoundException(id);
         }
+    }
+
+    public static bool Update(int id_dispositivo)
+    {
+
+        MySqlCommand command = new MySqlCommand(UpdateEstado);
+        command.Parameters.AddWithValue("@id", id_dispositivo);
+
+        return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 
     #endregion

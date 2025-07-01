@@ -15,6 +15,10 @@ public class Dispositivo
 
     private static string select = "SELECT id_dispositivo, direccion_MAC, estado, fecha_asignacion FROM DISPOSITIVO where id_dispositivo = @ID";
 
+    private static string UpdateEstado = "UPDATE DISPOSITIVO SET estado = NOT estado WHERE id_dispositivo = @id;";
+
+    private static string insert = "INSERT INTO DISPOSITIVO (direccion_MAC) VALUES (@direccion_mac);";
+
     #endregion
 
     #region attributes
@@ -84,10 +88,30 @@ public class Dispositivo
         }
     }
 
+    public static int post(string direccion_mac)
+    {
+        int result = 0;
+
+        MySqlCommand command = new MySqlCommand(insert);
+        command.Parameters.AddWithValue("@direccion_mac", direccion_mac);
+
+        result = SqlServerConnection.ExecuteCommand(command);
+        return result;
+    }
+
+    public static bool Update(int id_dispositivo)
+    {
+
+        MySqlCommand command = new MySqlCommand(UpdateEstado);
+        command.Parameters.AddWithValue("@id", id_dispositivo);
+        
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
     #endregion
 
     #region x
- 
-  
+
+
     #endregion
 }

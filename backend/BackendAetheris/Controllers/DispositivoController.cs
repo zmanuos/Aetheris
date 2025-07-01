@@ -33,4 +33,31 @@ public class DispositivoController : ControllerBase
             return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
         }
     }
+
+    [HttpPost("{direccion_MAC}")]
+    public ActionResult Post(string direccion_MAC)
+    {
+        try
+        {
+            int result = Dispositivo.post(direccion_MAC);
+            if (result > 0)
+                return Ok(MessageResponse.GetReponse(0, "Se ha registrado el dispositivo exitosamente", MessageType.Success));
+            else
+                return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el dispositivo", MessageType.Warning));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
+        }
+    }
+
+    [HttpPut("{id}")]
+    public ActionResult Put(int id)
+    {
+        bool updated = Dispositivo.Update(id);
+        if (updated)
+            return Ok(MessageResponse.GetReponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
+        else
+            return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el asilo", MessageType.Warning));
+    }
 }

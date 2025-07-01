@@ -6,6 +6,8 @@ public class UsuarioMapper
 {
     public static Usuario ToObject(DataRow row)
     {
+        Rol rol_usuario = new Rol();
+
         int id = (int)row["id_usuario"];
         int usuario = (int)row["usuario"];
         string contra = (string)row["contra"];
@@ -14,7 +16,7 @@ public class UsuarioMapper
         DateTime createdAt = (DateTime)row["CreatedAt"];
         bool isActive = (bool)row["isActive"];
 
-        Rol rol_usuario = Rol.Get(rol);
+        rol_usuario = Rol.Get(rol);
 
         return new Usuario(id, usuario, contra, email, rol_usuario, createdAt, isActive);
     }

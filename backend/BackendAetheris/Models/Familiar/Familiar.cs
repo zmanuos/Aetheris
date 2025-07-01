@@ -10,6 +10,9 @@ public class Familiar
     private static string selectAll = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco FROM FAMILIAR";
     private static string select = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco FROM FAMILIAR WHERE id_familiar = @ID";
 
+    private static string updateTelefono = "UPDATE FAMILIAR SET telefono = @telefono WHERE id_familiar = @id";
+   
+
     #endregion
 
     #region Attributes
@@ -89,6 +92,34 @@ public class Familiar
             throw new FamiliarNotFoundException(id);
         }
     }
+
+    public static bool UpdateTelefono(int id, string nuevoTelefono)
+    {
+        MySqlCommand command = new MySqlCommand(updateTelefono);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@telefono", nuevoTelefono);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+   
+    public static int RegistrarFamiliar(FamiliarPost familiar)
+    {
+        MySqlCommand cmd = new MySqlCommand("spRegistrarFamiliar");
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@nombre", familiar.nombre);
+        cmd.Parameters.AddWithValue("@apellido", familiar.apellido);
+        cmd.Parameters.AddWithValue("@fecha_nacimiento", familiar.fechaNacimiento);
+        cmd.Parameters.AddWithValue("@genero", familiar.genero);
+        cmd.Parameters.AddWithValue("@telefono", familiar.telefono);
+        cmd.Parameters.AddWithValue("@email", familiar.email);
+        cmd.Parameters.AddWithValue("@contrasena", familiar.contra);
+        cmd.Parameters.AddWithValue("@id_residente", familiar.residente);
+        cmd.Parameters.AddWithValue("@id_parentesco", familiar.parentesco);
+
+        return SqlServerConnection.ExecuteProcedure(cmd);
+    }
+
 
     #endregion
 }
