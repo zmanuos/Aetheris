@@ -45,6 +45,7 @@ CALL spRegistrarFamiliar(
     'Carlos',
     'González',
     '1975-08-10',
+    
     'Masculino',
     '6645551111',
     1, -- id_residente: María González
