@@ -417,6 +417,9 @@
                   "parentesco": {
                     "type": "integer",
                     "format": "int32"
+                  },
+                  "firebase_uid": {
+                    "type": "string"
                   }
                 }
               },
@@ -446,6 +449,9 @@
                   "style": "form"
                 },
                 "parentesco": {
+                  "style": "form"
+                },
+                "firebase_uid": {
                   "style": "form"
                 }
               }
@@ -516,6 +522,42 @@
         }
       }
     },
+    "/api/Parentesco": {
+      "get": {
+        "tags": [
+          "Parentesco"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Parentesco/{id}": {
+      "get": {
+        "tags": [
+          "Parentesco"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Personal": {
       "get": {
         "tags": [
@@ -527,6 +569,83 @@
           }
         }
       },
+      "post": {
+        "tags": [
+          "Personal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalCreateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalCreateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalCreateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Personal/{id}": {
+      "get": {
+        "tags": [
+          "Personal"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Personal"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/personal": {
       "post": {
         "tags": [
           "Personal"
@@ -587,52 +706,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/Personal/{id}": {
-      "get": {
-        "tags": [
-          "Personal"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Personal"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Success"
@@ -950,6 +1023,52 @@
           "password": {
             "minLength": 6,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "PersonalCreateDto": {
+        "required": [
+          "apellido",
+          "fecha_Nacimiento",
+          "firebaseUid",
+          "genero",
+          "nombre",
+          "telefono"
+        ],
+        "type": "object",
+        "properties": {
+          "firebaseUid": {
+            "maxLength": 28,
+            "minLength": 28,
+            "type": "string"
+          },
+          "nombre": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellido": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "fecha_Nacimiento": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "genero": {
+            "maxLength": 10,
+            "minLength": 0,
+            "type": "string"
+          },
+          "telefono": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "activo": {
+            "type": "boolean"
           }
         },
         "additionalProperties": false
