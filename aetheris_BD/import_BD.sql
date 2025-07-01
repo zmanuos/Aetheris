@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 01-07-2025 a las 19:24:33
+-- Tiempo de generación: 01-07-2025 a las 19:44:45
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.0.30
 
@@ -25,11 +25,11 @@ DELIMITER $$
 --
 -- Procedimientos
 --
-CREATE DEFINER=`root`@`localhost` PROCEDURE `spRegistrarEmpleado` (IN `nombre` VARCHAR(100), IN `apellido` VARCHAR(100), IN `fecha_nacimiento` DATE, IN `genero` VARCHAR(10), IN `telefono` VARCHAR(15), IN `email` VARCHAR(100), IN `contra` VARCHAR(100))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `spRegistrarEmpleado` (IN `nombre` VARCHAR(100), IN `apellido` VARCHAR(100), IN `fecha_nacimiento` DATE, IN `genero` VARCHAR(10), IN `telefono` VARCHAR(15), IN `email` VARCHAR(100), IN `contra` VARCHAR(100), IN `firebase_uid` VARCHAR(28))   BEGIN
     DECLARE nuevo_id INT;
 
-    INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo)
-    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, 1);
+    INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid)
+    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, 1, firebase_uid);
 
     SET nuevo_id = LAST_INSERT_ID();
 
@@ -42,14 +42,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `spRegistrarEmpleado` (IN `nombre` V
     );
 END$$
 
-CREATE DEFINER=`root`@`localhost` PROCEDURE `spRegistrarFamiliar` (IN `nombre` VARCHAR(100), IN `apellido` VARCHAR(100), IN `fecha_nacimiento` DATE, IN `genero` VARCHAR(10), IN `telefono` VARCHAR(15), IN `id_residente` INT, IN `id_parentesco` INT, IN `email` VARCHAR(100), IN `contrasena` VARCHAR(100))   BEGIN
+CREATE DEFINER=`root`@`localhost` PROCEDURE `spRegistrarFamiliar` (IN `nombre` VARCHAR(100), IN `apellido` VARCHAR(100), IN `fecha_nacimiento` DATE, IN `genero` VARCHAR(10), IN `telefono` VARCHAR(15), IN `id_residente` INT, IN `id_parentesco` INT, IN `email` VARCHAR(100), IN `contrasena` VARCHAR(100), IN `firebase_uid` VARCHAR(28))   BEGIN
     DECLARE nuevo_id INT;
     DECLARE usuario_id INT;
 
     SET nuevo_id = LAST_INSERT_ID();
 
-    INSERT INTO FAMILIAR (id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco)
-    VALUES (nuevo_id + 1000, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco);
+    INSERT INTO FAMILIAR (id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid)
+    VALUES (nuevo_id + 1000, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid);
 
     SET usuario_id = LAST_INSERT_ID();
 
@@ -84,9 +84,9 @@ CREATE TABLE `alerta` (
 --
 
 INSERT INTO `alerta` (`id_alerta`, `id_residente`, `id_alerta_tipo`, `id_area`, `fecha`, `mensaje`) VALUES
-(1, 2, 3, NULL, '2025-07-01 17:23:10', 'Frecuencia cardíaca crítica detectada.'),
-(2, 1, 2, NULL, '2025-07-01 17:23:10', 'Oxigenación ligeramente baja.'),
-(3, 3, 1, NULL, '2025-07-01 17:23:10', 'Chequeo normal sin anomalías.');
+(1, 2, 3, NULL, '2025-07-01 17:43:27', 'Frecuencia cardíaca crítica detectada.'),
+(2, 1, 2, NULL, '2025-07-01 17:43:27', 'Oxigenación ligeramente baja.'),
+(3, 3, 1, NULL, '2025-07-01 17:43:27', 'Chequeo normal sin anomalías.');
 
 -- --------------------------------------------------------
 
@@ -179,10 +179,10 @@ CREATE TABLE `chequeo` (
 --
 
 INSERT INTO `chequeo` (`id_chequeo`, `id_residente`, `fecha`, `frecuencia_cardiaca`, `oxigeno`, `peso`, `observaciones`) VALUES
-(1, 1, '2025-07-01 17:23:10', 72, 97.50, 60.20, 'Chequeo normal.'),
-(2, 2, '2025-07-01 17:23:10', 88, 94.20, 72.40, 'Frecuencia cardíaca algo elevada.'),
-(3, 1, '2025-07-01 17:23:10', 76, 98.00, 60.00, 'Todo en orden.'),
-(4, 3, '2025-07-01 17:23:10', 80, 96.70, 55.10, 'Nuevo ingreso, chequeo inicial.');
+(1, 1, '2025-07-01 17:43:27', 72, 97.50, 60.20, 'Chequeo normal.'),
+(2, 2, '2025-07-01 17:43:27', 88, 94.20, 72.40, 'Frecuencia cardíaca algo elevada.'),
+(3, 1, '2025-07-01 17:43:27', 76, 98.00, 60.00, 'Todo en orden.'),
+(4, 3, '2025-07-01 17:43:27', 80, 96.70, 55.10, 'Nuevo ingreso, chequeo inicial.');
 
 -- --------------------------------------------------------
 
@@ -202,9 +202,9 @@ CREATE TABLE `dispositivo` (
 --
 
 INSERT INTO `dispositivo` (`id_dispositivo`, `direccion_MAC`, `estado`, `fecha_asignacion`) VALUES
-(1, '00:1A:7D:DA:71:01', 1, '2025-07-01 17:23:10'),
-(2, '00:1A:7D:DA:71:02', 1, '2025-07-01 17:23:10'),
-(3, '00:1A:7D:DA:71:03', 0, '2025-07-01 17:23:10');
+(1, '00:1A:7D:DA:71:01', 1, '2025-07-01 17:43:27'),
+(2, '00:1A:7D:DA:71:02', 1, '2025-07-01 17:43:27'),
+(3, '00:1A:7D:DA:71:03', 0, '2025-07-01 17:43:27');
 
 -- --------------------------------------------------------
 
@@ -220,17 +220,18 @@ CREATE TABLE `familiar` (
   `genero` varchar(10) DEFAULT NULL,
   `telefono` varchar(15) DEFAULT NULL,
   `id_residente` int(11) DEFAULT NULL,
-  `id_parentesco` int(11) DEFAULT NULL
+  `id_parentesco` int(11) DEFAULT NULL,
+  `firebase_uid` varchar(28) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Volcado de datos para la tabla `familiar`
 --
 
-INSERT INTO `familiar` (`id_familiar`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `id_residente`, `id_parentesco`) VALUES
-(1001, 'Ana', 'Martínez', '2000-03-22', 'Femenino', '6644442222', 2, 2),
-(1002, 'Elihu', 'Moreno', '2005-03-29', 'Masculino', '6644442222', 3, 2),
-(1004, 'Carlos', 'González', '1975-08-10', 'Masculino', '6645551111', 1, 1);
+INSERT INTO `familiar` (`id_familiar`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `id_residente`, `id_parentesco`, `firebase_uid`) VALUES
+(1001, 'Ana', 'Martínez', '2000-03-22', 'Femenino', '6644442222', 2, 2, 'ana_firebase_uid_1234567890'),
+(1002, 'Elihu', 'Moreno', '2005-03-29', 'Masculino', '6644442222', 3, 2, 'elihu_firebase_uid_123456789'),
+(1004, 'Carlos', 'González', '1975-08-10', 'Masculino', '6645551111', 1, 1, 'carlos_firebase_uid_12345678');
 
 -- --------------------------------------------------------
 
@@ -265,6 +266,7 @@ CREATE TABLE `personal` (
   `fecha_nacimiento` date DEFAULT NULL,
   `genero` varchar(10) DEFAULT NULL,
   `telefono` varchar(15) DEFAULT NULL,
+  `firebase_uid` varchar(28) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -272,9 +274,9 @@ CREATE TABLE `personal` (
 -- Volcado de datos para la tabla `personal`
 --
 
-INSERT INTO `personal` (`id_personal`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `activo`) VALUES
-(1, 'Luisa', 'Mendoza', '1985-02-15', 'Femenino', '6643217890', 1),
-(2, 'Roberto', 'Delgado', '1990-07-03', 'Masculino', '6646543210', 1);
+INSERT INTO `personal` (`id_personal`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `firebase_uid`, `activo`) VALUES
+(1, 'Luisa', 'Mendoza', '1985-02-15', 'Femenino', '6643217890', 'luisa_firebase_uid_123456789', 1),
+(2, 'Roberto', 'Delgado', '1990-07-03', 'Masculino', '6646543210', 'roberto_firebase_uid_1234567', 1);
 
 --
 -- Disparadores `personal`
@@ -320,9 +322,9 @@ CREATE TABLE `residente` (
 --
 
 INSERT INTO `residente` (`id_residente`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `dispositivo`, `id_foto`, `fecha_ingreso`, `activo`) VALUES
-(1, 'María', 'González', '1945-05-14', 'Femenino', '6649876543', 1, 'maria.jpg', '2025-07-01 17:23:10', 1),
-(2, 'Jorge', 'Martínez', '1938-09-23', 'Masculino', '6641122334', 2, 'jorge.jpg', '2025-07-01 17:23:10', 1),
-(3, 'Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg', '2025-07-01 17:23:10', 1);
+(1, 'María', 'González', '1945-05-14', 'Femenino', '6649876543', 1, 'maria.jpg', '2025-07-01 17:43:27', 1),
+(2, 'Jorge', 'Martínez', '1938-09-23', 'Masculino', '6641122334', 2, 'jorge.jpg', '2025-07-01 17:43:27', 1),
+(3, 'Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg', '2025-07-01 17:43:27', 1);
 
 --
 -- Disparadores `residente`
@@ -382,10 +384,7 @@ CREATE TABLE `rol` (
 INSERT INTO `rol` (`id_role`, `nombre`) VALUES
 (1, 'Administrador'),
 (2, 'Empleado'),
-(3, 'Familiar'),
-(4, 'Administrador'),
-(5, 'Empleado'),
-(6, 'Familiar');
+(3, 'Familiar');
 
 -- --------------------------------------------------------
 
@@ -408,11 +407,11 @@ CREATE TABLE `usuario` (
 --
 
 INSERT INTO `usuario` (`id_usuario`, `usuario`, `contra`, `email`, `rol`, `CreatedAt`, `isActive`) VALUES
-(1, 1004, 'carlos123', 'carlos.gonzalez@gmail.com', 3, '2025-07-01 10:23:10', 1),
-(2, 1001, 'ana123', 'ana.martinez@gmail.com', 3, '2025-07-01 10:23:10', 1),
-(3, 1002, 'elihu123', 'elihu.martinez@gmail.com', 3, '2025-07-01 10:23:10', 1),
-(4, 1, 'admin123', 'luisa@aetheris.mx', 2, '2025-07-01 10:23:10', 1),
-(5, 2, 'empleado123', 'roberto@aetheris.mx', 2, '2025-07-01 10:23:10', 1);
+(1, 1004, 'carlos123', 'carlos.gonzalez@gmail.com', 3, '2025-07-01 10:43:27', 1),
+(2, 1001, 'ana123', 'ana.martinez@gmail.com', 3, '2025-07-01 10:43:27', 1),
+(3, 1002, 'elihu123', 'elihu.martinez@gmail.com', 3, '2025-07-01 10:43:27', 1),
+(4, 1, 'admin123', 'luisa@aetheris.mx', 2, '2025-07-01 10:43:27', 1),
+(5, 2, 'empleado123', 'roberto@aetheris.mx', 2, '2025-07-01 10:43:27', 1);
 
 --
 -- Índices para tablas volcadas
@@ -465,6 +464,7 @@ ALTER TABLE `dispositivo`
 --
 ALTER TABLE `familiar`
   ADD PRIMARY KEY (`id_familiar`),
+  ADD UNIQUE KEY `firebase_uid` (`firebase_uid`),
   ADD KEY `id_parentesco` (`id_parentesco`),
   ADD KEY `id_residente` (`id_residente`);
 
@@ -478,7 +478,8 @@ ALTER TABLE `parentesco`
 -- Indices de la tabla `personal`
 --
 ALTER TABLE `personal`
-  ADD PRIMARY KEY (`id_personal`);
+  ADD PRIMARY KEY (`id_personal`),
+  ADD UNIQUE KEY `firebase_uid` (`firebase_uid`);
 
 --
 -- Indices de la tabla `residente`

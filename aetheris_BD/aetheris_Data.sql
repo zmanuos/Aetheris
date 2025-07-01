@@ -50,7 +50,8 @@ CALL spRegistrarFamiliar(
     1, -- id_residente: María González
     1, -- id_parentesco: Hijo
     'carlos.gonzalez@gmail.com',
-    'carlos123'
+    'carlos123',
+    'carlos_firebase_uid_1234567890' -- Firebase UID simulado
 );
 
 -- Ana Martínez (Nieta de Jorge Martínez)
@@ -63,7 +64,8 @@ CALL spRegistrarFamiliar(
     2, -- id_residente: Jorge Martínez
     2, -- id_parentesco: Nieto
     'ana.martinez@gmail.com',
-    'ana123'
+    'ana123',
+    'ana_firebase_uid_1234567890' -- Firebase UID simulado
 );
 
 -- Elihu Moreno (Nieta de Jorge Martínez)
@@ -76,7 +78,8 @@ CALL spRegistrarFamiliar(
     3, -- id_residente: Jorge Martínez
     2, -- id_parentesco: Nieto
     'elihu.martinez@gmail.com',
-    'elihu123'
+    'elihu123',
+    'elihu_firebase_uid_1234567890' -- Firebase UID simulado
 );
 
 
@@ -89,7 +92,8 @@ CALL spRegistrarEmpleado(
     'Femenino',
     '6643217890',
     'luisa@aetheris.mx',
-    'admin123'
+    'admin123',
+    'luisa_firebase_uid_1234567890' -- Firebase UID simulado
 );
 
 -- Roberto Delgado (Empleado)
@@ -100,7 +104,8 @@ CALL spRegistrarEmpleado(
     'Masculino',
     '6646543210',
     'roberto@aetheris.mx',
-    'empleado123'
+    'empleado123',
+    'roberto_firebase_uid_1234567890' -- Firebase UID simulado
 );
 
 
