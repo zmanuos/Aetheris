@@ -17,17 +17,12 @@ import { Ionicons } from '@expo/vector-icons';
 // Importa el componente de tarjeta desde la nueva ubicación compartida
 import ResidentCard from '../../components/shared/ResidentCard';
 
-// Si en el futuro necesitas Firebase o Config para cargar datos reales, descomenta e importa:
-// import { auth, db } from '../../config/firebaseConfig';
-// import { createUserWithEmailAndPassword } from 'firebase/auth';
-// import { setDoc, doc } from 'firebase/firestore';
-// import Config from '../../config/config'; // Si vas a cargar desde API
-
 // Definimos esta constante aquí para que sea consistente con el cálculo en ResidentCard
-// Este es el padding que tendrá el contenedor de la grilla en la pantalla
 const GRID_CONTAINER_PADDING = 10;
 
-export default function ResidentsScreen() {
+// Asegúrate de que esta pantalla sea un componente de una pila de navegación
+// para poder acceder al prop 'navigation'.
+export default function ResidentsScreen({ navigation }) { // <-- Asegúrate de recibir 'navigation' aquí
   // Estados para la carga y errores (se mantienen para la estructura, pero no se usarán con datos estáticos)
   const [isLoading, setIsLoading] = useState(false); // Falso inicialmente para datos estáticos
   const [fetchError, setFetchError] = useState(''); // Vacío inicialmente para datos estáticos
@@ -126,8 +121,10 @@ export default function ResidentsScreen() {
     },
   ]);
 
+  // MODIFICACIÓN AQUÍ:
   const handleAddNewResident = () => {
-    Alert.alert('Funcionalidad', 'Navegar a la pantalla de añadir nuevo residente.');
+    // Asegúrate de que 'RegisterResident' sea el nombre de la ruta definida en tu Stack Navigator
+    navigation.navigate('RegisterResident'); // <-- REDIRECCIONA AQUÍ
   };
 
   const handleViewProfile = (id) => {
@@ -293,9 +290,8 @@ const styles = StyleSheet.create({
   residentsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    // Usamos space-between para empujar las tarjetas a los extremos y dejar el gap en el medio
     justifyContent: 'space-between',
-    paddingHorizontal: GRID_CONTAINER_PADDING, // Usamos la constante definida arriba
+    paddingHorizontal: GRID_CONTAINER_PADDING,
   },
   loadingIndicator: {
     marginTop: 50,

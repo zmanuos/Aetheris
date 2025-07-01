@@ -1,14 +1,7 @@
 <<<<<<< HEAD
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.csproj.AssemblyReference.cache
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.AssemblyInfoInputs.cache
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.AssemblyInfo.cs
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.csproj.CoreCompileInputs.cache
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.MvcApplicationPartsAssemblyInfo.cs
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.sourcelink.json
 =======
 >>>>>>> 22b546b82f5b1d9fe5f8c30c1799cbc4f2314ed1
+<<<<<<< HEAD
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\appsettings.json
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\BackendAetheris.staticwebassets.endpoints.json
@@ -174,6 +167,8 @@ C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\refin
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.pdb
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.genruntimeconfig.cache
 C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\ref\BackendAetheris.dll
+=======
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
 C:\Users\a2310\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\a2310\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\appsettings.json
 C:\Users\a2310\Documents\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\BackendAetheris.staticwebassets.endpoints.json
@@ -460,3 +455,14 @@ C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris
 C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\runtimes\win-x64\native\krbcc64.dll
 C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\runtimes\browser\lib\net8.0\System.Text.Encodings.Web.dll
 C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\bin\Debug\net8.0\runtimes\win\lib\net8.0\System.Windows.Extensions.dll
+<<<<<<< HEAD
+=======
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.csproj.AssemblyReference.cache
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.AssemblyInfoInputs.cache
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.AssemblyInfo.cs
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.csproj.CoreCompileInputs.cache
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.MvcApplicationPartsAssemblyInfo.cs
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\OSUNA\Documents\Aetheris\backend\BackendAetheris\obj\Debug\net8.0\BackendAetheris.sourcelink.json
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e

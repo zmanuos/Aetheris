@@ -29,27 +29,26 @@ public class FamiliarController : ControllerBase
         }
     }
 
-
     [HttpPost]
-    public ActionResult Post([FromForm] FamiliarPost familiar)
+    public ActionResult Post([FromForm] FamiliarPost familiar) // Recibe el DTO actualizado
     {
         if (!ModelState.IsValid)
             return BadRequest(MessageResponse.GetReponse(1, "Datos inválidos", MessageType.Error));
 
         try
         {
-            int result = Familiar.RegistrarFamiliar(familiar);
+            // Llama al nuevo método 'Post' en el modelo Familiar
+            int result = Familiar.Post(familiar);
             if (result > 0)
-                return Ok(MessageResponse.GetReponse(0, "Se ha registrado el personal exitosamente", MessageType.Success));
+                return Ok(MessageResponse.GetReponse(0, "Se ha registrado el familiar exitosamente con ID: " + result, MessageType.Success));
             else
-                return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el personal", MessageType.Warning));
+                return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el familiar", MessageType.Warning));
         }
         catch (Exception ex)
         {
             return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
         }
     }
-
 
     [HttpPut("{id}/{telefono}")]
     public ActionResult UpdateTelefono(int id, string telefono)
@@ -60,5 +59,4 @@ public class FamiliarController : ControllerBase
         else
             return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el telefono", MessageType.Warning));
     }
-
 }

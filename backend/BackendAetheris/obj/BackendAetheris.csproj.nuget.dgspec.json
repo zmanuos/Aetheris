@@ -4,10 +4,10 @@
     "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {}
   },
   "projects": {
-    "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {
+    "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
+        "projectUniqueName": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
         "projectName": "BackendAetheris",
         "projectPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
         "packagesPath": "C:\\Users\\elihu\\.nuget\\packages\\",
@@ -103,6 +103,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[8.0.17, 8.0.17]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.17, 8.0.17]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
