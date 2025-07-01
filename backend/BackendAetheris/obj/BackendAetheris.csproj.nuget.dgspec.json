@@ -1,7 +1,7 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {}
+    "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {}
   },
   "projects": {
     "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj": {
@@ -9,15 +9,15 @@
       "restore": {
         "projectUniqueName": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
         "projectName": "BackendAetheris",
-        "projectPath": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
-        "packagesPath": "C:\\Users\\OSUNA\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\obj\\",
+        "projectPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
+        "packagesPath": "C:\\Users\\elihu\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\OSUNA\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\elihu\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -129,7 +129,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.205/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

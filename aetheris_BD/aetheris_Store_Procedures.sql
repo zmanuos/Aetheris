@@ -9,13 +9,14 @@ CREATE PROCEDURE spRegistrarEmpleado (
     IN genero VARCHAR(10),
     IN telefono VARCHAR(15),
     IN email VARCHAR(100),
-    IN contra VARCHAR(100)
+    IN contra VARCHAR(100),
+    IN firebase_uid VARCHAR(28)
 )
 BEGIN
     DECLARE nuevo_id INT;
 
-    INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo)
-    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, 1);
+    INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid)
+    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, 1, firebase_uid);
 
     SET nuevo_id = LAST_INSERT_ID();
 
@@ -47,26 +48,27 @@ CREATE PROCEDURE spRegistrarFamiliar (
     IN id_residente INT,
     IN id_parentesco INT,
     IN email VARCHAR(100),
-    IN contrasena VARCHAR(100)
+    IN contrasena VARCHAR(100),
+    IN firebase_uid VARCHAR(28)
 )
 BEGIN
     DECLARE nuevo_id INT;
-
-    INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco)
-    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco);
+    DECLARE usuario_id INT;
 
     SET nuevo_id = LAST_INSERT_ID();
 
+    INSERT INTO FAMILIAR (id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid)
+    VALUES (nuevo_id + 1000, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid);
+
+    SET usuario_id = LAST_INSERT_ID();
+
     INSERT INTO USUARIO (usuario, contra, email, rol)
     VALUES (
-        nuevo_id,
+        usuario_id + 1000,
         contrasena,
         email,
         3
     );
 END;
 //
-DELIMITER ;
-//
-
 DELIMITER ;

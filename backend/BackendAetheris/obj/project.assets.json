@@ -4981,23 +4981,39 @@
     ]
   },
   "packageFolders": {
+<<<<<<< HEAD
+    "C:\\Users\\elihu\\.nuget\\packages\\": {},
+=======
     "C:\\Users\\OSUNA\\.nuget\\packages\\": {},
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
+<<<<<<< HEAD
+      "projectUniqueName": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
+      "projectName": "BackendAetheris",
+      "projectPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
+      "packagesPath": "C:\\Users\\elihu\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\obj\\",
+=======
       "projectUniqueName": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
       "projectName": "BackendAetheris",
       "projectPath": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\BackendAetheris.csproj",
       "packagesPath": "C:\\Users\\OSUNA\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\obj\\",
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
+<<<<<<< HEAD
+        "C:\\Users\\elihu\\AppData\\Roaming\\NuGet\\NuGet.Config",
+=======
         "C:\\Users\\OSUNA\\AppData\\Roaming\\NuGet\\NuGet.Config",
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -5109,7 +5125,11 @@
             "privateAssets": "all"
           }
         },
+<<<<<<< HEAD
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203/PortableRuntimeIdentifierGraph.json"
+=======
         "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.205/PortableRuntimeIdentifierGraph.json"
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
       }
     }
   },
@@ -5118,7 +5138,11 @@
       "code": "Undefined",
       "level": "Warning",
       "warningLevel": 1,
+<<<<<<< HEAD
+      "message": "Problem reading the cache file C:\\Users\\elihu\\OneDrive\\Documentos\\XAMPP\\htdocs\\Aetheris\\backend\\BackendAetheris\\obj\\project.nuget.cache : Unexpected character encountered while parsing value: <. Path 'expectedPackageFiles', line 7, position 0."
+=======
       "message": "Problem reading the cache file C:\\Users\\OSUNA\\Documents\\Aetheris\\backend\\BackendAetheris\\obj\\project.nuget.cache : Unexpected character encountered while parsing value: <. Path 'expectedPackageFiles', line 7, position 0."
+>>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
     }
   ]
 }

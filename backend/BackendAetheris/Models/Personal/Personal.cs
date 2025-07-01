@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
 
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+
+
 public class Personal
 {
     #region statement
@@ -108,10 +111,43 @@ public class Personal
         command.Parameters.AddWithValue("@telefono", this.telefono);
         command.Parameters.AddWithValue("@activo", this.activo);
         command.Parameters.AddWithValue("@firebase_uid", (object)this.firebaseUid ?? DBNull.Value);
-
+     
         int rowsAffected = SqlServerConnection.ExecuteCommand(command);
         return rowsAffected;
     }
+
+
+    public static bool UpdateTelefono(int id, string nuevoTelefono)
+    {
+        MySqlCommand command = new MySqlCommand(updateTelefono);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@telefono", nuevoTelefono);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdateEstado(int id)
+    {
+        MySqlCommand command = new MySqlCommand(updateEstado);
+        command.Parameters.AddWithValue("@id", id);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static int RegistrarPersonal(PersonalPost personal)
+    {
+        MySqlCommand cmd = new MySqlCommand("spRegistrarEmpleado");
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@nombre", personal.nombre);
+                cmd.Parameters.AddWithValue("@apellido", personal.apellido);
+                cmd.Parameters.AddWithValue("@fecha_nacimiento", personal.fechaNacimiento);
+                cmd.Parameters.AddWithValue("@genero", personal.genero);
+                cmd.Parameters.AddWithValue("@telefono", personal.telefono);
+                cmd.Parameters.AddWithValue("@email", personal.email);
+                cmd.Parameters.AddWithValue("@contra", personal.contra);
+
+            return SqlServerConnection.ExecuteProcedure(cmd);
+    }
+
 
     #endregion
 }
