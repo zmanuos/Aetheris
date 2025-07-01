@@ -9,14 +9,24 @@ public class ParentescoController : ControllerBase
     [HttpGet]
     public ActionResult Get()
     {
+        return Ok(ParentescoListResponse.GetResponse(Parentesco.Get()));
+    }
+
+    [HttpGet("{id}")]
+    public ActionResult Get(int id)
+    {
         try
         {
-            List<Parentesco> parentescos = Parentesco.Get();
-            return Ok(MessageResponse.GetReponse(0, "Parentescos obtenidos exitosamente", MessageType.Success, parentescos));
+            Parentesco f = Parentesco.Get(id);
+            return Ok(ParentescoResponse.GetResponse(f));
+        }
+        catch (ParentescoNotFoundException e)
+        {
+            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
         }
         catch (Exception e)
         {
-            return StatusCode(500, MessageResponse.GetReponse(999, "Error interno al obtener parentescos: " + e.Message, MessageType.CriticalError));
+            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
         }
     }
 }

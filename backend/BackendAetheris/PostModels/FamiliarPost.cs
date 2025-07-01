@@ -11,4 +11,7 @@ public class FamiliarPost
     public string contra { get; set; }
     public int residente { get; set; }
     public int parentesco { get; set; }
+    public string firebase_uid { get; set; }
+    
+   
 }

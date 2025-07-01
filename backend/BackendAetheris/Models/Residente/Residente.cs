@@ -130,7 +130,6 @@ public class Residente
         command.Parameters.AddWithValue("@genero", residente.genero);
         command.Parameters.AddWithValue("@telefono", residente.telefono);
 
-
         result = SqlServerConnection.ExecuteCommand(command);
         return result;
     }

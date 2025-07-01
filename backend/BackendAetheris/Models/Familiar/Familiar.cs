@@ -26,9 +26,9 @@ public class Familiar
     private DateTime _fecha_nacimiento;
     private string _genero;
     private string _telefono;
-    private Residente _residente; // Si Residente y Parentesco se mapean como objetos completos
-    private Parentesco _parentesco; // en FamiliarMapper.ToObject
-    private string _firebase_uid; // ¡NUEVO ATRIBUTO!
+    private Residente _residente;
+    private Parentesco _parentesco; 
+    private string _firebase_uid; 
 
     #endregion
 
@@ -81,7 +81,6 @@ public class Familiar
     public static List<Familiar> Get()
     {
         MySqlCommand command = new MySqlCommand(selectAll);
-        // Asegúrate de que FamiliarMapper.ToList pueda manejar la nueva columna firebase_uid
         return FamiliarMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
@@ -123,13 +122,13 @@ public class Familiar
         cmd.Parameters.AddWithValue("@fecha_nacimiento", familiar.fechaNacimiento);
         cmd.Parameters.AddWithValue("@genero", familiar.genero);
         cmd.Parameters.AddWithValue("@telefono", familiar.telefono);
-        cmd.Parameters.AddWithValue("@id_residente", familiar.id_residente);
-        cmd.Parameters.AddWithValue("@id_parentesco", familiar.id_parentesco);
+        cmd.Parameters.AddWithValue("@id_residente", familiar.residente);
+        cmd.Parameters.AddWithValue("@id_parentesco", familiar.parentesco);
         cmd.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid); // ¡Aquí se pasa el UID de Firebase!
 
         // ExecuteScalar se usa porque el INSERT tiene "SELECT LAST_INSERT_ID();"
         // que devuelve el ID del nuevo registro.
-        return SqlServerConnection.ExecuteScalar(cmd);
+        return SqlServerConnection.ExecuteCommand(cmd);
     }
 
     #endregion

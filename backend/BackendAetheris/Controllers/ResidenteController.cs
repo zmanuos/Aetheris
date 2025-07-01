@@ -42,7 +42,7 @@ public ActionResult Post([FromForm]ResidentePost residente)
     {
         int result = Residente.Post(residente); 
         if (result > 0)
-            return Ok(MessageResponse.GetReponse(0, "Se ha registrado el residente exitosamente", MessageType.Success, new { id_residente = result }));
+            return Ok(MessageResponse.GetReponse(0, "Se ha registrado el residente exitosamente", MessageType.Success));
         else
             return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el residente", MessageType.Warning));
     }

@@ -9,4 +9,14 @@ public class ParentescoMapper
 
         return new Parentesco(id, nombre);
     }
+
+    public static List<Parentesco> ToList(DataTable table)
+    {
+        List<Parentesco> list = new List<Parentesco>();
+        foreach (DataRow row in table.Rows)
+        {
+            list.Add(ToObject(row));
+        }
+        return list;
+    }
 }

@@ -79,7 +79,6 @@ public class PersonalController : ControllerBase
             return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al crear el empleado: {ex.Message}", MessageType.CriticalError));
         }
     }
-<<<<<<< HEAD
 
     [HttpPost]
     public ActionResult Post([FromForm] PersonalPost personal)
@@ -125,6 +124,4 @@ public class PersonalController : ControllerBase
 
 
 }
-=======
-}
->>>>>>> 6376e04a04fd20c10f9595816c7a2a2ba3bc703e
+

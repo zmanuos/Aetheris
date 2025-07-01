@@ -45,23 +45,13 @@ public class Parentesco
 
     #region Methods
 
+
     public static List<Parentesco> Get()
     {
         MySqlCommand command = new MySqlCommand(selectAll);
-        DataTable table = SqlServerConnection.ExecuteQuery(command);
-        List<Parentesco> parentescos = new List<Parentesco>();
-        foreach (DataRow row in table.Rows)
-        {
-            parentescos.Add(new Parentesco
-            {
-                id = Convert.ToInt32(row["id_parentesco"]),
-                nombre = row["parentesco"].ToString()
-            });
-        }
-        return parentescos;
+        return ParentescoMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
-    // Tu método Get(int id) existente
     public static Parentesco Get(int id)
     {
         MySqlCommand command = new MySqlCommand(select);
@@ -70,15 +60,14 @@ public class Parentesco
 
         if (table.Rows.Count > 0)
         {
-            // Asegúrate de que ParentescoMapper.ToObject esté definido y mapee correctamente
-            // O puedes hacer el mapeo aquí mismo como en Get() si no usas un mapper
             return ParentescoMapper.ToObject(table.Rows[0]);
         }
         else
         {
-            return null;
+            throw new FamiliarNotFoundException(id);
         }
     }
+
 
     #endregion
 }
