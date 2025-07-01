@@ -51,22 +51,22 @@ CREATE PROCEDURE spRegistrarFamiliar (
 )
 BEGIN
     DECLARE nuevo_id INT;
-
-    INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco)
-    VALUES (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco);
+    DECLARE usuario_id INT;
 
     SET nuevo_id = LAST_INSERT_ID();
 
+    INSERT INTO FAMILIAR (id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco)
+    VALUES (nuevo_id + 1000, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco);
+
+    SET usuario_id = LAST_INSERT_ID();
+
     INSERT INTO USUARIO (usuario, contra, email, rol)
     VALUES (
-        nuevo_id,
+        usuario_id + 1000,
         contrasena,
         email,
         3
     );
 END;
 //
-DELIMITER ;
-//
-
 DELIMITER ;

@@ -1,26 +1,25 @@
 // AETHERIS/components/shared/LoginForm.js
 "use client"
 
-import React, { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { useState } from "react";
 import {
-  View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
+  View
 } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
 
 // Importa Firebase Authentication y Firestore
-import { auth, db } from '../../config/firebaseConfig'; // <-- Asegúrate que 'db' se importe correctamente
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore'; // <-- Importar para trabajar con documentos de Firestore
+import { auth, db } from '../../config/firebaseConfig'; // <-- Asegúrate que 'db' se importe correctamente
 
 
 export default function LoginForm({ onLoginSuccess }) {
@@ -33,23 +32,25 @@ export default function LoginForm({ onLoginSuccess }) {
   // **** ELIMINA ESTAS CREDENCIALES ESTÁTICAS Y EL ROLE_MAPPING ****
   // Si las necesitas para ALGÚN CASO EXCEPCIONAL de desarrollo, déjalas,
   // pero ya no deben ser la principal fuente de roles ni un fallback general.
-  // const FAMILY_EMAIL_STATIC = "1";
-  // const FAMILY_PASSWORD_STATIC = "1";
-  // const FAMILY_ROLE_STATIC = "family"; // O "admin" como lo tenías, pero esto es confuso si es "family" estático
+  const FAMILY_EMAIL_STATIC = "1";
+  const FAMILY_PASSWORD_STATIC = "1";
+  const FAMILY_ROLE_STATIC = "family"; // O "admin" como lo tenías, pero esto es confuso si es "family" estático
+
+  
 
   const handleSubmit = async () => {
     setError("");
     setIsLoading(true);
 
     // **** ELIMINA ESTA LÓGICA DE USUARIO ESTÁTICO SI YA NO LA NECESITAS ****
-    // if (email === FAMILY_EMAIL_STATIC && password === FAMILY_PASSWORD_STATIC) {
-    //   console.log("Login successful with static credentials (development family user).");
-    //   if (onLoginSuccess) {
-    //     onLoginSuccess(FAMILY_ROLE_STATIC);
-    //   }
-    //   setIsLoading(false);
-    //   return;
-    // }
+    if (email === FAMILY_EMAIL_STATIC && password === FAMILY_PASSWORD_STATIC) {
+       console.log("Login successful with static credentials (development family user).");
+       if (onLoginSuccess) {
+         onLoginSuccess("admin");
+       }
+       setIsLoading(false);
+       return;
+     }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);

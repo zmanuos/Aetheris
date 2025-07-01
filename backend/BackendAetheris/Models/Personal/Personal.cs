@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-<<<<<<< HEAD
 using MySql.Data.MySqlClient;
-=======
+
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
->>>>>>> 22b546b82f5b1d9fe5f8c30c1799cbc4f2314ed1
+
 
 public class Personal
 {
@@ -102,7 +101,6 @@ public class Personal
         }
     }
 
-<<<<<<< HEAD
     public int Add()
     {
         MySqlCommand command = new MySqlCommand(insert);
@@ -113,7 +111,12 @@ public class Personal
         command.Parameters.AddWithValue("@telefono", this.telefono);
         command.Parameters.AddWithValue("@activo", this.activo);
         command.Parameters.AddWithValue("@firebase_uid", (object)this.firebaseUid ?? DBNull.Value);
-=======
+     
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected;
+    }
+
+
     public static bool UpdateTelefono(int id, string nuevoTelefono)
     {
         MySqlCommand command = new MySqlCommand(updateTelefono);
@@ -145,12 +148,6 @@ public class Personal
             return SqlServerConnection.ExecuteProcedure(cmd);
     }
 
-    #endregion
->>>>>>> 22b546b82f5b1d9fe5f8c30c1799cbc4f2314ed1
-
-        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
-        return rowsAffected;
-    }
 
     #endregion
 }
