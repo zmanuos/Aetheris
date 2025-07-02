@@ -48,19 +48,8 @@ BEGIN
 END;
 // DELIMITER ;
 
-DELIMITER //
 
-CREATE TRIGGER activar_dispositivo
-AFTER INSERT ON RESIDENTE
-FOR EACH ROW
-BEGIN
-    IF NEW.dispositivo IS NOT NULL THEN
-        UPDATE DISPOSITIVO
-        SET estado = TRUE
-        WHERE id_dispositivo = NEW.dispositivo;
-    END IF;
-END;
-//
+DELIMITER //
 
 CREATE TRIGGER activar_dispositivo_update
 AFTER UPDATE ON RESIDENTE
@@ -75,3 +64,4 @@ END;
 //
 
 DELIMITER ;
+
