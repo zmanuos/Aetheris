@@ -2,12 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO; // Necesario para FileStream y Path
-using Microsoft.AspNetCore.Hosting; // Necesario para IWebHostEnvironment
-using Microsoft.AspNetCore.Http; // Necesario para IFormFile
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-// Asumo que ResidentePhotoUploadDto está en el mismo namespace raíz o en una carpeta de modelos accesible
-// using YourProjectNamespace.Models; // Ejemplo si está en una carpeta Models
 
 [Route("api/[controller]")]
 [ApiController]
@@ -25,7 +23,6 @@ public class ResidenteController : ControllerBase
     [HttpGet]
     public ActionResult Get()
     {
-        // Asumo que ResidenteListResponse y CommonApiResponse están definidas
         return Ok(ResidenteListResponse.GetResponse(Residente.Get()));
     }
 
@@ -35,12 +32,11 @@ public class ResidenteController : ControllerBase
         try
         {
             Residente a = Residente.Get(id);
-            if (a == null) // Manejar el caso si Get(id) retorna null ahora
+            if (a == null)
             {
                 _logger.LogWarning($"GET Residente/{id} - Residente no encontrado.");
                 return Ok(CommonApiResponse.GetResponse(1, "Residente no encontrado", MessageType.Error));
             }
-            // Asumo que ResidenteResponse está definida
             return Ok(ResidenteResponse.GetResponse(a));
         }
         catch (Exception e)
@@ -56,12 +52,10 @@ public class ResidenteController : ControllerBase
         _logger.LogInformation($"POST Residente: Intentando registrar residente {residente.nombre} {residente.apellido}");
         try
         {
-            // El método Post ahora devuelve el ID insertado
             int newResidentId = Residente.Post(residente);
             if (newResidentId > 0)
             {
                 _logger.LogInformation($"POST Residente: Residente {residente.nombre} {residente.apellido} registrado con ID: {newResidentId}");
-                // Importante: Devolver el ID en la respuesta para que el frontend lo use
                 return Ok(CommonApiResponse.GetResponse(0, "Se ha registrado el residente exitosamente", MessageType.Success, new { id_residente = newResidentId }));
             }
             else
@@ -73,12 +67,10 @@ public class ResidenteController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, $"POST Residente: Error interno al registrar residente {residente.nombre} {residente.apellido}.");
-            // Asumo que CommonApiResponse y MessageType están definidos
             return StatusCode(500, CommonApiResponse.GetResponse(3, "Error interno al registrar residente: " + ex.Message, MessageType.Error));
         }
     }
 
-    // --- ENDPOINT MODIFICADO PARA SUBIR LA FOTO ---
     [HttpPost("UploadPhoto")]
     public async Task<ActionResult> UploadPhoto([FromForm] ResidentePhotoUploadDto model)
     {
@@ -87,7 +79,6 @@ public class ResidenteController : ControllerBase
 
         _logger.LogInformation($"[UploadPhoto] Intentando subir foto para residente ID: {id_residente}");
 
-        // Validaciones básicas del archivo
         if (file == null || file.Length == 0)
         {
             _logger.LogWarning($"[UploadPhoto] ID: {id_residente} - Archivo no proporcionado o vacío.");
@@ -98,7 +89,7 @@ public class ResidenteController : ControllerBase
             _logger.LogWarning($"[UploadPhoto] ID: {id_residente} - Archivo no es una imagen válida. ContentType: {file.ContentType}");
             return BadRequest(CommonApiResponse.GetResponse(1, "El archivo no es una imagen válida.", MessageType.Error));
         }
-        if (file.Length > 5 * 1024 * 1024) // 5 MB de límite
+        if (file.Length > 5 * 1024 * 1024)
         {
             _logger.LogWarning($"[UploadPhoto] ID: {id_residente} - La imagen excede el tamaño máximo. Tamaño: {file.Length} bytes.");
             return BadRequest(CommonApiResponse.GetResponse(1, "La imagen excede el tamaño máximo permitido (5MB).", MessageType.Error));
@@ -106,33 +97,27 @@ public class ResidenteController : ControllerBase
 
         try
         {
-            // Ruta de la carpeta donde se guardarán las imágenes
             string uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "images", "residents");
             _logger.LogInformation($"[UploadPhoto] ID: {id_residente} - Carpeta de destino de fotos: {uploadsFolder}");
 
-            // Crear la carpeta si no existe
             if (!Directory.Exists(uploadsFolder))
             {
                 _logger.LogInformation($"[UploadPhoto] ID: {id_residente} - La carpeta de destino no existe, intentando crearla.");
                 Directory.CreateDirectory(uploadsFolder);
             }
 
-            // Generar nombre de archivo basado en id_residente y la extensión original
             string fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(fileExtension)) {
-                fileExtension = ".png"; // Fallback por si la extensión no viene en el nombre original
+                fileExtension = ".png";
             }
-            string fileNameToSave = $"{id_residente}{fileExtension}"; // ¡Usamos el ID como nombre!
+            string fileNameToSave = $"{id_residente}{fileExtension}";
             string filePath = Path.Combine(uploadsFolder, fileNameToSave);
             _logger.LogInformation($"[UploadPhoto] ID: {id_residente} - Ruta completa del archivo a guardar: {filePath} con nombre '{fileNameToSave}'.");
 
-            // Opcional y recomendado: Eliminar cualquier foto anterior asociada a este residente con diferentes extensiones
-            // Esto asegura que solo haya UNA foto para ese ID en la carpeta y no queden "huérfanas" si se cambia el formato.
-            string[] commonImageExtensions = { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff" }; // Lista de extensiones comunes a revisar
+            string[] commonImageExtensions = { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff" };
             foreach (string ext in commonImageExtensions)
             {
                 string oldFilePath = Path.Combine(uploadsFolder, $"{id_residente}{ext}");
-                // Verificar que exista y no sea la misma ruta que la nueva foto que se va a guardar
                 if (System.IO.File.Exists(oldFilePath) && oldFilePath != filePath)
                 {
                     try
@@ -147,14 +132,12 @@ public class ResidenteController : ControllerBase
                 }
             }
 
-            // Guardar el nuevo archivo físicamente
-            using (var stream = new FileStream(filePath, FileMode.Create)) // FileMode.Create sobrescribe si ya existe un archivo con ese nombre EXACTO
+            using (var stream = new FileStream(filePath, FileMode.Create))
             {
                 await file.CopyToAsync(stream);
             }
             _logger.LogInformation($"[UploadPhoto] ID: {id_residente} - Archivo '{fileNameToSave}' guardado físicamente.");
 
-            // Actualizar la base de datos con el nuevo nombre de archivo
             bool updated = Residente.UpdateFoto(id_residente, fileNameToSave);
 
             if (updated)
@@ -165,7 +148,6 @@ public class ResidenteController : ControllerBase
             else
             {
                 _logger.LogError($"[UploadPhoto] ID: {id_residente} - Foto subida ('{fileNameToSave}'), pero fallo al actualizar el registro del residente en la base de datos.");
-                // Si falla la actualización en DB, intenta eliminar el archivo que acabas de subir para no dejar basura
                 if (System.IO.File.Exists(filePath))
                 {
                     System.IO.File.Delete(filePath);

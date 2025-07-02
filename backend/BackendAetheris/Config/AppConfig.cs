@@ -16,7 +16,7 @@ using System.Reflection;
 
 public static class AppConfig
 {
-    private static readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+    private static readonly string MyAllowAllOrigins = "_myAllowAllOrigins"; 
 
     public static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
     {
@@ -85,17 +85,12 @@ public static class AppConfig
 
         services.AddCors(options =>
         {
-            options.AddPolicy(name: MyAllowSpecificOrigins,
+            options.AddPolicy(name: MyAllowAllOrigins, 
                               policy =>
                               {
-                                  policy.WithOrigins("http://192.168.100.21:19000",
-                                                     "exp://192.168.100.21:19000",
-                                                     "http://localhost:19000",
-                                                     "http://localhost:8081",
-                                                     "http://192.168.100.21:8081")
-                                        .AllowAnyHeader()
-                                        .AllowAnyMethod()
-                                        .AllowCredentials();
+                                  policy.AllowAnyOrigin() 
+                                        .AllowAnyHeader()  
+                                        .AllowAnyMethod(); 
                               });
         });
     }
@@ -110,7 +105,7 @@ public static class AppConfig
             app.UseSwaggerUI();
         }
 
-        app.UseCors(MyAllowSpecificOrigins);
+        app.UseCors(MyAllowAllOrigins); 
 
         app.UseAuthentication();
         app.UseAuthorization();

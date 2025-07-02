@@ -1,7 +1,6 @@
-using Microsoft.AspNetCore.Http; // Necesario para IFormFile
-
+using Microsoft.AspNetCore.Http;
 public class ResidentePhotoUploadDto
 {
     public int IdResidente { get; set; }
-    public IFormFile FotoArchivo { get; set; }
+    public IFormFile? FotoArchivo { get; set; }
 }

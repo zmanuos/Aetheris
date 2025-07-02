@@ -6,7 +6,6 @@ import { StatusBar } from 'expo-status-bar';
 
 console.log("--- App.js: Iniciando carga del archivo ---"); 
 
-// <--- ¡¡¡IMPORTAR TU CONFIGURACIÓN DE FIREBASE AQUÍ!!! --->
 import './config/firebaseConfig'; 
 
 console.log("--- App.js: firebaseConfig importado ---"); 
