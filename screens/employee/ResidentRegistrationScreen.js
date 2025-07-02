@@ -1,3 +1,4 @@
+// AETHERIS/screens/employee/ResidentRegistrationScreen.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -14,14 +15,13 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Picker } from '@react-native-picker/picker';
-
 import * as ImagePicker from 'expo-image-picker'; 
 
-import Config from '../../config/config';
+// Ajusta la ruta de config si es necesario
+import Config from '../../config/config'; 
 const API_URL = Config.API_BASE_URL;
 
-export default function RegisterResidentScreen({ navigation }) {
+export default function ResidentRegistrationScreen({ navigation }) {
   const [residentName, setResidentName] = useState('');
   const [residentApellido, setResidentApellido] = useState('');
   const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date());
@@ -29,25 +29,10 @@ export default function RegisterResidentScreen({ navigation }) {
   const [residentGenero, setResidentGenero] = useState('');
   const [residentTelefono, setResidentTelefono] = useState('');
   
-  // residentPhotoDataRef ahora guardará el objeto Blob/File listo para FormData
   const residentPhotoDataRef = useRef(null); 
   const [residentFotoPreview, setResidentFotoPreview] = useState(null);
 
-  const [familiarName, setFamiliarName] = useState('');
-  const [familiarApellido, setFamiliarApellido] = useState('');
-  const [familiarFechaNacimiento, setFamiliarFechaNacimiento] = useState(new Date());
-  const [showFamiliarDatePicker, setShowFamiliarDatePicker] = useState(false);
-  const [familiarGenero, setFamiliarGenero] = useState('');
-  const [familiarTelefono, setFamiliarTelefono] = useState('');
-  const [familiarParentesco, setFamiliarParentesco] = useState('');
-  const [familiarFirebaseEmail, setFamiliarFirebaseEmail] = useState('');
-  const [familiarFirebasePassword, setFamiliarFirebasePassword] = useState('');
-
-  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [residentId, setResidentId] = useState(null);
-
-  const [parentescos, setParentescos] = useState([]);
 
   useEffect(() => {
     console.log('*** [useEffect] Cambio en residentFotoPreview:', residentFotoPreview);
@@ -56,43 +41,10 @@ export default function RegisterResidentScreen({ navigation }) {
     }
   }, [residentFotoPreview]);
 
-  useEffect(() => {
-    const fetchParentescos = async () => {
-      try {
-        const response = await fetch(`${API_URL}/Parentesco`);
-        const data = await response.json();
-        if (response.ok && data.data) {
-          setParentescos(data.data);
-        } else {
-          console.error('Error al cargar parentescos:', data.message || 'Error desconocido');
-          setParentescos([
-            { id: 1, nombre: 'Hijo/a' }, { id: 2, nombre: 'Cónyuge' },
-            { id: 3, nombre: 'Hermano/a' }, { id: 4, nombre: 'Nieto/a' },
-            { id: 5, nombre: 'Sobrino/a' }, { id: 6, nombre: 'Otro' },
-          ]);
-        }
-      } catch (error) {
-        console.error('Error de conexión al cargar parentescos:', error);
-        setParentescos([
-          { id: 1, nombre: 'Hijo/a' }, { id: 2, nombre: 'Cónyuge' },
-          { id: 3, nombre: 'Hermano/a' }, { id: 4, nombre: 'Nieto/a' },
-          { id: 5, nombre: 'Sobrino/a' }, { id: 6, nombre: 'Otro' },
-        ]);
-      }
-    };
-    fetchParentescos();
-  }, []);
-
   const onChangeResidentDate = (event, selectedDate) => {
     const currentDate = selectedDate || residentFechaNacimiento;
     setShowDatePicker(Platform.OS === 'ios');
     setResidentFechaNacimiento(currentDate);
-  };
-
-  const onChangeFamiliarDate = (event, selectedDate) => {
-    const currentDate = selectedDate || familiarFechaNacimiento;
-    setShowFamiliarDatePicker(Platform.OS === 'ios');
-    setFamiliarFechaNacimiento(currentDate);
   };
 
   const pickImage = async () => {
@@ -119,14 +71,13 @@ export default function RegisterResidentScreen({ navigation }) {
       let previewUri = assetUri;
 
       if (assetUri.startsWith('data:')) {
-        // Es un data URI, necesitamos convertirlo a Blob
         try {
           const response = await fetch(assetUri);
           const blob = await response.blob();
           
           const match = assetUri.match(/^data:(.*?);base64,/);
           const mimeType = match ? match[1] : 'image/jpeg';
-          let extension = mimeType.split('/')[1] || 'jpeg'; // Extrae la extensión del tipo MIME
+          let extension = mimeType.split('/')[1] || 'jpeg';
 
           imageDataForUpload = { blob, name: `photo.${extension}`, type: mimeType };
           console.log('Convertido data URI a Blob:', imageDataForUpload);
@@ -138,10 +89,8 @@ export default function RegisterResidentScreen({ navigation }) {
           return;
         }
       } else {
-        // Es un URI de archivo normal (file:// o assets-library://), puede usarse directamente
-        // Aseguramos que tenemos nombre y tipo correctos
         let filename = assetUri.split('/').pop();
-        let type = 'image/jpeg'; // Default, you might want to infer more robustly
+        let type = 'image/jpeg';
         const extensionMatch = filename.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
         if (extensionMatch) {
             const ext = extensionMatch[1].toLowerCase();
@@ -158,7 +107,7 @@ export default function RegisterResidentScreen({ navigation }) {
       }
       
       residentPhotoDataRef.current = imageDataForUpload;
-      setResidentFotoPreview(previewUri); // Siempre usamos el URI original para la vista previa
+      setResidentFotoPreview(previewUri);
     } else {
       console.log('Selección de imagen cancelada (desde pickImage).');
       residentPhotoDataRef.current = null;
@@ -210,8 +159,6 @@ export default function RegisterResidentScreen({ navigation }) {
         console.log('ID de nuevo residente extraído (valor y tipo):', newResidentId, typeof newResidentId); 
 
         if (newResidentId) { 
-            setResidentId(newResidentId);
-
             console.log('Valor actual de currentResidentPhotoData ANTES de la subida dentro del IF:', currentResidentPhotoData);
             console.log('¿La lógica de subida de foto se ejecutará? (basado en currentResidentPhotoData dentro del IF)', !!currentResidentPhotoData);
 
@@ -265,8 +212,19 @@ export default function RegisterResidentScreen({ navigation }) {
                 console.log('No se seleccionó foto, la subida de foto fue omitida.');
             }
 
-            Alert.alert('Éxito', 'Residente registrado exitosamente. Ahora registra al familiar.');
-            setCurrentStep(2);
+            // <-- ESTA LÍNEA NAVEGA AL FORMULARIO DEL FAMILIAR -->
+            navigation.navigate('FamiliarRegistrationScreen', { // <-- Nombre de ruta crucial
+              residentId: newResidentId,
+              residentSummary: {
+                name: residentName,
+                apellido: residentApellido,
+                fechaNacimiento: residentFechaNacimiento.toLocaleDateString(),
+                genero: residentGenero,
+                telefono: residentTelefono,
+                fotoPreview: residentFotoPreview,
+              },
+            });
+
         } else {
             Alert.alert('Advertencia', 'Residente registrado, pero no se recibió el ID. No se puede continuar al siguiente paso.');
             console.error('ID del residente no recibido en la respuesta (verifica la estructura del JSON):', data);
@@ -277,84 +235,6 @@ export default function RegisterResidentScreen({ navigation }) {
     } catch (error) {
       console.error('Error registrando residente:', error);
       Alert.alert('Error de Conexión', 'No se pudo conectar con el servidor para registrar al residente.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleRegisterFamiliar = async () => {
-    if (!familiarName || !familiarApellido || !familiarGenero || !familiarTelefono || !familiarParentesco || !familiarFirebaseEmail || !familiarFirebasePassword) {
-      Alert.alert('Error', 'Por favor, completa todos los campos obligatorios del familiar, incluyendo email y contraseña para el acceso.');
-      return;
-    }
-    if (!residentId) {
-        Alert.alert('Error', 'Primero debes registrar al residente.');
-        return;
-    }
-
-    setIsLoading(true);
-    let firebaseUid = null;
-
-    try {
-        console.log("Simulando creación de usuario Firebase con:", familiarFirebaseEmail, familiarFirebasePassword);
-        firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}`; 
-        console.log("UID de Firebase simulado:", firebaseUid);
-        Alert.alert('Firebase', 'Usuario Firebase simulado creado exitosamente. ID: ' + firebaseUid);
-
-    } catch (firebaseError) {
-        console.error("Error al crear usuario Firebase:", firebaseError);
-        Alert.alert("Error Firebase", `No se pudo crear el usuario en Firebase: ${firebaseError.message}`);
-        setIsLoading(false);
-        return;
-    }
-
-    const formDataFamiliar = new FormData();
-    formDataFamiliar.append('nombre', familiarName);
-    formDataFamiliar.append('apellido', familiarApellido);
-    
-    const familiarYear = familiarFechaNacimiento.getFullYear();
-    const familiarMonth = String(familiarFechaNacimiento.getMonth() + 1).padStart(2, '0');
-    const familiarDay = String(familiarFechaNacimiento.getDate()).padStart(2, '0');
-    const formattedFamiliarDate = `${familiarYear}-${familiarMonth}-${familiarDay}`;
-    formDataFamiliar.append('fechaNacimiento', formattedFamiliarDate);
-
-    formDataFamiliar.append('genero', familiarGenero);
-    formDataFamiliar.append('telefono', familiarTelefono);
-    formDataFamiliar.append('id_residente', residentId.toString());
-    formDataFamiliar.append('id_parentesco', familiarParentesco);
-    formDataFamiliar.append('firebase_uid', firebaseUid);
-
-    formDataFamiliar.append('email', familiarFirebaseEmail);
-    formDataFamiliar.append('contra', familiarFirebasePassword);
-
-    console.log('Datos del familiar a enviar (FormData):');
-    for (let pair of formDataFamiliar.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/Familiar`, {
-        method: 'POST',
-        body: formDataFamiliar,
-      });
-
-      const data = await response.json();
-      console.log('Respuesta de la API al registrar familiar:', data);
-
-      if (response.ok && data.code === 0) { 
-        Alert.alert('Éxito', 'Familiar registrado exitosamente en la base de datos SQL.');
-        navigation.goBack();
-      } else {
-        if (data.errors) {
-            let errorMessages = Object.values(data.errors).map(errArray => errArray.join(', ')).join('\n');
-            Alert.alert('Error de Validación', `Por favor, corrige los siguientes errores:\n${errorMessages}`);
-        } else {
-            Alert.alert('Error al Registrar Familiar', data.message || 'Ocurrió un error inesperado al guardar datos personales.');
-        }
-      }
-    } catch (error) {
-      console.error('Error registrando familiar en SQL:', error);
-      Alert.alert('Error de Conexión', 'No se pudo conectar con el servidor para registrar al familiar en SQL.');
     } finally {
       setIsLoading(false);
     }
@@ -403,99 +283,15 @@ export default function RegisterResidentScreen({ navigation }) {
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={handleRegisterResident}
-            disabled={isLoading || currentStep === 2}
+            disabled={isLoading}
           >
-            {isLoading && currentStep === 1 ? (
+            {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>
-                {currentStep === 1 ? 'Registrar Residente y Continuar' : 'Residente Registrado'}
-              </Text>
+              <Text style={styles.primaryButtonText}>Registrar Residente y Continuar</Text>
             )}
           </TouchableOpacity>
         </View>
-
-        {currentStep === 2 && (
-          <View style={[styles.formSection, styles.familiarSection]}>
-            <Text style={styles.sectionTitle}>2. Datos del Familiar</Text>
-            <Text style={styles.infoText}>Asociado al Residente ID: {residentId}</Text>
-            <TextInput style={styles.input} placeholder="Nombre Familiar" value={familiarName} onChangeText={setFamiliarName} />
-            <TextInput style={styles.input} placeholder="Apellido Familiar" value={familiarApellido} onChangeText={setFamiliarApellido} />
-            <TouchableOpacity style={styles.input} onPress={() => setShowFamiliarDatePicker(true)}>
-                <Text style={styles.dateInputText}>
-                    Fecha de Nacimiento Familiar: {familiarFechaNacimiento.toLocaleDateString()}
-                </Text>
-            </TouchableOpacity>
-            {showFamiliarDatePicker && (
-                <DateTimePicker
-                testID="familiarDatePicker"
-                value={familiarFechaNacimiento}
-                mode="date"
-                display="default"
-                onChange={onChangeFamiliarDate}
-                />
-            )}
-            <TextInput style={styles.input} placeholder="Género Familiar (Ej: Masculino, Femenino)" value={familiarGenero} onChangeText={setFamiliarGenero} />
-            <TextInput style={styles.input} placeholder="Teléfono Familiar" value={familiarTelefono} onChangeText={setFamiliarTelefono} keyboardType="phone-pad" />
-
-            <Text style={styles.sectionSubtitle}>Credenciales de Acceso para el Familiar</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Email (para acceso Firebase)"
-              value={familiarFirebaseEmail}
-              onChangeText={setFamiliarFirebaseEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Contraseña (para acceso Firebase)"
-              value={familiarFirebasePassword}
-              onChangeText={setFamiliarFirebasePassword}
-              secureTextEntry={true}
-            />
-
-            <View style={styles.pickerContainer}>
-              <Text style={styles.pickerLabel}>Parentesco:</Text>
-              {Platform.OS === 'ios' ? (
-                <Picker
-                  selectedValue={familiarParentesco}
-                  onValueChange={(itemValue) => setFamiliarParentesco(itemValue)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="Selecciona un parentesco" value="" />
-                  {parentescos.map((p) => (
-                    <Picker.Item key={p.id} label={p.nombre} value={p.id.toString()} />
-                  ))}
-                </Picker>
-              ) : (
-                <View style={styles.androidPicker}>
-                  <Picker
-                    selectedValue={familiarParentesco}
-                    onValueChange={(itemValue) => setFamiliarParentesco(itemValue)}
-                  >
-                    <Picker.Item label="Selecciona un parentesco" value="" />
-                    {parentescos.map((p) => (
-                      <Picker.Item key={p.id} label={p.nombre} value={p.id.toString()} />
-                    ))}
-                  </Picker>
-                </View>
-              )}
-            </View>
-
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={handleRegisterFamiliar}
-              disabled={isLoading}
-            >
-              {isLoading && currentStep === 2 ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.primaryButtonText}>Registrar Familiar</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -585,38 +381,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  familiarSection: {
-    borderColor: '#10B981',
-    borderWidth: 1,
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-  pickerContainer: {
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 15,
-    overflow: 'hidden',
-  },
-  pickerLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    paddingHorizontal: 15,
-    paddingTop: 5,
-  },
-  picker: {
-    height: 40,
-    width: '100%',
-    color: '#333',
-  },
-  androidPicker: {
-    height: 45,
-    justifyContent: 'center',
   },
   imagePickerButton: {
     flexDirection: 'row',
