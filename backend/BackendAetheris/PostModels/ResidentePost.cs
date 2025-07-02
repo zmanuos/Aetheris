@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.Contracts;
+﻿using System;
 
 public class ResidentePost
 {
@@ -6,7 +6,6 @@ public class ResidentePost
     public string apellido { get; set; }
     public DateTime fechaNacimiento { get; set; }
     public string genero { get; set; }
-    public string foto { get; set; }
     public string telefono { get; set; }
-
+    // El campo 'foto' se ha eliminado de este DTO
 }

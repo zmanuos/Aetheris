@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web; // Este using podría no ser necesario en un proyecto .NET Core/.NET 5+, pero lo mantengo si ya lo tienes.
-using Microsoft.Data.SqlClient; // Este using parece ser de SQL Server, pero tus comandos son de MySql.Data.MySqlClient. Si no usas SQL Server, puedes eliminarlo.
 using MySql.Data.MySqlClient;
 using System.Data;
+// Si tienes la excepción personalizada, asegúrate de que esté definida en tu proyecto
+// using YourNamespace.Exceptions; // Ejemplo: using BackendAetheris.Exceptions;
+
 
 public class Residente
 {
@@ -15,13 +16,17 @@ public class Residente
 
     private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
 
-    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto);";
+    // Modificado: El INSERT no incluye 'SELECT LAST_INSERT_ID()' porque lo manejará el método ExecuteInsertCommandAndGetLastId
+    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto_default);";
 
     private static string AsignarDispositivo = "UPDATE RESIDENTE SET dispositivo = @dispositivo WHERE id_residente = @id_residente";
 
     private static string updateTelefono = "UPDATE RESIDENTE SET telefono = @telefono WHERE id_residente = @id";
 
     private static string updateEstado = "UPDATE RESIDENTE SET activo = not activo WHERE id_residente = @id";
+
+    // Nuevo statement para actualizar solo la foto
+    private static string updateFotoStatement = "UPDATE RESIDENTE SET foto = @foto WHERE id_residente = @id_residente";
 
 
     #endregion
@@ -34,7 +39,7 @@ public class Residente
     private DateTime _fecha_nacimiento;
     private string _genero;
     private string _telefono;
-    private Dispositivo _dispositivo; // Asumiendo que la clase Dispositivo existe
+    private Dispositivo _dispositivo; // Asumo que Dispositivo es otra clase/modelo y tiene un constructor por defecto o es anulable
     private string _foto;
     private DateTime _fecha_ingreso;
     private bool _activo;
@@ -68,8 +73,8 @@ public class Residente
         Fecha_nacimiento = DateTime.MinValue;
         Genero = "";
         Telefono = "";
-        Dispositivo = new Dispositivo();
-        Foto = "";
+        Dispositivo = new Dispositivo(); // Asegúrate de que Dispositivo tenga un constructor por defecto
+        Foto = "nophoto.png"; // Valor por defecto si no hay foto al inicio
         Fecha_ingreso = DateTime.MinValue;
         Activo = false;
     }
@@ -97,7 +102,6 @@ public class Residente
     {
         MySqlCommand command = new MySqlCommand(selectAll);
         //Populate
-        // Asumiendo que ResidenteMapper.ToList y SqlServerConnection.ExecuteQuery son correctos
         return ResidenteMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
@@ -110,16 +114,18 @@ public class Residente
 
         if (table.Rows.Count > 0)
         {
-            // Asumiendo que ResidenteMapper.ToObject es correcto
             return ResidenteMapper.ToObject(table.Rows[0]);
         }
         else
         {
-            // Asegúrate de que ResidenteNotFoundException esté definida
-            throw new ResidenteNotFoundException(id);
+            // Puedes retornar null si el residente no se encuentra
+            return null;
+            // O lanzar una excepción específica si prefieres ese comportamiento
+            // throw new ResidenteNotFoundException(id);
         }
     }
 
+    // Método para insertar un nuevo residente y obtener su ID
     public static int Post(ResidentePost residente)
     {
         MySqlCommand command = new MySqlCommand(insert);
@@ -127,28 +133,36 @@ public class Residente
         command.Parameters.AddWithValue("@nombre", residente.nombre);
         command.Parameters.AddWithValue("@apellido", residente.apellido);
         command.Parameters.AddWithValue("@fecha_nacimiento", residente.fechaNacimiento);
-        command.Parameters.AddWithValue("@foto", residente.foto);
         command.Parameters.AddWithValue("@genero", residente.genero);
         command.Parameters.AddWithValue("@telefono", residente.telefono);
+        // Valor por defecto para la foto al insertar
+        command.Parameters.AddWithValue("@foto_default", "nophoto.png"); // Usa DBNull.Value si tu columna es NULLABLE
 
-        // --- CAMBIO CLAVE AQUÍ: Usamos ExecuteInsertCommandAndGetLastId para obtener el ID real ---
+        // Llama al método de conexión que ejecuta el INSERT y devuelve el último ID
         int newId = SqlServerConnection.ExecuteInsertCommandAndGetLastId(command);
-        return newId; // Devuelve el ID generado por la base de datos
+
+        return newId;
     }
 
-
+    // Nuevo método estático para actualizar solo el campo 'foto' de un residente
+    public static bool UpdateFoto(int id_residente, string newFileName)
+    {
+        MySqlCommand command = new MySqlCommand(updateFotoStatement);
+        command.Parameters.AddWithValue("@foto", newFileName);
+        command.Parameters.AddWithValue("@id_residente", id_residente);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
 
 
     public static int Update(int residente, int dispositivo)
     {
-        // Esta línea asigna 'result' y luego lo devuelve en la misma expresión, lo cual es redundante.
-        // También, si ExecuteCommand devuelve el número de filas afectadas, este método devolvería 1 si se actualiza.
-        // Si necesitas que devuelva el ID de alguna manera, la lógica debe ser diferente.
+        int result = 0;
+
         MySqlCommand command = new MySqlCommand(AsignarDispositivo);
         command.Parameters.AddWithValue("@dispositivo", dispositivo);
         command.Parameters.AddWithValue("@id_residente", residente);
 
-        return SqlServerConnection.ExecuteCommand(command);
+        return result = SqlServerConnection.ExecuteCommand(command);
     }
 
     public static bool UpdateTelefono(int id, string nuevoTelefono)
@@ -168,8 +182,8 @@ public class Residente
 
     #endregion
 
-    #region x
-
-
-    #endregion
+    // Definiciones de clases dependientes que deben existir en tu proyecto
+    // public class Dispositivo { /* ... */ }
+    // public class ResidenteMapper { /* ... */ }
+    // public class ResidenteNotFoundException : Exception { /* ... */ } // Si la usas
 }

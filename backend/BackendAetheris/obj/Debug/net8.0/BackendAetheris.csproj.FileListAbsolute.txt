@@ -529,3 +529,4 @@ C:/Users/elihu/OneDrive/Documentos/XAMPP/htdocs/Aetheris/backend/BackendAetheris
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/BackendAetheris.pdb
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/BackendAetheris.genruntimeconfig.cache
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/ref/BackendAetheris.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/BackendAetheris.staticwebassets.runtime.json

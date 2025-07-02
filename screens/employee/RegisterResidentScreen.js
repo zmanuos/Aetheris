@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,13 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
+
+import * as ImagePicker from 'expo-image-picker'; 
 
 import Config from '../../config/config';
 const API_URL = Config.API_BASE_URL;
@@ -25,7 +28,10 @@ export default function RegisterResidentScreen({ navigation }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [residentGenero, setResidentGenero] = useState('');
   const [residentTelefono, setResidentTelefono] = useState('');
-  const [residentFoto, setResidentFoto] = useState('default');
+  
+  // residentPhotoDataRef ahora guardará el objeto Blob/File listo para FormData
+  const residentPhotoDataRef = useRef(null); 
+  const [residentFotoPreview, setResidentFotoPreview] = useState(null);
 
   const [familiarName, setFamiliarName] = useState('');
   const [familiarApellido, setFamiliarApellido] = useState('');
@@ -42,6 +48,13 @@ export default function RegisterResidentScreen({ navigation }) {
   const [residentId, setResidentId] = useState(null);
 
   const [parentescos, setParentescos] = useState([]);
+
+  useEffect(() => {
+    console.log('*** [useEffect] Cambio en residentFotoPreview:', residentFotoPreview);
+    if (residentFotoPreview) {
+      console.log('*** [useEffect] URI de residentFotoPreview:', residentFotoPreview);
+    }
+  }, [residentFotoPreview]);
 
   useEffect(() => {
     const fetchParentescos = async () => {
@@ -82,7 +95,81 @@ export default function RegisterResidentScreen({ navigation }) {
     setFamiliarFechaNacimiento(currentDate);
   };
 
+  const pickImage = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permiso requerido', 'Necesitamos permiso para acceder a tu galería de fotos.');
+        return;
+      }
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled) {
+      const assetUri = result.assets[0].uri;
+      console.log('Imagen seleccionada URI (desde pickImage):', assetUri);
+
+      let imageDataForUpload = null;
+      let previewUri = assetUri;
+
+      if (assetUri.startsWith('data:')) {
+        // Es un data URI, necesitamos convertirlo a Blob
+        try {
+          const response = await fetch(assetUri);
+          const blob = await response.blob();
+          
+          const match = assetUri.match(/^data:(.*?);base64,/);
+          const mimeType = match ? match[1] : 'image/jpeg';
+          let extension = mimeType.split('/')[1] || 'jpeg'; // Extrae la extensión del tipo MIME
+
+          imageDataForUpload = { blob, name: `photo.${extension}`, type: mimeType };
+          console.log('Convertido data URI a Blob:', imageDataForUpload);
+        } catch (blobError) {
+          console.error('Error al convertir data URI a Blob:', blobError);
+          Alert.alert('Error', 'No se pudo procesar la imagen seleccionada.');
+          residentPhotoDataRef.current = null;
+          setResidentFotoPreview(null);
+          return;
+        }
+      } else {
+        // Es un URI de archivo normal (file:// o assets-library://), puede usarse directamente
+        // Aseguramos que tenemos nombre y tipo correctos
+        let filename = assetUri.split('/').pop();
+        let type = 'image/jpeg'; // Default, you might want to infer more robustly
+        const extensionMatch = filename.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
+        if (extensionMatch) {
+            const ext = extensionMatch[1].toLowerCase();
+            switch(ext) {
+                case 'png': type = 'image/png'; break;
+                case 'jpg':
+                case 'jpeg': type = 'image/jpeg'; break;
+                case 'gif': type = 'image/gif'; break;
+                default: type = 'application/octet-stream';
+            }
+        }
+        imageDataForUpload = { uri: assetUri, name: filename, type: type };
+        console.log('Usando URI de archivo:', imageDataForUpload);
+      }
+      
+      residentPhotoDataRef.current = imageDataForUpload;
+      setResidentFotoPreview(previewUri); // Siempre usamos el URI original para la vista previa
+    } else {
+      console.log('Selección de imagen cancelada (desde pickImage).');
+      residentPhotoDataRef.current = null;
+      setResidentFotoPreview(null);
+    }
+  };
+
   const handleRegisterResident = async () => {
+    const currentResidentPhotoData = residentPhotoDataRef.current;
+    console.log('*** [handleRegisterResident] Valor de residentPhotoDataRef.current al inicio de la función:', currentResidentPhotoData);
+
     if (!residentName || !residentApellido || !residentGenero || !residentTelefono) {
       Alert.alert('Error', 'Por favor, completa todos los campos obligatorios del residente.');
       return;
@@ -96,12 +183,18 @@ export default function RegisterResidentScreen({ navigation }) {
     const year = residentFechaNacimiento.getFullYear();
     const month = String(residentFechaNacimiento.getMonth() + 1).padStart(2, '0');
     const day = String(residentFechaNacimiento.getDate()).padStart(2, '0');
-    const formattedDate = `${year}/${month}/${day}`;
+    const formattedDate = `${year}-${month}-${day}`; 
     formData.append('fechaNacimiento', formattedDate);
 
     formData.append('genero', residentGenero);
     formData.append('telefono', residentTelefono);
-    formData.append('foto', residentFoto);
+
+    let newResidentId = null;
+
+    console.log('Datos del residente a enviar (FormData):');
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
 
     try {
       const response = await fetch(`${API_URL}/Residente`, {
@@ -110,14 +203,69 @@ export default function RegisterResidentScreen({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('Residente Response:', data);
+      console.log('Respuesta de la API al registrar residente:', data);
 
-      if (response.ok && data.status === 0) {
-        Alert.alert('Éxito', 'Residente registrado exitosamente. Ahora registra al familiar.');
-        
-        setResidentId(data.data?.id_residente || null); 
+        if (response.ok && data && data.status === 0)  { 
+        newResidentId = data.data?.id_residente || null; 
+        console.log('ID de nuevo residente extraído (valor y tipo):', newResidentId, typeof newResidentId); 
 
-        if (data.data?.id_residente) { 
+        if (newResidentId) { 
+            setResidentId(newResidentId);
+
+            console.log('Valor actual de currentResidentPhotoData ANTES de la subida dentro del IF:', currentResidentPhotoData);
+            console.log('¿La lógica de subida de foto se ejecutará? (basado en currentResidentPhotoData dentro del IF)', !!currentResidentPhotoData);
+
+            if (currentResidentPhotoData) {
+                console.log('Iniciando subida de foto para residente ID:', newResidentId);
+                const photoUploadFormData = new FormData();
+                
+                photoUploadFormData.append('IdResidente', newResidentId.toString());
+
+                if (currentResidentPhotoData.blob) {
+                    photoUploadFormData.append('FotoArchivo', currentResidentPhotoData.blob, currentResidentPhotoData.name);
+                } else {
+                    photoUploadFormData.append('FotoArchivo', {
+                        uri: currentResidentPhotoData.uri,
+                        name: currentResidentPhotoData.name,
+                        type: currentResidentPhotoData.type,
+                    });
+                }
+                
+                console.log('Datos de la foto a enviar (FormData para foto):');
+                for (let pair of photoUploadFormData.entries()) {
+                  console.log(pair[0] + ': ' + (typeof pair[1] === 'object' ? '[Object Blob/File]' : pair[1]));
+                }
+
+                try {
+                    const photoUploadResponse = await fetch(`${API_URL}/Residente/UploadPhoto`, {
+                        method: 'POST',
+                        body: photoUploadFormData,
+                    });
+
+                    console.log('Estado de la respuesta de subida de foto:', photoUploadResponse.status);
+
+                    if (photoUploadResponse.ok) {
+                        console.log('Foto subida exitosamente.');
+                    } else {
+                        const errorText = await photoUploadResponse.text();
+                        console.error('Error al subir la foto. Código de estado:', photoUploadResponse.status, 'Respuesta:', errorText);
+                        
+                        try {
+                            const errorData = JSON.parse(errorText);
+                            Alert.alert('Error al subir foto', errorData.message || 'Ocurrió un error al subir la imagen.');
+                        } catch (parseError) {
+                            Alert.alert('Error al subir foto', `Ocurrió un error inesperado al subir la imagen: ${errorText}`);
+                        }
+                    }
+                } catch (photoError) {
+                    console.error('Error de conexión al subir la foto:', photoError);
+                    Alert.alert('Error de Conexión', 'No se pudo conectar con el servidor para subir la foto.');
+                }
+            } else {
+                console.log('No se seleccionó foto, la subida de foto fue omitida.');
+            }
+
+            Alert.alert('Éxito', 'Residente registrado exitosamente. Ahora registra al familiar.');
             setCurrentStep(2);
         } else {
             Alert.alert('Advertencia', 'Residente registrado, pero no se recibió el ID. No se puede continuar al siguiente paso.');
@@ -149,15 +297,7 @@ export default function RegisterResidentScreen({ navigation }) {
 
     try {
         console.log("Simulando creación de usuario Firebase con:", familiarFirebaseEmail, familiarFirebasePassword);
-        // --- MODIFICACIÓN CLAVE AQUÍ: Generar un UID simulado más corto ---
-        // Genera un número aleatorio y lo convierte a base 36 (alfanumérico) para acortarlo
-        firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}`; // Genera una cadena de 13 caracteres alfanuméricos
-        // Esto resultará en un UID simulado de aproximadamente 18 caracteres (5 + 13)
-        // Un UID real de Firebase es de 28 caracteres, así que este es solo para simulación.
-        // Si necesitas un UID simulado de 28 caracteres, puedes usar algo como:
-        // firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`.substring(0, 28);
-        // Pero para el propósito de superar el error de longitud, el primero es suficiente.
-        // --------------------------------------------------------------------
+        firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}`; 
         console.log("UID de Firebase simulado:", firebaseUid);
         Alert.alert('Firebase', 'Usuario Firebase simulado creado exitosamente. ID: ' + firebaseUid);
 
@@ -175,7 +315,7 @@ export default function RegisterResidentScreen({ navigation }) {
     const familiarYear = familiarFechaNacimiento.getFullYear();
     const familiarMonth = String(familiarFechaNacimiento.getMonth() + 1).padStart(2, '0');
     const familiarDay = String(familiarFechaNacimiento.getDate()).padStart(2, '0');
-    const formattedFamiliarDate = `${familiarYear}/${familiarMonth}/${familiarDay}`;
+    const formattedFamiliarDate = `${familiarYear}-${familiarMonth}-${familiarDay}`;
     formDataFamiliar.append('fechaNacimiento', formattedFamiliarDate);
 
     formDataFamiliar.append('genero', familiarGenero);
@@ -187,6 +327,11 @@ export default function RegisterResidentScreen({ navigation }) {
     formDataFamiliar.append('email', familiarFirebaseEmail);
     formDataFamiliar.append('contra', familiarFirebasePassword);
 
+    console.log('Datos del familiar a enviar (FormData):');
+    for (let pair of formDataFamiliar.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
     try {
       const response = await fetch(`${API_URL}/Familiar`, {
         method: 'POST',
@@ -194,9 +339,9 @@ export default function RegisterResidentScreen({ navigation }) {
       });
 
       const data = await response.json();
-      console.log('Familiar Response:', data);
+      console.log('Respuesta de la API al registrar familiar:', data);
 
-      if (response.ok && data.statusCode === 0) {
+      if (response.ok && data.code === 0) { 
         Alert.alert('Éxito', 'Familiar registrado exitosamente en la base de datos SQL.');
         navigation.goBack();
       } else {
@@ -246,7 +391,15 @@ export default function RegisterResidentScreen({ navigation }) {
           )}
           <TextInput style={styles.input} placeholder="Género (Ej: Masculino, Femenino)" value={residentGenero} onChangeText={setResidentGenero} />
           <TextInput style={styles.input} placeholder="Teléfono (Ej: 5512345678)" value={residentTelefono} onChangeText={setResidentTelefono} keyboardType="phone-pad" />
-          <TextInput style={styles.input} placeholder="URL de Foto (opcional)" value={residentFoto} onChangeText={setResidentFoto} />
+          
+          <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
+            <Ionicons name="camera-outline" size={24} color="#FFF" />
+            <Text style={styles.imagePickerButtonText}>Seleccionar Foto</Text>
+          </TouchableOpacity>
+          {residentFotoPreview && (
+            <Image source={{ uri: residentFotoPreview }} style={styles.residentPhotoPreview} />
+          )}
+
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={handleRegisterResident}
@@ -464,5 +617,29 @@ const styles = StyleSheet.create({
   androidPicker: {
     height: 45,
     justifyContent: 'center',
-  }
+  },
+  imagePickerButton: {
+    flexDirection: 'row',
+    backgroundColor: '#007BFF',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 15,
+  },
+  imagePickerButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  residentPhotoPreview: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    alignSelf: 'center',
+    marginBottom: 15,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+  },
 });
