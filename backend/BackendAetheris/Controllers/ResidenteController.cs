@@ -1,9 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic; // Asegúrate de tener este using si no estaba
+using System.Linq; // Asegúrate de tener este using si no estaba
 
 [Route("api/[controller]")]
 [ApiController]
@@ -26,31 +24,32 @@ public class ResidenteController : ControllerBase
         }
         catch (ResidenteNotFoundException e)
         {
-            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+            return Ok(CommonApiResponse.GetResponse(1, e.Message, MessageType.Error)); // Usar CommonApiResponse
         }
         catch (Exception e)
         {
-            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+            return Ok(CommonApiResponse.GetResponse(999, e.Message, MessageType.CriticalError)); // Usar CommonApiResponse
         }
     }
 
 
-[HttpPost]
-public ActionResult Post([FromForm]ResidentePost residente)
-{
-    try
+    [HttpPost]
+    public ActionResult Post([FromForm]ResidentePost residente)
     {
-        int result = Residente.Post(residente); 
-        if (result > 0)
-            return Ok(MessageResponse.GetReponse(0, "Se ha registrado el residente exitosamente", MessageType.Success));
-        else
-            return Ok(MessageResponse.GetReponse(2, "No se pudo registrar el residente", MessageType.Warning));
+        try
+        {
+            int result = Residente.Post(residente); 
+            if (result > 0)
+                // --- CAMBIO CLAVE AQUÍ: Usar CommonApiResponse y pasar el ID en el Data ---
+                return Ok(CommonApiResponse.GetResponse(0, "Se ha registrado el residente exitosamente", MessageType.Success, new { id_residente = result }));
+            else
+                return Ok(CommonApiResponse.GetResponse(2, "No se pudo registrar el residente", MessageType.Warning));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, CommonApiResponse.GetResponse(3, "Error interno: " + ex.Message, MessageType.Error));
+        }
     }
-    catch (Exception ex)
-    {
-        return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
-    }
-}
 
 
     [HttpPut("{residente}/{dispositivo}")]
@@ -61,16 +60,16 @@ public ActionResult Post([FromForm]ResidentePost residente)
         {
             if (Residente.Update(residente, dispositivo) > 0)
             {
-                return Ok(MessageResponse.GetReponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
+                return Ok(CommonApiResponse.GetResponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
             } else
             {
-                return Ok(MessageResponse.GetReponse(1, "No se pudo actualizar el dispositivo", MessageType.Error));
+                return Ok(CommonApiResponse.GetResponse(1, "No se pudo actualizar el dispositivo", MessageType.Error));
             }
             
         }
         catch (Exception e)
         {
-            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+            return Ok(CommonApiResponse.GetResponse(999, e.Message, MessageType.CriticalError));
         }
     }
 
@@ -80,9 +79,9 @@ public ActionResult Post([FromForm]ResidentePost residente)
     {
         bool updated = Residente.UpdateTelefono(id, telefono);
         if (updated)
-            return Ok(MessageResponse.GetReponse(0, "Telefono actualizado correctamente", MessageType.Success));
+            return Ok(CommonApiResponse.GetResponse(0, "Telefono actualizado correctamente", MessageType.Success));
         else
-            return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el telefono", MessageType.Warning));
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el telefono", MessageType.Warning));
     }
 
     [HttpPut("{id}")]
@@ -90,11 +89,8 @@ public ActionResult Post([FromForm]ResidentePost residente)
     {
         bool updated = Residente.UpdateEstado(id);
         if (updated)
-            return Ok(MessageResponse.GetReponse(0, "Estado del residente actualizado correctamente", MessageType.Success));
+            return Ok(CommonApiResponse.GetResponse(0, "Estado del residente actualizado correctamente", MessageType.Success));
         else
-            return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el estado del residente ", MessageType.Warning));
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el estado del residente ", MessageType.Warning));
     }
-
-
-
 }

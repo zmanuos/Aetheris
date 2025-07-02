@@ -92,7 +92,13 @@ export default function RegisterResidentScreen({ navigation }) {
     const formData = new FormData();
     formData.append('nombre', residentName);
     formData.append('apellido', residentApellido);
-    formData.append('fechaNacimiento', residentFechaNacimiento.toISOString());
+
+    const year = residentFechaNacimiento.getFullYear();
+    const month = String(residentFechaNacimiento.getMonth() + 1).padStart(2, '0');
+    const day = String(residentFechaNacimiento.getDate()).padStart(2, '0');
+    const formattedDate = `${year}/${month}/${day}`;
+    formData.append('fechaNacimiento', formattedDate);
+
     formData.append('genero', residentGenero);
     formData.append('telefono', residentTelefono);
     formData.append('foto', residentFoto);
@@ -106,10 +112,17 @@ export default function RegisterResidentScreen({ navigation }) {
       const data = await response.json();
       console.log('Residente Response:', data);
 
-      if (response.ok && data.statusCode === 0) {
+      if (response.ok && data.status === 0) {
         Alert.alert('Éxito', 'Residente registrado exitosamente. Ahora registra al familiar.');
-        setResidentId(data.data?.id || data.id_residente || null);
-        setCurrentStep(2);
+        
+        setResidentId(data.data?.id_residente || null); 
+
+        if (data.data?.id_residente) { 
+            setCurrentStep(2);
+        } else {
+            Alert.alert('Advertencia', 'Residente registrado, pero no se recibió el ID. No se puede continuar al siguiente paso.');
+            console.error('ID del residente no recibido en la respuesta (verifica la estructura del JSON):', data);
+        }
       } else {
         Alert.alert('Error al Registrar Residente', data.message || 'Ocurrió un error inesperado.');
       }
@@ -136,8 +149,15 @@ export default function RegisterResidentScreen({ navigation }) {
 
     try {
         console.log("Simulando creación de usuario Firebase con:", familiarFirebaseEmail, familiarFirebasePassword);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        firebaseUid = `mock_firebase_uid_${Date.now()}`;
+        // --- MODIFICACIÓN CLAVE AQUÍ: Generar un UID simulado más corto ---
+        // Genera un número aleatorio y lo convierte a base 36 (alfanumérico) para acortarlo
+        firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}`; // Genera una cadena de 13 caracteres alfanuméricos
+        // Esto resultará en un UID simulado de aproximadamente 18 caracteres (5 + 13)
+        // Un UID real de Firebase es de 28 caracteres, así que este es solo para simulación.
+        // Si necesitas un UID simulado de 28 caracteres, puedes usar algo como:
+        // firebaseUid = `mock_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`.substring(0, 28);
+        // Pero para el propósito de superar el error de longitud, el primero es suficiente.
+        // --------------------------------------------------------------------
         console.log("UID de Firebase simulado:", firebaseUid);
         Alert.alert('Firebase', 'Usuario Firebase simulado creado exitosamente. ID: ' + firebaseUid);
 
@@ -151,12 +171,21 @@ export default function RegisterResidentScreen({ navigation }) {
     const formDataFamiliar = new FormData();
     formDataFamiliar.append('nombre', familiarName);
     formDataFamiliar.append('apellido', familiarApellido);
-    formDataFamiliar.append('fechaNacimiento', familiarFechaNacimiento.toISOString());
+    
+    const familiarYear = familiarFechaNacimiento.getFullYear();
+    const familiarMonth = String(familiarFechaNacimiento.getMonth() + 1).padStart(2, '0');
+    const familiarDay = String(familiarFechaNacimiento.getDate()).padStart(2, '0');
+    const formattedFamiliarDate = `${familiarYear}/${familiarMonth}/${familiarDay}`;
+    formDataFamiliar.append('fechaNacimiento', formattedFamiliarDate);
+
     formDataFamiliar.append('genero', familiarGenero);
     formDataFamiliar.append('telefono', familiarTelefono);
     formDataFamiliar.append('id_residente', residentId.toString());
     formDataFamiliar.append('id_parentesco', familiarParentesco);
     formDataFamiliar.append('firebase_uid', firebaseUid);
+
+    formDataFamiliar.append('email', familiarFirebaseEmail);
+    formDataFamiliar.append('contra', familiarFirebasePassword);
 
     try {
       const response = await fetch(`${API_URL}/Familiar`, {
@@ -171,7 +200,12 @@ export default function RegisterResidentScreen({ navigation }) {
         Alert.alert('Éxito', 'Familiar registrado exitosamente en la base de datos SQL.');
         navigation.goBack();
       } else {
-        Alert.alert('Error al Registrar Familiar', data.message || 'Ocurrió un error inesperado al guardar datos personales.');
+        if (data.errors) {
+            let errorMessages = Object.values(data.errors).map(errArray => errArray.join(', ')).join('\n');
+            Alert.alert('Error de Validación', `Por favor, corrige los siguientes errores:\n${errorMessages}`);
+        } else {
+            Alert.alert('Error al Registrar Familiar', data.message || 'Ocurrió un error inesperado al guardar datos personales.');
+        }
       }
     } catch (error) {
       console.error('Error registrando familiar en SQL:', error);

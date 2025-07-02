@@ -30,14 +30,13 @@ public class FamiliarController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Post([FromForm] FamiliarPost familiar) // Recibe el DTO actualizado
+    public ActionResult Post([FromForm] FamiliarPost familiar) 
     {
         if (!ModelState.IsValid)
             return BadRequest(MessageResponse.GetReponse(1, "Datos inválidos", MessageType.Error));
 
         try
         {
-            // Llama al nuevo método 'Post' en el modelo Familiar
             int result = Familiar.Post(familiar);
             if (result > 0)
                 return Ok(MessageResponse.GetReponse(0, "Se ha registrado el familiar exitosamente con ID: " + result, MessageType.Success));

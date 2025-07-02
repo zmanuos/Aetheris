@@ -1,22 +1,20 @@
 // AETHERIS/components/shared/ResidentCard.js
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native'; // Importa Image
 import { Ionicons } from '@expo/vector-icons';
+import { LineChart } from 'react-native-chart-kit'; // Importa LineChart
 
 const { width } = Dimensions.get('window');
 
 // Definimos la constante del gap deseado entre las tarjetas
-const GAP_BETWEEN_CARDS = 2; // Espacio deseado entre las dos tarjetas
-
-// La constante para el padding del contenedor ahora se recibe como prop
-// para asegurar que el cálculo sea siempre consistente.
+const GAP_BETWEEN_CARDS = 10; // Espacio deseado entre las tarjetas (ajustado para mejor visualización)
 
 const getHealthStatusColor = (status) => {
   switch (status.toLowerCase()) {
     case 'alta':
       return '#22C55E'; // Green
     case 'media':
-    case 'moderada': // Agregamos 'moderada' por si acaso
+    case 'moderada':
       return '#F59E0B'; // Yellow/Orange
     case 'baja':
       return '#EF4444'; // Red
@@ -27,40 +25,56 @@ const getHealthStatusColor = (status) => {
 
 const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, gridContainerPadding }) => {
 
-  const availableWidthForContent = width - (3 * gridContainerPadding);
-  const cardWidth = (availableWidthForContent - GAP_BETWEEN_CARDS) / 3;
-
+  // Calcular el ancho disponible restando el padding total del contenedor
+  const totalHorizontalPadding = gridContainerPadding * 2; 
+  // Para 3 tarjetas, hay 2 gaps entre ellas
+  const totalGapWidth = GAP_BETWEEN_CARDS * 2; 
+  const cardWidth = (width - totalHorizontalPadding - totalGapWidth) / 3;
 
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
 
-  const renderHeartRateGraph = (data) => {
-    if (!data || data.length === 0) {
-      return <Text style={styles.noGraphData}>Sin datos.</Text>;
-    }
-    return (
-      <View style={styles.heartRateGraphContainer}>
-        {data.slice(-7).map((value, index) => (
-          <View
-            key={index}
-            style={[
-              styles.heartRateBar,
-              { height: Math.max(2, value / 4) }, // Altura mínima de 2px para que se vea
-              { backgroundColor: value > 90 || value < 60 ? '#EF4444' : '#10B981' }
-            ]}
-          />
-        ))}
-      </View>
-    );
+  // Datos para la gráfica de frecuencia cardíaca
+  const heartRateChartData = {
+    // Tomar los últimos 7 puntos para que la gráfica no sea demasiado densa
+    labels: resident.historial_frecuencia_cardiaca.slice(-7).map((_, index) => (index + 1).toString()), 
+    datasets: [
+      {
+        data: resident.historial_frecuencia_cardiaca.slice(-7), // Usar solo los últimos 7 valores
+        color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`, // Color de la línea (rojo/rosa)
+        strokeWidth: 2 
+      }
+    ]
+  };
+
+  const chartConfig = {
+    backgroundGradientFrom: "#ffffff",
+    backgroundGradientFromOpacity: 0,
+    backgroundGradientTo: "#ffffff",
+    backgroundGradientToOpacity: 0,
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity * 0.5})`, // Color de etiquetas y líneas de la cuadrícula
+    strokeWidth: 2,
+    barPercentage: 0.5,
+    useShadowColorFromDataset: false,
+    decimalPlaces: 0, // No mostrar decimales en el eje Y
+    propsForDots: {
+      r: "3", // Radio de los puntos en la línea
+      strokeWidth: "1",
+      stroke: "#FF6384" // Borde de los puntos
+    },
+    fillShadowGradientFrom: '#FF6384', // Color de inicio del gradiente de área
+    fillShadowGradientTo: '#ffffff',   // Color de fin del gradiente de área
+    fillShadowGradientFromOpacity: 0.3, // Opacidad del gradiente de área
+    fillShadowGradientToOpacity: 0,     // Opacidad del gradiente de área
   };
 
   return (
-    // No aplicamos marginHorizontal a la tarjeta, ya que justifyContent: 'space-between'
-    // en el contenedor manejará el espacio entre las dos tarjetas.
-    <View style={[styles.card, { width: cardWidth }]}>
+    <View style={[styles.card, { width: cardWidth, marginHorizontal: GAP_BETWEEN_CARDS / 2 }]}>
       <View style={styles.cardHeader}>
-        <View style={styles.avatarPlaceholder}>
-          <Ionicons name="person-circle-outline" size={30} color="#9CA3AF" />
-        </View>
+        {/* Usar Image para el avatar si resident.foto contiene una URL válida, sino el placeholder */}
+        <Image
+          source={{ uri: resident.foto && resident.foto !== 'default' ? resident.foto : `https://ui-avatars.com/api/?name=${resident.nombre}+${resident.apellido}&background=random&color=fff&size=128` }}
+          style={styles.avatar}
+        />
         <View style={styles.headerInfo}>
           <Text style={styles.residentName}>{resident.nombre} {resident.apellido}</Text>
           <Text style={styles.residentDetails}>{age} años • Hab. {resident.nombre_area || 'N/A'}</Text>
@@ -80,7 +94,25 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, gr
             <Text style={styles.heartRateValue}>{resident.ultima_frecuencia_cardiaca}<Text style={styles.heartRateUnit}>bpm</Text></Text>
           )}
         </View>
-        {renderHeartRateGraph(resident.historial_frecuencia_cardiaca)}
+        {/* --- GRÁFICA DE FRECUENCIA CARDÍACA CON LINECHART --- */}
+        {resident.historial_frecuencia_cardiaca && resident.historial_frecuencia_cardiaca.length > 0 ? (
+            <LineChart
+              data={heartRateChartData}
+              width={cardWidth - 16} // Ancho de la tarjeta menos padding horizontal
+              height={80} // Altura de la gráfica
+              chartConfig={chartConfig}
+              bezier // Curvas suaves
+              style={styles.chartStyle}
+              withVerticalLabels={false} // No mostrar etiquetas verticales (números en el eje X)
+              withHorizontalLabels={false} // No mostrar etiquetas horizontales (números en el eje Y)
+              withDots={true} // Mostrar puntos en la línea
+              withInnerLines={false} // Ocultar líneas internas
+              withOuterLines={false} // Ocultar líneas externas
+              segments={3} // Número de segmentos en el eje Y (para controlar la escala visual)
+            />
+        ) : (
+            <Text style={styles.noGraphData}>Sin historial de FC.</Text>
+        )}
       </View>
 
       <View style={styles.cardActions}>
@@ -105,54 +137,51 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 8,
-    marginVertical: 6, // Margen vertical para espacio entre filas
-    // marginHorizontal ya no es necesario aquí, lo maneja justifyContent del padre
+    marginVertical: 6,
     overflow: 'hidden',
     borderWidth: 0,
-    elevation: 3,
+    elevation: 4, // Un poco más de elevación para un efecto 3D
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 }, // Sombra más pronunciada
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 8,
+    padding: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: '#F0F0F0',
   },
-  avatarPlaceholder: {
-    width: 35,
-    height: 35,
-    borderRadius: 17.5,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 6,
+  avatar: { // Estilos para el nuevo Image de avatar
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 8,
+    backgroundColor: '#F3F4F6', // Color de fondo si no hay imagen
   },
   headerInfo: {
     flex: 1,
   },
   residentName: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14, // Ligeramente más grande
+    fontWeight: '700', // Más negrita
     color: '#333',
   },
   residentDetails: {
-    fontSize: 9,
+    fontSize: 10, // Ligeramente más grande
     color: '#6B7280',
-    marginTop: 1,
+    marginTop: 2,
   },
   healthStatusTag: {
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    borderRadius: 15,
-    marginLeft: 5,
+    paddingVertical: 3, // Más padding
+    paddingHorizontal: 8, // Más padding
+    borderRadius: 20, // Más redondeado
+    marginLeft: 8,
   },
   healthStatusText: {
     color: 'white',
-    fontSize: 8,
+    fontSize: 9, // Ligeramente más grande
     fontWeight: 'bold',
   },
   cardBody: {
@@ -162,57 +191,49 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 6,
-    marginBottom: 3,
+    marginBottom: 5, // Más espacio debajo
   },
   heartRateText: {
-    fontSize: 11,
+    fontSize: 12, // Más grande
     fontWeight: '600',
     color: '#EF4444',
     marginLeft: 4,
   },
   heartRateValue: {
-    fontSize: 13,
+    fontSize: 14, // Más grande
     fontWeight: 'bold',
     color: '#EF4444',
     marginLeft: 'auto',
   },
   heartRateUnit: {
-    fontSize: 9,
+    fontSize: 10, // Más grande
     color: '#EF4444',
   },
-  heartRateGraphContainer: {
-    flexDirection: 'row',
-    height: 20,
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    paddingHorizontal: 1,
-    marginTop: 6,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#E0E0E0',
-  },
-  heartRateBar: {
-    width: 2,
-    borderRadius: 1,
-    marginHorizontal: 0.5,
+  chartStyle: {
+    marginVertical: 0, // Ajusta los márgenes de la gráfica
+    borderRadius: 5,
+    alignSelf: 'center', // Centra la gráfica dentro del contenedor
+    marginTop: 5,
   },
   noGraphData: {
     textAlign: 'center',
     color: '#9CA3AF',
-    marginTop: 5,
-    fontSize: 9,
+    marginTop: 10,
+    fontSize: 11, // Más grande
   },
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderTopWidth: 0.5,
     borderTopColor: '#F9FAFB',
-    paddingVertical: 6,
+    paddingVertical: 8, // Más padding
     backgroundColor: '#FDFDFD',
   },
   actionButtonIcon: {
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderRadius: 5,
+    paddingVertical: 5, // Más padding
+    paddingHorizontal: 8, // Más padding
+    borderRadius: 6,
+    backgroundColor: '#EAEAEA', // Un ligero fondo para los botones de acción
   },
 });
 

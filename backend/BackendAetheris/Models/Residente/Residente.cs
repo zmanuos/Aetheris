@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using Microsoft.Data.SqlClient;
+using System.Web; // Este using podría no ser necesario en un proyecto .NET Core/.NET 5+, pero lo mantengo si ya lo tienes.
+using Microsoft.Data.SqlClient; // Este using parece ser de SQL Server, pero tus comandos son de MySql.Data.MySqlClient. Si no usas SQL Server, puedes eliminarlo.
 using MySql.Data.MySqlClient;
 using System.Data;
 
@@ -34,7 +34,7 @@ public class Residente
     private DateTime _fecha_nacimiento;
     private string _genero;
     private string _telefono;
-    private Dispositivo _dispositivo;
+    private Dispositivo _dispositivo; // Asumiendo que la clase Dispositivo existe
     private string _foto;
     private DateTime _fecha_ingreso;
     private bool _activo;
@@ -97,6 +97,7 @@ public class Residente
     {
         MySqlCommand command = new MySqlCommand(selectAll);
         //Populate
+        // Asumiendo que ResidenteMapper.ToList y SqlServerConnection.ExecuteQuery son correctos
         return ResidenteMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
@@ -109,18 +110,18 @@ public class Residente
 
         if (table.Rows.Count > 0)
         {
+            // Asumiendo que ResidenteMapper.ToObject es correcto
             return ResidenteMapper.ToObject(table.Rows[0]);
         }
         else
         {
+            // Asegúrate de que ResidenteNotFoundException esté definida
             throw new ResidenteNotFoundException(id);
         }
     }
 
     public static int Post(ResidentePost residente)
     {
-        int result = 0;
-
         MySqlCommand command = new MySqlCommand(insert);
 
         command.Parameters.AddWithValue("@nombre", residente.nombre);
@@ -130,8 +131,9 @@ public class Residente
         command.Parameters.AddWithValue("@genero", residente.genero);
         command.Parameters.AddWithValue("@telefono", residente.telefono);
 
-        result = SqlServerConnection.ExecuteCommand(command);
-        return result;
+        // --- CAMBIO CLAVE AQUÍ: Usamos ExecuteInsertCommandAndGetLastId para obtener el ID real ---
+        int newId = SqlServerConnection.ExecuteInsertCommandAndGetLastId(command);
+        return newId; // Devuelve el ID generado por la base de datos
     }
 
 
@@ -139,13 +141,14 @@ public class Residente
 
     public static int Update(int residente, int dispositivo)
     {
-        int result = 0;
-
+        // Esta línea asigna 'result' y luego lo devuelve en la misma expresión, lo cual es redundante.
+        // También, si ExecuteCommand devuelve el número de filas afectadas, este método devolvería 1 si se actualiza.
+        // Si necesitas que devuelva el ID de alguna manera, la lógica debe ser diferente.
         MySqlCommand command = new MySqlCommand(AsignarDispositivo);
         command.Parameters.AddWithValue("@dispositivo", dispositivo);
         command.Parameters.AddWithValue("@id_residente", residente);
 
-        return result = SqlServerConnection.ExecuteCommand(command);
+        return SqlServerConnection.ExecuteCommand(command);
     }
 
     public static bool UpdateTelefono(int id, string nuevoTelefono)

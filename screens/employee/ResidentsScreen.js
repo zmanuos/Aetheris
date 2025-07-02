@@ -159,7 +159,6 @@ export default function ResidentsScreen({ navigation }) { // <-- Asegúrate de r
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>Gestión de Residentes</Text>
         <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
           <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
           <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>

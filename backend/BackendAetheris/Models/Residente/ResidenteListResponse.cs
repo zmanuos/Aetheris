@@ -1,12 +1,12 @@
 ﻿public class ResidenteListResponse : JsonResponse
 {
-    public List<Residente> Agents { get; set; }
+    public List<Residente> Data { get; set; } 
 
-    public static ResidenteListResponse GetResponse(List<Residente> agents)
+    public static ResidenteListResponse GetResponse(List<Residente> residentes)
     {
         ResidenteListResponse r = new ResidenteListResponse();
         r.Status = 0;
-        r.Agents = agents;
+        r.Data = residentes; 
         return r;
     }
 }
