@@ -111,24 +111,24 @@ public class Familiar
 
     // ¡NUEVO MÉTODO POST para registrar Familiar!
     // Ahora recibe FamiliarPost que incluye firebase_uid
+    // En Familiar.cs, dentro del método Post
     public static int Post(FamiliarPost familiar)
     {
-        MySqlCommand cmd = new MySqlCommand(insertFamiliar); // Usa el INSERT directo
-        // NO es un stored procedure para crear usuarios SQL
-        // Por lo tanto, no necesitamos cmd.CommandType = CommandType.StoredProcedure;
+        MySqlCommand cmd = new MySqlCommand(insertFamiliar);
 
         cmd.Parameters.AddWithValue("@nombre", familiar.nombre);
         cmd.Parameters.AddWithValue("@apellido", familiar.apellido);
         cmd.Parameters.AddWithValue("@fecha_nacimiento", familiar.fechaNacimiento);
         cmd.Parameters.AddWithValue("@genero", familiar.genero);
         cmd.Parameters.AddWithValue("@telefono", familiar.telefono);
-        cmd.Parameters.AddWithValue("@id_residente", familiar.residente);
-        cmd.Parameters.AddWithValue("@id_parentesco", familiar.parentesco);
-        cmd.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid); // ¡Aquí se pasa el UID de Firebase!
+        
+        // --- CAMBIOS AQUÍ: Usar los nuevos nombres de propiedades del DTO ---
+        cmd.Parameters.AddWithValue("@id_residente", familiar.id_residente); // Era familiar.residente
+        cmd.Parameters.AddWithValue("@id_parentesco", familiar.id_parentesco); // Era familiar.parentesco
+        
+        cmd.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid);
 
-        // ExecuteScalar se usa porque el INSERT tiene "SELECT LAST_INSERT_ID();"
-        // que devuelve el ID del nuevo registro.
-        return SqlServerConnection.ExecuteCommand(cmd);
+        return SqlServerConnection.ExecuteInsertCommandAndGetLastId(cmd); // Asumo que usas este método ahora
     }
 
     #endregion

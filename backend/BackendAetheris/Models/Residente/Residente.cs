@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using Microsoft.Data.SqlClient;
 using MySql.Data.MySqlClient;
 using System.Data;
+
 
 public class Residente
 {
@@ -15,13 +14,15 @@ public class Residente
 
     private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
 
-    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto);";
+    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto_default);";
 
     private static string AsignarDispositivo = "UPDATE RESIDENTE SET dispositivo = @dispositivo WHERE id_residente = @id_residente";
 
     private static string updateTelefono = "UPDATE RESIDENTE SET telefono = @telefono WHERE id_residente = @id";
 
     private static string updateEstado = "UPDATE RESIDENTE SET activo = not activo WHERE id_residente = @id";
+
+    private static string updateFotoStatement = "UPDATE RESIDENTE SET foto = @foto WHERE id_residente = @id_residente";
 
 
     #endregion
@@ -61,7 +62,6 @@ public class Residente
 
     public Residente()
     {
-        //Default values
         Id_residente = 0;
         Nombre = "";
         Apellido = "";
@@ -69,7 +69,7 @@ public class Residente
         Genero = "";
         Telefono = "";
         Dispositivo = new Dispositivo();
-        Foto = "";
+        Foto = "nophoto.png";
         Fecha_ingreso = DateTime.MinValue;
         Activo = false;
     }
@@ -96,7 +96,6 @@ public class Residente
     public static List<Residente> Get()
     {
         MySqlCommand command = new MySqlCommand(selectAll);
-        //Populate
         return ResidenteMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
@@ -104,7 +103,6 @@ public class Residente
     public static Residente Get(int id) {
         MySqlCommand command = new MySqlCommand(select);
         command.Parameters.AddWithValue("@ID", id);
-        //Populate
         DataTable table = SqlServerConnection.ExecuteQuery(command);
 
         if (table.Rows.Count > 0)
@@ -113,28 +111,33 @@ public class Residente
         }
         else
         {
-            throw new ResidenteNotFoundException(id);
+            return null;
         }
     }
 
     public static int Post(ResidentePost residente)
     {
-        int result = 0;
-
         MySqlCommand command = new MySqlCommand(insert);
 
         command.Parameters.AddWithValue("@nombre", residente.nombre);
         command.Parameters.AddWithValue("@apellido", residente.apellido);
         command.Parameters.AddWithValue("@fecha_nacimiento", residente.fechaNacimiento);
-        command.Parameters.AddWithValue("@foto", residente.foto);
         command.Parameters.AddWithValue("@genero", residente.genero);
         command.Parameters.AddWithValue("@telefono", residente.telefono);
+        command.Parameters.AddWithValue("@foto_default", "nophoto.png");
 
-        result = SqlServerConnection.ExecuteCommand(command);
-        return result;
+        int newId = SqlServerConnection.ExecuteInsertCommandAndGetLastId(command);
+
+        return newId;
     }
 
-
+    public static bool UpdateFoto(int id_residente, string newFileName)
+    {
+        MySqlCommand command = new MySqlCommand(updateFotoStatement);
+        command.Parameters.AddWithValue("@foto", newFileName);
+        command.Parameters.AddWithValue("@id_residente", id_residente);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
 
 
     public static int Update(int residente, int dispositivo)
@@ -162,11 +165,6 @@ public class Residente
         command.Parameters.AddWithValue("@id", id);
         return SqlServerConnection.ExecuteCommand(command) > 0;
     }
-
-    #endregion
-
-    #region x
-
 
     #endregion
 }

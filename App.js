@@ -4,13 +4,20 @@ import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
+console.log("--- App.js: Iniciando carga del archivo ---"); 
+
+import './config/firebaseConfig'; 
+
+console.log("--- App.js: firebaseConfig importado ---"); 
+
 import AuthNavigator from './navigation/AuthNavigator';
-import AdminNavigator from './navigation/AdminNavigator'; // Este navegador lo usaremos para Admin y Employee
+import AdminNavigator from './navigation/AdminNavigator';
 import FamilyNavigator from './navigation/FamilyNavigator';
 
 export default function App() {
+  console.log("--- App.js: Componente App renderizando ---"); 
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState(null); // 'admin', 'family', 'employee'
+  const [userRole, setUserRole] = useState(null);
 
   const handleLoginSuccess = (role) => {
     setIsAuthenticated(true);
@@ -25,14 +32,15 @@ export default function App() {
   };
 
   const renderAppNavigator = () => {
+    console.log("--- App.js: renderAppNavigator ejecutándose ---"); 
     if (!isAuthenticated) {
       return <AuthNavigator onLoginSuccess={handleLoginSuccess} />;
     } else if (userRole === 'admin') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />; // Pasa userRole al AdminNavigator
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
     } else if (userRole === 'employee') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />; // Pasa userRole al AdminNavigator (el mismo que Admin)
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
     } else if (userRole === 'family') {
-      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} />; // Pasa userRole al FamilyNavigator
+      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} />;
     }
     return null;
   };

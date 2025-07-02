@@ -1,10 +1,15 @@
-// AETHERIS/config/firebaseConfig.js
-// Importa las funciones que necesitas del SDKs
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth'; // Para autenticación
-import { getFirestore } from 'firebase/firestore'; // <-- ¡NUEVO! Para Firestore
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'; 
+import { Platform } from 'react-native';
 
-// Your web app's Firebase configuration
+console.log("--- firebaseConfig.js: Iniciando carga del archivo ---"); 
+
+let ReactNativeAsyncStorage;
+if (Platform.OS !== 'web') {
+  ReactNativeAsyncStorage = require('@react-native-async-storage/async-storage').default;
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyDR5fgU2nFx7KA8pIpEb9TVZzN5KgbchKQ",
   authDomain: "aetheris-ac3f3.firebaseapp.com",
@@ -14,14 +19,35 @@ const firebaseConfig = {
   appId: "1:1053969698323:web:37f2a6ad866dcecb9cf9e6"
 };
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
+let app;
+if (getApps().length === 0) {
+  app = initializeApp(firebaseConfig);
+  console.log("--- firebaseConfig.js: Firebase App inicializada ---"); 
+} else {
+  app = getApp();
+  console.log("--- firebaseConfig.js: Firebase App ya inicializada, obteniendo instancia existente ---"); 
+}
 
-// Inicializa Firebase Authentication
-const auth = getAuth(app);
+let auth;
+try {
+  if (Platform.OS === 'web') {
+    auth = initializeAuth(app, {
+      persistence: undefined
+    });
+    console.log("--- firebaseConfig.js: Firebase Auth inicializada para WEB ---");
+  } else {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(ReactNativeAsyncStorage)
+    });
+    console.log("--- firebaseConfig.js: Firebase Auth inicializada con persistencia NATIVA ---");
+  }
+} catch (e) {
+  console.error("--- firebaseConfig.js: ERROR al inicializar Auth ---", e);
+  auth = null;
+}
 
-// Inicializa Firebase Firestore y obten una referencia al servicio
-const db = getFirestore(app); // <-- ¡NUEVO!
+const db = getFirestore(app);
+console.log("--- firebaseConfig.js: Firebase Firestore inicializada ---"); 
 
-// Exporta las instancias que necesitarás en otras partes de tu app
-export { app, auth, db }; // <-- ¡NUEVO! Exporta 'db' también
+export { app, auth, db };
+console.log("--- firebaseConfig.js: Exportaciones completadas ---");

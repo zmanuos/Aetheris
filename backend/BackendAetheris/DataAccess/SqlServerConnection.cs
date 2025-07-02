@@ -1,13 +1,14 @@
 ﻿using System.Data;
-using Microsoft.Data.SqlClient;
-using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient; // Usamos MySql.Data.MySqlClient, no Microsoft.Data.SqlClient para MySQL
+using Microsoft.Extensions.Configuration;
+using System;
 
 public class SqlServerConnection
 {
 
     #region connections
 
-    private static IConfiguration _configuration; 
+    private static IConfiguration _configuration;
 
     public static void InitializeConfiguration(IConfiguration configuration)
     {
@@ -16,14 +17,34 @@ public class SqlServerConnection
 
     private static string GetConnectionString()
     {
-        return _configuration.GetConnectionString("DefaultConnection");
+        string connectionString = _configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            Console.WriteLine("Error: La cadena de conexión 'DefaultConnection' no está configurada.");
+            throw new InvalidOperationException("La cadena de conexión 'DefaultConnection' no está configurada.");
+        }
+        return connectionString;
     }
 
     private static MySqlConnection GetConnection()
     {
-        var connection = new MySqlConnection(GetConnectionString());
-        connection.Open();
-        return connection;
+        MySqlConnection connection = null;
+        try
+        {
+            connection = new MySqlConnection(GetConnectionString());
+            connection.Open();
+            return connection;
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"Error de MySQL al abrir la conexión: {ex.Message}");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error general al abrir la conexión: {ex.Message}");
+            throw;
+        }
     }
 
 
@@ -33,29 +54,37 @@ public class SqlServerConnection
 
     public static DataTable ExecuteQuery(MySqlCommand command)
     {
-        //Result
         DataTable table = new DataTable();
-        //Get connection
-        MySqlConnection connection = GetConnection();
-        //Connection is open
-        if (connection.State == ConnectionState.Open)
+        MySqlConnection connection = null;
+
+        try
         {
-            try
-            {
-                //Assign connection
-                command.Connection = connection;
-                //Adapter
-                MySqlDataAdapter adapter = new MySqlDataAdapter(command);
-                // execute querry
+            connection = GetConnection();
 
-                adapter.Fill(table);
+            if (connection == null || connection.State != ConnectionState.Open)
+            {
+                Console.WriteLine("La conexión a la base de datos no está abierta.");
+                return table;
+            }
 
-            }
-            catch (SqlException e)
+            command.Connection = connection;
+            MySqlDataAdapter adapter = new MySqlDataAdapter(command);
+            adapter.Fill(table);
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"Error de MySQL al ejecutar la consulta: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error general al ejecutar la consulta: {ex.Message}");
+        }
+        finally
+        {
+            if (connection != null && connection.State == ConnectionState.Open)
             {
-            }
-            catch (Exception e)
-            {
+                connection.Close();
+                connection.Dispose();
             }
         }
         return table;
@@ -64,74 +93,146 @@ public class SqlServerConnection
 
     public static int ExecuteProcedure(MySqlCommand command)
     {
-        //result
         int result = 999;
-        // conectivity
-        MySqlConnection connection = GetConnection();
-        //Check if connection is open
-        if (connection.State == ConnectionState.Open)
+        MySqlConnection connection = null;
+
+        try
         {
-            // Assign connection
+            connection = GetConnection();
+            if (connection == null || connection.State != ConnectionState.Open)
+            {
+                Console.WriteLine("La conexión a la base de datos no está abierta para el procedimiento.");
+                return result;
+            }
+
             command.Connection = connection;
-            // Declare Command as Store procedure
             command.CommandType = CommandType.StoredProcedure;
-            // add return parameter
             MySqlParameter returnParameter = new MySqlParameter("@status", DbType.Int32);
-            // parameter is output
             returnParameter.Direction = ParameterDirection.Output;
-            // add parameter 
             command.Parameters.Add(returnParameter);
-            // execute procedure
             command.ExecuteNonQuery();
-            // read parameter result
             result = (Int32)command.Parameters["@status"].Value;
         }
-
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"Error de MySQL al ejecutar el procedimiento: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error general al ejecutar el procedimiento: {ex.Message}");
+        }
+        finally
+        {
+            if (connection != null && connection.State == ConnectionState.Open)
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
         return result;
+    }
+
+    // Nuevo método para ejecutar comandos de inserción y obtener el último ID generado
+    public static int ExecuteInsertCommandAndGetLastId(MySqlCommand command)
+    {
+        int lastInsertId = 0;
+        MySqlConnection connection = null;
+
+        try
+        {
+            connection = GetConnection();
+            if (connection == null || connection.State != ConnectionState.Open)
+            {
+                Console.WriteLine("La conexión a la base de datos no está abierta para el comando de inserción.");
+                return 0; // O un valor que indique error
+            }
+
+            command.Connection = connection;
+
+            // Ejecuta la inserción
+            command.ExecuteNonQuery();
+
+            // Obtiene el último ID insertado (para MySQL)
+            // Asegúrate de que el CommandText no tenga un punto y coma al final si se concatena
+            command.CommandText = "SELECT LAST_INSERT_ID();";
+            command.Parameters.Clear(); // Limpia los parámetros del INSERT para la nueva consulta
+            object result = command.ExecuteScalar(); // Ejecuta la consulta para obtener el ID
+
+            if (result != null && result != DBNull.Value)
+            {
+                lastInsertId = Convert.ToInt32(result);
+            }
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Error de argumento al ejecutar comando de inserción: {ex.Message}");
+            lastInsertId = 0;
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"Error de MySQL al ejecutar comando de inserción: {ex.Message}");
+            lastInsertId = 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error general al ejecutar comando de inserción: {ex.Message}");
+            lastInsertId = 0;
+        }
+        finally
+        {
+            if (connection != null && connection.State == ConnectionState.Open)
+            {
+                connection.Close();
+                connection.Dispose();
+            }
+        }
+        return lastInsertId;
     }
 
 
     public static int ExecuteCommand(MySqlCommand command)
     {
-        //result
         int result = 0;
-        // Connection
-        MySqlConnection connection = GetConnection();
-        //Check if connection is open
-        if (connection.State == ConnectionState.Open)
+        MySqlConnection connection = null;
+
+        try
         {
-            try
+            connection = GetConnection();
+            if (connection == null || connection.State != ConnectionState.Open)
             {
-                // Assign connection
-                command.Connection = connection;
-                
-                // execute Query
-                result = command.ExecuteNonQuery(); // regresa numero de registros afectados por el comando
-                
-                // close connection
+                Console.WriteLine("La conexión a la base de datos no está abierta para el comando.");
+                return result;
+            }
+
+            command.Connection = connection;
+
+            result = command.ExecuteNonQuery();
+        }
+        catch (ArgumentException ex)
+        {
+            Console.WriteLine($"Error de argumento al ejecutar comando: {ex.Message}");
+            result = 0;
+        }
+        catch (MySqlException ex)
+        {
+            Console.WriteLine($"Error de MySQL al ejecutar comando: {ex.Message}");
+            result = 0;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error general al ejecutar comando: {ex.Message}");
+            result = 0;
+        }
+        finally // Aseguramos que la conexión se cierre y se disponga siempre
+        {
+            if (connection != null && connection.State == ConnectionState.Open)
+            {
                 connection.Close();
                 connection.Dispose();
             }
-            catch (ArgumentException e)
-            {
-                result = 0;
-            }
-            catch (MySqlException e) 
-            {
-                result = 0;
-            }
-            catch (Exception e)
-            {
-                result = 0;
-            }        
         }
-
         return result;
     }
 
-
-
-
     #endregion
-
 }
