@@ -30,9 +30,11 @@ INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, dis
 
 -- Tabla: PARENTESCO
 INSERT INTO PARENTESCO (parentesco) VALUES
-('Hijo'),
-('Nieto'),
-('Hermana');
+(1, 'Padre'),
+(2, 'Madre'),
+(3, 'Esposo(a)'),
+(4, 'Hijo(a)'),
+(5, 'Otro');
 
 -- Carlos González (Hijo de María González, id_residente = 1, id_parentesco = 1)
 INSERT INTO FAMILIAR (

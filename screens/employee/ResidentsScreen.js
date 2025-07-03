@@ -1,4 +1,3 @@
-// AETHERIS/screens/employee/ResidentsScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -14,20 +13,14 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-// Importa el componente de tarjeta desde la nueva ubicación compartida
 import ResidentCard from '../../components/shared/ResidentCard';
 
-// Definimos esta constante aquí para que sea consistente con el cálculo en ResidentCard
 const GRID_CONTAINER_PADDING = 10;
 
-// Asegúrate de que esta pantalla sea un componente de una pila de navegación
-// para poder acceder al prop 'navigation'.
-export default function ResidentsScreen({ navigation }) { // <-- Asegúrate de recibir 'navigation' aquí
-  // Estados para la carga y errores (se mantienen para la estructura, pero no se usarán con datos estáticos)
-  const [isLoading, setIsLoading] = useState(false); // Falso inicialmente para datos estáticos
-  const [fetchError, setFetchError] = useState(''); // Vacío inicialmente para datos estáticos
+export default function ResidentsScreen({ navigation }) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
 
-  // Datos estáticos de residentes
   const [residents, setResidents] = useState([
     {
       id_residente: 101,
@@ -121,10 +114,8 @@ export default function ResidentsScreen({ navigation }) { // <-- Asegúrate de r
     },
   ]);
 
-  // MODIFICACIÓN AQUÍ:
   const handleAddNewResident = () => {
-    // Asegúrate de que 'RegisterResident' sea el nombre de la ruta definida en tu Stack Navigator
-    navigation.navigate('RegisterResident'); // <-- REDIRECCIONA AQUÍ
+    navigation.navigate('RegisterResident');
   };
 
   const handleViewProfile = (id) => {
@@ -196,7 +187,6 @@ export default function ResidentsScreen({ navigation }) { // <-- Asegúrate de r
                 onDelete={handleDeleteResident}
                 onViewProfile={handleViewProfile}
                 onHistory={handleHistory}
-                // Pasamos el padding del contenedor a la tarjeta para el cálculo preciso
                 gridContainerPadding={GRID_CONTAINER_PADDING}
               />
             ))}

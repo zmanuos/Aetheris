@@ -22,7 +22,7 @@ CREATE TABLE PERSONAL (
     apellido VARCHAR(100),
     fecha_nacimiento DATE,
     genero VARCHAR(10),
-    telefono VARCHAR(15),
+    telefono VARCHAR(10),
     firebase_uid VARCHAR(28) UNIQUE,
     activo BOOLEAN DEFAULT FALSE
 );
