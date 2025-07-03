@@ -111,3 +111,19 @@ CREATE TABLE ALERTA (
     FOREIGN KEY (id_alerta_tipo) REFERENCES ALERTA_TIPO(id_alerta_tipo),
     FOREIGN KEY (id_area) REFERENCES AREA(id_area) -- Clave foránea nueva
 );
+
+CREATE TABLE OBSERVACIONES (
+    id_observaciones INT AUTO_INCREMENT PRIMARY KEY,
+    id_residente INT,
+    observacion TEXT,
+    FOREIGN KEY (id_residente) REFERENCES FAMILIAR(id_residente)
+);
+
+CREATE TABLE NOTAS (
+    id_notas INT AUTO_INCREMENT PRIMARY KEY,
+    id_familiar INT,
+    nota TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_familiar) REFERENCES FAMILIAR(id_familiar)
+);
+
