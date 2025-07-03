@@ -10,17 +10,19 @@ import SideMenu from '../components/navigation/SideMenu';
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import ResidentRegistrationScreen from '../screens/employee/ResidentRegistrationScreen'; 
-import FamiliarRegistrationScreen from '../screens/employee/FamiliarRegistrationScreen'; // Esta es la pantalla clave
+import FamiliarRegistrationScreen from '../screens/employee/FamiliarRegistrationScreen';
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
 import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen';
 
 // Importa las pantallas específicas de Admin
-import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen';
+import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen'; // Pantalla de lista
+import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen'; 
 import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
 
 const Drawer = createDrawerNavigator();
 const ResidentsStack = createStackNavigator();
+const EmployeeStack = createStackNavigator(); // <-- NUEVO STACK NAVIGATOR PARA EMPLEADOS
 
 function ResidentsStackScreen() {
   return (
@@ -31,20 +33,37 @@ function ResidentsStackScreen() {
       }}
     >
       <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
-      
-      {/* La pantalla de registro de nuevo residente */}
       <ResidentsStack.Screen name="RegisterResident" component={ResidentRegistrationScreen} />
-
-      {/* LA LÍNEA QUE SE AJUSTÓ EN LA NAVEGACIÓN */}
       <ResidentsStack.Screen 
-        name="FamiliarRegistrationScreen" // <-- ¡Aquí se ajustó el nombre para coincidir!
+        name="FamiliarRegistrationScreen" 
         component={FamiliarRegistrationScreen} 
       />
-
     </ResidentsStack.Navigator>
   );
 }
 
+// <-- NUEVA FUNCIÓN PARA EL STACK DE GESTIÓN DE EMPLEADOS
+function EmployeeManagementStackScreen() {
+  return (
+    <EmployeeStack.Navigator
+      initialRouteName="EmployeeList" // Pantalla inicial del stack
+      screenOptions={{
+        headerShown: false, // Oculta los headers del stack, el Drawer Navigator los manejará
+      }}
+    >
+      <EmployeeStack.Screen
+        name="EmployeeList" // Nombre para la pantalla de la lista
+        component={EmployeeManagementScreen}
+        options={{ title: 'Gestión de Empleados' }} // Título si quieres que aparezca
+      />
+      <EmployeeStack.Screen
+        name="CreateEmployee" // Nombre para la pantalla de creación
+        component={EmployeeCreationScreen}
+        options={{ title: 'Registrar Nuevo Empleado' }} // Título si quieres que aparezca
+      />
+    </EmployeeStack.Navigator>
+  );
+}
 
 const AdminNavigator = ({ onLogout, userRole }) => {
   return (
@@ -79,7 +98,12 @@ const AdminNavigator = ({ onLogout, userRole }) => {
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
       <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
 
-      <Drawer.Screen name="EmployeeManagement" component={EmployeeManagementScreen} options={{ title: 'GESTIÓN EMPLEADOS' }} />
+      <Drawer.Screen 
+        name="EmployeeManagement" // Se mantiene el nombre para SideMenu
+        component={EmployeeManagementStackScreen} // Apunta a la función del Stack Navigator
+        options={{ title: 'GESTIÓN EMPLEADOS' }} 
+      />
+      
       <Drawer.Screen name="AsylumData" component={AsylumDataScreen} options={{ title: 'DATOS DEL ASILO' }} />
     </Drawer.Navigator>
   );
