@@ -13,22 +13,20 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
-// --- COLORES (asegúrate de que estos coincidan con tus constantes de color globales) ---
-const SUCCESS_GREEN = '#6BB240'; // Tu PRIMARY_GREEN
+const SUCCESS_GREEN = '#6BB240';
 const ERROR_RED = '#DC3545';
 const INFO_BLUE = '#007BFF';
 const WARNING_ORANGE = '#FFC107';
 const WHITE = '#FFFFFF';
-const DARK_GRAY = '#333'; // Usado para sombras
-const LIGHT_BORDER_GRAY = '#ddd'; // Un gris más claro para bordes sutiles
+const DARK_GRAY = '#333';
+const LIGHT_BORDER_GRAY = '#ddd';
 
 const Notification = forwardRef((props, ref) => {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState('');
-  const [type, setType] = useState('success'); // 'success', 'error', 'info', 'warning'
-  // Volvemos a un solo Animated.Value para translateY
+  const [type, setType] = useState('success');
   const slideAnim = useState(new Animated.Value(Platform.OS === 'web' ? -50 : -100))[0];
-  const fadeAnim = useState(new Animated.Value(0))[0]; // Para la animación de opacidad
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useImperativeHandle(ref, () => ({
     show: (msg, type = 'success', duration = 3000) => {
@@ -36,17 +34,15 @@ const Notification = forwardRef((props, ref) => {
       setType(type);
       setIsVisible(true);
 
-      // Valor final de la posición de la notificación al aparecer
       let slideToValue;
       if (Platform.OS === 'web') {
-        slideToValue = 20; // En web, se desliza hasta 20px del top
+        slideToValue = 20;
       } else if (Platform.OS === 'ios') {
-        slideToValue = 0; // Ajuste para iOS SafeArea
+        slideToValue = 0;
       } else {
-        slideToValue = 20; // Android
+        slideToValue = 20;
       }
 
-      // Iniciar animaciones
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
@@ -72,8 +68,6 @@ const Notification = forwardRef((props, ref) => {
   }));
 
   const hide = () => {
-    // Valor final de la posición para ocultar la notificación
-    // En web, se desliza hacia arriba, no lateralmente.
     const slideToValue = Platform.OS === 'web' ? -50 : -100;
 
     Animated.parallel([
@@ -83,7 +77,7 @@ const Notification = forwardRef((props, ref) => {
         useNativeDriver: true,
       }),
       Animated.timing(slideAnim, {
-        toValue: slideToValue, // Se desliza hacia arriba fuera de la vista
+        toValue: slideToValue,
         duration: 300,
         useNativeDriver: true,
       }),
@@ -133,8 +127,7 @@ const Notification = forwardRef((props, ref) => {
       style={[
         styles.notificationContainer,
         { backgroundColor: getBackgroundColor() },
-        { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }, // Solo translateY
-        // Estilos específicos para web aquí
+        { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         Platform.OS === 'web' && styles.notificationContainerWeb,
       ]}
     >
@@ -152,10 +145,10 @@ const Notification = forwardRef((props, ref) => {
 const styles = StyleSheet.create({
   notificationContainer: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20, // Ajuste para iOS SafeArea y Android
-    width: width * 0.9, // 90% del ancho de la pantalla para móvil
-    maxWidth: 400, // Limita el ancho máximo incluso en pantallas grandes de móvil
-    alignSelf: 'center', // Centra horizontalmente para móvil
+    top: Platform.OS === 'ios' ? 50 : 20,
+    width: width * 0.9,
+    maxWidth: 400,
+    alignSelf: 'center',
     borderRadius: 8,
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -171,15 +164,14 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: LIGHT_BORDER_GRAY,
   },
-  // Estilos específicos para Web (top-center)
   notificationContainerWeb: {
-    top: 20, // Posición desde arriba
-    width: 320, // Ancho fijo para web, se ve mejor que un porcentaje
-    left: '50%', // Empieza en el 50%
-    right: 'auto', // Asegura que `right` no interfiera
-    transform: [{ translateX: -160 }], // Ajusta para centrar el ancho fijo (ancho / 2 = 320 / 2 = 160)
-    marginHorizontal: 'auto', // Esto ayuda a centrar si el width no es fijo o para asegurar
-    alignSelf: 'auto', // Sobrescribir alignSelf: 'center' que es más para móvil
+    top: 20,
+    width: 320,
+    left: '50%',
+    right: 'auto',
+    transform: [{ translateX: -160 }],
+    marginHorizontal: 'auto',
+    alignSelf: 'auto',
   },
   contentWrapper: {
     flexDirection: 'row',
