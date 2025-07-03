@@ -474,7 +474,7 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
                 disabled={isCreating}
             >
                 <Text style={styles.primaryButtonText}>
-                    {isCreating ? <ActivityIndicator color={WHITE} /> : 'GUARDAR EMPLEADO'}
+                    {isCreating ? <ActivityIndicator color={WHITE} /> : 'REGISTRAR EMPLEADO'}
                 </Text>
             </TouchableOpacity>
         </ScrollView>
