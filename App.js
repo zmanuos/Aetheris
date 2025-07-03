@@ -1,4 +1,3 @@
-// AETHERIS/App.js
 import 'react-native-gesture-handler';
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
@@ -13,6 +12,10 @@ console.log("--- App.js: firebaseConfig importado ---");
 import AuthNavigator from './navigation/AuthNavigator';
 import AdminNavigator from './navigation/AdminNavigator';
 import FamilyNavigator from './navigation/FamilyNavigator';
+
+// IMPORTE EL NOTIFICATIONPROVIDER AQUÍ
+import { NotificationProvider } from './src/context/NotificationContext'; 
+// Asegúrate de que la ruta 'src/context/NotificationContext' sea correcta según dónde creaste el archivo.
 
 export default function App() {
   console.log("--- App.js: Componente App renderizando ---"); 
@@ -38,6 +41,7 @@ export default function App() {
     } else if (userRole === 'admin') {
       return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
     } else if (userRole === 'employee') {
+      // Ambos roles 'admin' y 'employee' usan AdminNavigator, lo cual es correcto.
       return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
     } else if (userRole === 'family') {
       return <FamilyNavigator onLogout={handleLogout} userRole={userRole} />;
@@ -46,9 +50,12 @@ export default function App() {
   };
 
   return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      {renderAppNavigator()}
-    </NavigationContainer>
+    // ENVUELVE EL NAVIGATIONCONTAINER CON EL NOTIFICATIONPROVIDER
+    <NotificationProvider>
+      <NavigationContainer>
+        <StatusBar style="dark" />
+        {renderAppNavigator()}
+      </NavigationContainer>
+    </NotificationProvider>
   );
 }

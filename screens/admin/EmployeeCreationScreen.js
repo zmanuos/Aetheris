@@ -1,11 +1,12 @@
-import React, { useState, useRef } from 'react';
+// screens/admin/EmployeeCreationScreen.js
+import React, { useState } from 'react'; // Eliminamos 'useRef' de aquí
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     ScrollView,
-    Alert,
+    // Alert, // Puedes comentar o eliminar Alert si la notificación la reemplaza
     Platform,
     TextInput,
     ActivityIndicator,
@@ -30,7 +31,8 @@ import {
     doPasswordsMatch
 } from '../../components/shared/Validations';
 
-import Notification from '../../components/shared/Notification'; // Importar el componente Notification
+// IMPORTAR EL HOOK DE NOTIFICACIÓN GLOBAL
+import { useNotification } from '../../src/context/NotificationContext'; // ¡AJUSTA ESTA RUTA SI ES NECESARIO!
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -60,7 +62,8 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
     const [isCreating, setIsCreating] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const notificationRef = useRef(null); // Referencia para el componente Notification
+    // USAR EL HOOK PARA OBTENER LA FUNCIÓN DE NOTIFICACIÓN GLOBAL
+    const { showNotification } = useNotification(); // <- CAMBIO CLAVE
 
     const [nameError, setNameError] = useState('');
     const [lastNameError, setLastNameError] = useState('');
@@ -261,12 +264,12 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
 
             console.log("Datos personales de empleado guardados en SQL a través del backend.");
 
-            // Mostrar notificación de éxito
-            if (notificationRef.current) {
-                notificationRef.current.show('Empleado registrado y datos personales guardados correctamente.', 'success');
-            }
-            // Alert.alert("Éxito", "Empleado registrado y datos personales guardados correctamente."); // Se reemplaza por la notificación
-            onEmployeeCreated();
+            // LLAMAR A LA NOTIFICACIÓN GLOBAL AQUÍ CON EL MENSAJE REDUCIDO
+            showNotification('Empleado creado exitosamente!', 'success'); // <- MENSAJE MODIFICADO
+            
+            // Alert.alert("Éxito", "Empleado registrado y datos personales guardados correctamente."); // Puedes eliminar esta línea
+
+            onEmployeeCreated(); // Esto disparará la navegación
         } catch (error) {
             console.error("Error al registrar empleado:", error.message);
             let errorMessage = "Ocurrió un error inesperado al registrar el empleado.";
@@ -288,12 +291,10 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
             } else {
                 errorMessage = error.message;
             }
-            // Mostrar notificación de error
-            if (notificationRef.current) {
-                notificationRef.current.show(errorMessage, 'error');
-            }
-            // Alert.alert("Error", errorMessage); // Se reemplaza por la notificación
-            setFormError(errorMessage); // Mantener el error en el formulario si es necesario
+            // LLAMAR A LA NOTIFICACIÓN GLOBAL PARA ERRORES
+            showNotification(errorMessage, 'error');
+            // Alert.alert("Error", errorMessage); // Puedes eliminar esta línea
+            setFormError(errorMessage);
         } finally {
             setIsCreating(false);
         }
@@ -301,7 +302,8 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
 
     return (
         <ScrollView contentContainerStyle={styles.formContainer}>
-            <Notification ref={notificationRef} /> {/* Renderizar el componente Notification */}
+            {/* ELIMINAR ESTA LÍNEA: Ya no se renderiza el componente Notification aquí */}
+            {/* <Notification ref={notificationRef} /> */}
 
             <Text style={styles.formTitle}>Nuevo Empleado</Text>
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
