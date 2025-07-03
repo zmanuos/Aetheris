@@ -115,7 +115,7 @@ export default function ResidentsScreen({ navigation }) {
   ]);
 
   const handleAddNewResident = () => {
-    navigation.navigate('RegisterResident');
+    navigation.navigate('RegisterResidentAndFamiliar'); // <--- LÍNEA MODIFICADA AQUÍ
   };
 
   const handleViewProfile = (id) => {

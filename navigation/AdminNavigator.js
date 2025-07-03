@@ -9,15 +9,18 @@ import SideMenu from '../components/navigation/SideMenu';
 // Importa las pantallas
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
-import ResidentRegistrationScreen from '../screens/employee/ResidentRegistrationScreen'; 
-import FamiliarRegistrationScreen from '../screens/employee/FamiliarRegistrationScreen';
+// Eliminamos las importaciones individuales de ResidentRegistrationScreen y FamiliarRegistrationScreen
+// import ResidentRegistrationScreen from '../screens/employee/ResidentRegistrationScreen';
+// import FamiliarRegistrationScreen from '../screens/employee/FamiliarRegistrationScreen';
+import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen'; // Importamos la nueva pantalla unificada
+
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
 import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen';
 
 // Importa las pantallas específicas de Admin
 import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen'; // Pantalla de lista
-import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen'; 
+import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen';
 import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
 
 const Drawer = createDrawerNavigator();
@@ -33,11 +36,13 @@ function ResidentsStackScreen() {
       }}
     >
       <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
-      <ResidentsStack.Screen name="RegisterResident" component={ResidentRegistrationScreen} />
-      <ResidentsStack.Screen 
-        name="FamiliarRegistrationScreen" 
-        component={FamiliarRegistrationScreen} 
-      />
+      {/* Reemplazamos la ruta de registro de residente y familiar por la nueva pantalla unificada */}
+      <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
+      {/* La siguiente línea ya no es necesaria si FamiliarRegistrationScreen se unifica */}
+      {/* <ResidentsStack.Screen
+        name="FamiliarRegistrationScreen"
+        component={FamiliarRegistrationScreen}
+      /> */}
     </ResidentsStack.Navigator>
   );
 }
@@ -91,19 +96,19 @@ const AdminNavigator = ({ onLogout, userRole }) => {
       })}
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
-      
+
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
-      
+
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
       <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
 
-      <Drawer.Screen 
+      <Drawer.Screen
         name="EmployeeManagement" // Se mantiene el nombre para SideMenu
         component={EmployeeManagementStackScreen} // Apunta a la función del Stack Navigator
-        options={{ title: 'GESTIÓN EMPLEADOS' }} 
+        options={{ title: 'GESTIÓN EMPLEADOS' }}
       />
-      
+
       <Drawer.Screen name="AsylumData" component={AsylumDataScreen} options={{ title: 'DATOS DEL ASILO' }} />
     </Drawer.Navigator>
   );
