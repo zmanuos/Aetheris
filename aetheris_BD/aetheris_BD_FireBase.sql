@@ -1,4 +1,3 @@
-
 DROP DATABASE IF EXISTS aetheris;
 CREATE DATABASE IF NOT EXISTS aetheris;
 USE aetheris;
@@ -14,30 +13,6 @@ CREATE TABLE ASILO (
     correo VARCHAR(100),
     cantidad_residentes INT DEFAULT 0,
     cantidad_empleados INT DEFAULT 0
-);
-
-
-CREATE TABLE ROL (
-    id_role INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(50)
-);
-
-
-INSERT INTO ROL (nombre) VALUES
-('Administrador'),
-('Empleado'),
-('Familiar');
-
--- Usuarios - Login.
-CREATE TABLE USUARIO (
-    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    usuario INT UNIQUE,
-    contra VARCHAR(256) NOT NULL,
-    email VARCHAR(100) UNIQUE,
-    rol INT,
-    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-    isActive BOOLEAN DEFAULT TRUE,
-    FOREIGN KEY (rol) REFERENCES ROL(id_role)
 );
 
 -- Personal del Asilo - info del personal.

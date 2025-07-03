@@ -36,80 +36,52 @@ INSERT INTO PARENTESCO (parentesco) VALUES
 (4, 'Hijo(a)'),
 (5, 'Otro');
 
--- Tabla: ROL
-INSERT INTO ROL (nombre) VALUES
-('Administrador'),
-('Empleado'),
-('Familiar');
-
--- Carlos González (Hijo de María González)
-CALL spRegistrarFamiliar(
-    'Carlos',
-    'González',
-    '1975-08-10',
-    
-    'Masculino',
-    '6645551111',
-    1, -- id_residente: María González
-    1, -- id_parentesco: Hijo
-    'carlos.gonzalez@gmail.com',
-    'carlos123',
-    'carlos_firebase_uid_1234567890' -- Firebase UID simulado
+-- Carlos González (Hijo de María González, id_residente = 1, id_parentesco = 1)
+INSERT INTO FAMILIAR (
+    nombre, apellido, fecha_nacimiento, genero,
+    telefono, id_residente, id_parentesco, firebase_uid
+) VALUES (
+    'Carlos', 'González', '1975-08-10', 'Masculino',
+    '6645551111', 1, 1, 'carlos_firebase_uid_1234567890'
 );
 
--- Ana Martínez (Nieta de Jorge Martínez)
-CALL spRegistrarFamiliar(
-    'Ana',
-    'Martínez',
-    '2000-03-22',
-    'Femenino',
-    '6644442222',
-    2, -- id_residente: Jorge Martínez
-    2, -- id_parentesco: Nieto
-    'ana.martinez@gmail.com',
-    'ana123',
-    'ana_firebase_uid_1234567890' -- Firebase UID simulado
+-- Ana Martínez (Nieta de Jorge Martínez, id_residente = 2, id_parentesco = 2)
+INSERT INTO FAMILIAR (
+    nombre, apellido, fecha_nacimiento, genero,
+    telefono, id_residente, id_parentesco, firebase_uid
+) VALUES (
+    'Ana', 'Martínez', '2000-03-22', 'Femenino',
+    '6644442222', 2, 2, 'ana_firebase_uid_1234567890'
 );
 
--- Elihu Moreno (Nieta de Jorge Martínez)
-CALL spRegistrarFamiliar(
-    'Elihu',
-    'Moreno',
-    '2005-03-29',
-    'Masculino',
-    '6644442222',
-    3, -- id_residente: Jorge Martínez
-    2, -- id_parentesco: Nieto
-    'elihu.martinez@gmail.com',
-    'elihu123',
-    'elihu_firebase_uid_1234567890' -- Firebase UID simulado
+-- Elihu Moreno (Nieta de Jorge Martínez, id_residente = 3, id_parentesco = 2)
+INSERT INTO FAMILIAR (
+    nombre, apellido, fecha_nacimiento, genero,
+    telefono, id_residente, id_parentesco, firebase_uid
+) VALUES (
+    'Elihu', 'Moreno', '2005-03-29', 'Masculino',
+    '6644442222', 3, 2, 'elihu_firebase_uid_1234567890'
 );
-
 
 
 -- Luisa Mendoza (Administrador)
-CALL spRegistrarEmpleado(
-    'Luisa',
-    'Mendoza',
-    '1985-02-15',
-    'Femenino',
-    '6643217890',
-    'luisa@aetheris.mx',
-    'admin123',
-    'luisa_firebase_uid_1234567890' -- Firebase UID simulado
+INSERT INTO PERSONAL (
+    nombre, apellido, fecha_nacimiento, genero,
+    telefono, firebase_uid
+) VALUES (
+    'Luisa', 'Mendoza', '1985-02-15', 'Femenino',
+    '6643217890', 'luisa_firebase_uid_1234567890'
 );
 
 -- Roberto Delgado (Empleado)
-CALL spRegistrarEmpleado(
-    'Roberto',
-    'Delgado',
-    '1990-07-03',
-    'Masculino',
-    '6646543210',
-    'roberto@aetheris.mx',
-    'empleado123',
-    'roberto_firebase_uid_1234567890' -- Firebase UID simulado
+INSERT INTO PERSONAL (
+    nombre, apellido, fecha_nacimiento, genero,
+    telefono, firebase_uid
+) VALUES (
+    'Roberto', 'Delgado', '1990-07-03', 'Masculino',
+    '6646543210', 'roberto_firebase_uid_1234567890'
 );
+
 
 
 -- Tabla: CHEQUEO
