@@ -7,19 +7,23 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
-  Alert,
+  // Eliminamos Alerta
   Platform,
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native'; // Importamos useRoute
 
 import ResidentCard from '../../components/shared/ResidentCard';
+import { useNotification } from '../../src/context/NotificationContext'; // CAMBIO: Ruta de la notificación corregida
 
 const GRID_CONTAINER_PADDING = 10;
 
 export default function ResidentsScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState('');
+  const { showNotification } = useNotification(); // Usamos el hook de notificación
+  const route = useRoute(); // Hook para acceder a los parámetros de la ruta
 
   const [residents, setResidents] = useState([
     {
@@ -114,37 +118,39 @@ export default function ResidentsScreen({ navigation }) {
     },
   ]);
 
+  // useEffect para mostrar la notificación si el registro fue exitoso
+  useEffect(() => {
+    if (route.params?.registrationSuccess) {
+      showNotification('Residente registrado exitosamente!', 'success'); // CAMBIO: Mensaje de la notificación
+      // Borrar el parámetro para que no se muestre de nuevo al volver a la pantalla
+      navigation.setParams({ registrationSuccess: undefined });
+    }
+  }, [route.params?.registrationSuccess, showNotification, navigation]);
+
+
   const handleAddNewResident = () => {
-    navigation.navigate('RegisterResidentAndFamiliar'); // <--- LÍNEA MODIFICADA AQUÍ
+    navigation.navigate('RegisterResidentAndFamiliar');
   };
 
   const handleViewProfile = (id) => {
-    Alert.alert('Ver Perfil', `Ver perfil del residente con ID: ${id}`);
+    showNotification(`Ver perfil del residente con ID: ${id}`, 'info');
   };
 
   const handleHistory = (id) => {
-    Alert.alert('Ver Historial', `Ver historial médico del residente con ID: ${id}`);
+    showNotification(`Ver historial médico del residente con ID: ${id}`, 'info');
   };
 
   const handleEditResident = (id) => {
-    Alert.alert('Editar Residente', `Editar residente con ID: ${id}`);
+    showNotification(`Editar residente con ID: ${id}`, 'info');
   };
 
   const handleDeleteResident = (id) => {
-    Alert.alert(
-      'Confirmar Eliminación',
-      `¿Estás seguro de que quieres eliminar al residente con ID: ${id}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Eliminar',
-          onPress: () => {
-            Alert.alert('Eliminado', `Residente ${id} eliminado (simulado).`);
-          },
-          style: 'destructive',
-        },
-      ]
-    );
+    // Para la confirmación de eliminación, podrías implementar un modal personalizado
+    // o un componente de confirmación si no quieres usar Alert.alert en absoluto.
+    // Por simplicidad, aquí simulamos la confirmación con una notificación.
+    showNotification(`Simulando eliminación del residente con ID: ${id}`, 'warning', 5000); // Muestra por más tiempo para visibilidad
+    // Lógica real de eliminación (no incluida aquí)
+    // showNotification(`Residente ${id} eliminado.`, 'success');
   };
 
   return (

@@ -1,3 +1,5 @@
+// /src/context/NotificationContext.js
+// This file provides a context for managing notifications across the application.
 import React, { createContext, useRef, useContext } from 'react';
 import Notification from '../../components/shared/Notification';
 
