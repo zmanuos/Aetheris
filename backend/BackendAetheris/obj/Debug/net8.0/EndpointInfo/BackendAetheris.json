@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "BackendAetheris",
-    "version": "1.0"
+    "title": "Aetheris API",
+    "version": "v1"
   },
   "paths": {
     "/api/Alerta": {
@@ -286,6 +286,133 @@
         }
       }
     },
+    "/api/ChequeoSemanal": {
+      "get": {
+        "tags": [
+          "ChequeoSemanal"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ChequeoSemanal/residente/{residenteId}": {
+      "get": {
+        "tags": [
+          "ChequeoSemanal"
+        ],
+        "parameters": [
+          {
+            "name": "residenteId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChequeoSemanal"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ChequeoSemanal/residente/{residenteId}/ultimo": {
+      "get": {
+        "tags": [
+          "ChequeoSemanal"
+        ],
+        "parameters": [
+          {
+            "name": "residenteId",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChequeoSemanal"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChequeoSemanal"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChequeoSemanal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Dispositivo": {
       "get": {
         "tags": [
@@ -386,6 +513,18 @@
           "content": {
             "multipart/form-data": {
               "schema": {
+                "required": [
+                  "apellido",
+                  "contra",
+                  "email",
+                  "fechaNacimiento",
+                  "firebase_uid",
+                  "genero",
+                  "id_parentesco",
+                  "id_residente",
+                  "nombre",
+                  "telefono"
+                ],
                 "type": "object",
                 "properties": {
                   "nombre": {
@@ -405,16 +544,18 @@
                     "type": "string"
                   },
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   },
                   "contra": {
+                    "minLength": 6,
                     "type": "string"
                   },
-                  "residente": {
+                  "id_residente": {
                     "type": "integer",
                     "format": "int32"
                   },
-                  "parentesco": {
+                  "id_parentesco": {
                     "type": "integer",
                     "format": "int32"
                   },
@@ -445,10 +586,10 @@
                 "contra": {
                   "style": "form"
                 },
-                "residente": {
+                "id_residente": {
                   "style": "form"
                 },
-                "parentesco": {
+                "id_parentesco": {
                   "style": "form"
                 },
                 "firebase_uid": {
@@ -518,6 +659,171 @@
         "responses": {
           "200": {
             "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/LecturaAmbiental": {
+      "get": {
+        "tags": [
+          "LecturaAmbiental"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LecturaAmbiental/zona/{zona}": {
+      "get": {
+        "tags": [
+          "LecturaAmbiental"
+        ],
+        "parameters": [
+          {
+            "name": "zona",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LecturaAmbiental"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LecturaResidente": {
+      "get": {
+        "tags": [
+          "LecturaResidente"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContinuaResidente"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContinuaResidente"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContinuaResidente"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LecturaResidente/{id}": {
+      "get": {
+        "tags": [
+          "LecturaResidente"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              }
+            }
           }
         }
       }
@@ -621,129 +927,6 @@
             "description": "Success"
           }
         }
-      },
-      "put": {
-        "tags": [
-          "Personal"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/personal": {
-      "post": {
-        "tags": [
-          "Personal"
-        ],
-        "requestBody": {
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "nombre": {
-                    "type": "string"
-                  },
-                  "apellido": {
-                    "type": "string"
-                  },
-                  "fechaNacimiento": {
-                    "type": "string",
-                    "format": "date-time"
-                  },
-                  "genero": {
-                    "type": "string"
-                  },
-                  "telefono": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string"
-                  },
-                  "contra": {
-                    "type": "string"
-                  }
-                }
-              },
-              "encoding": {
-                "nombre": {
-                  "style": "form"
-                },
-                "apellido": {
-                  "style": "form"
-                },
-                "fechaNacimiento": {
-                  "style": "form"
-                },
-                "genero": {
-                  "style": "form"
-                },
-                "telefono": {
-                  "style": "form"
-                },
-                "email": {
-                  "style": "form"
-                },
-                "contra": {
-                  "style": "form"
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/Personal/{id}/{telefono}": {
-      "put": {
-        "tags": [
-          "Personal"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "telefono",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
       }
     },
     "/api/Residente": {
@@ -780,9 +963,6 @@
                   "genero": {
                     "type": "string"
                   },
-                  "foto": {
-                    "type": "string"
-                  },
                   "telefono": {
                     "type": "string"
                   }
@@ -799,9 +979,6 @@
                   "style": "form"
                 },
                 "genero": {
-                  "style": "form"
-                },
-                "foto": {
                   "style": "form"
                 },
                 "telefono": {
@@ -857,6 +1034,45 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Residente/UploadPhoto": {
+      "post": {
+        "tags": [
+          "Residente"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "IdResidente": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "FotoArchivo": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              },
+              "encoding": {
+                "IdResidente": {
+                  "style": "form"
+                },
+                "FotoArchivo": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -1008,6 +1224,117 @@
         },
         "additionalProperties": false
       },
+      "ChequeoSemanal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "residenteId": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaChequeo": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "spo2": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "pulso": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temperaturaCorporal": {
+            "type": "number",
+            "format": "double"
+          },
+          "peso": {
+            "type": "number",
+            "format": "double"
+          },
+          "altura": {
+            "type": "number",
+            "format": "double"
+          },
+          "imc": {
+            "type": "number",
+            "format": "double"
+          },
+          "dispositivoSpO2": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispositivoTempCorp": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispositivoPeso": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispositivoAltura": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ContinuaResidente": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "residenteId": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispositivoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "ritmoCardiaco": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "LecturaAmbiental": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/ObjectId"
+          },
+          "zona": {
+            "type": "string",
+            "nullable": true
+          },
+          "dispositivoId": {
+            "type": "string",
+            "nullable": true
+          },
+          "temperatura": {
+            "type": "number",
+            "format": "double"
+          },
+          "humedad": {
+            "type": "number",
+            "format": "double"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "LoginRequest": {
         "required": [
           "email",
@@ -1023,6 +1350,22 @@
           "password": {
             "minLength": 6,
             "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ObjectId": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "creationTime": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
           }
         },
         "additionalProperties": false
@@ -1100,6 +1443,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Ingresa el token JWT de la siguiente manera: Bearer {tu token}",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }

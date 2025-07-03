@@ -186,6 +186,78 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "ChequeoSemanalController",
+    "Method": "GetTodos",
+    "RelativePath": "api/ChequeoSemanal",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[ChequeoSemanal, BackendAetheris, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "ChequeoSemanalController",
+    "Method": "GetPorResidente",
+    "RelativePath": "api/ChequeoSemanal/residente/{residenteId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "residenteId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[ChequeoSemanal, BackendAetheris, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "ChequeoSemanalController",
+    "Method": "GetUltimoPorResidente",
+    "RelativePath": "api/ChequeoSemanal/residente/{residenteId}/ultimo",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "residenteId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "ChequeoSemanal",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
     "ContainingType": "DispositivoController",
     "Method": "Get",
     "RelativePath": "api/Dispositivo",
@@ -297,12 +369,12 @@
         "IsRequired": false
       },
       {
-        "Name": "residente",
+        "Name": "id_residente",
         "Type": "System.Int32",
         "IsRequired": false
       },
       {
-        "Name": "parentesco",
+        "Name": "id_parentesco",
         "Type": "System.Int32",
         "IsRequired": false
       },
@@ -350,6 +422,98 @@
       }
     ],
     "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LecturaAmbientalController",
+    "Method": "GetTodas",
+    "RelativePath": "api/LecturaAmbiental",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LecturaAmbiental, BackendAetheris, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LecturaAmbientalController",
+    "Method": "GetPorZona",
+    "RelativePath": "api/LecturaAmbiental/zona/{zona}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "zona",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[LecturaAmbiental, BackendAetheris, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LecturaResidenteController",
+    "Method": "GetAll",
+    "RelativePath": "api/LecturaResidente",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "System.Collections.Generic.List\u00601[[ContinuaResidente, BackendAetheris, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "LecturaResidenteController",
+    "Method": "GetById",
+    "RelativePath": "api/LecturaResidente/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "ContinuaResidente",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "ParentescoController",
@@ -420,43 +584,6 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "PersonalController",
-    "Method": "UpdateEstado",
-    "RelativePath": "api/Personal/{id}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PersonalController",
-    "Method": "UpdateTelefono",
-    "RelativePath": "api/Personal/{id}/{telefono}",
-    "HttpMethod": "PUT",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "id",
-        "Type": "System.Int32",
-        "IsRequired": true
-      },
-      {
-        "Name": "telefono",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
     "ContainingType": "ResidenteController",
     "Method": "Get",
     "RelativePath": "api/Residente",
@@ -491,11 +618,6 @@
       },
       {
         "Name": "genero",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "foto",
         "Type": "System.String",
         "IsRequired": false
       },
@@ -582,6 +704,27 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "ResidenteController",
+    "Method": "UploadPhoto",
+    "RelativePath": "api/Residente/UploadPhoto",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "IdResidente",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "FotoArchivo",
+        "Type": "Microsoft.AspNetCore.Http.IFormFile",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "UsuarioController",
     "Method": "Get",
     "RelativePath": "api/Usuario",
@@ -619,52 +762,6 @@
         "Name": "id",
         "Type": "System.Int32",
         "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PersonalController",
-    "Method": "Post",
-    "RelativePath": "personal",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "nombre",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "apellido",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "fechaNacimiento",
-        "Type": "System.DateTime",
-        "IsRequired": false
-      },
-      {
-        "Name": "genero",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "telefono",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "email",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "contra",
-        "Type": "System.String",
-        "IsRequired": false
       }
     ],
     "ReturnTypes": []
