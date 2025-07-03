@@ -828,6 +828,248 @@
         }
       }
     },
+    "/api/Nota": {
+      "get": {
+        "tags": [
+          "Nota"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Nota"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_familiar": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "notaTexto": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "id_familiar": {
+                  "style": "form"
+                },
+                "notaTexto": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Nota/todo": {
+      "get": {
+        "tags": [
+          "Nota"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Nota/{id_familiar}": {
+      "get": {
+        "tags": [
+          "Nota"
+        ],
+        "parameters": [
+          {
+            "name": "id_familiar",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Nota/{id}": {
+      "put": {
+        "tags": [
+          "Nota"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nota": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "nota": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Observacion": {
+      "get": {
+        "tags": [
+          "Observacion"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Observacion"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_residente": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "observacion": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "id_residente": {
+                  "style": "form"
+                },
+                "observacion": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Observacion/{id_residente}": {
+      "get": {
+        "tags": [
+          "Observacion"
+        ],
+        "parameters": [
+          {
+            "name": "id_residente",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Observacion/{id}": {
+      "put": {
+        "tags": [
+          "Observacion"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "observacion": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "observacion": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
     "/api/Parentesco": {
       "get": {
         "tags": [

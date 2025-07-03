@@ -124,6 +124,8 @@ CREATE TABLE NOTAS (
     id_familiar INT,
     nota TEXT,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_familiar) REFERENCES FAMILIAR(id_familiar)
 );
+
 

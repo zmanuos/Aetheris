@@ -29,7 +29,7 @@ INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, dis
 ('Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg'); -- sin dispositivo aún
 
 -- Tabla: PARENTESCO
-INSERT INTO PARENTESCO (parentesco) VALUES
+INSERT INTO PARENTESCO (id_parentesco, parentesco) VALUES
 (1, 'Padre'),
 (2, 'Madre'),
 (3, 'Esposo(a)'),
@@ -97,3 +97,23 @@ INSERT INTO ALERTA (id_residente, id_alerta_tipo, mensaje) VALUES
 (2, 3, 'Frecuencia cardíaca crítica detectada.'),
 (1, 2, 'Oxigenación ligeramente baja.'),
 (3, 1, 'Chequeo normal sin anomalías.');
+
+
+-- Tabla: OBSERVACIONES
+
+INSERT INTO OBSERVACIONES (id_residente, observacion) VALUES
+(1, 'Alergia severa a la penicilina. No administrar bajo ninguna circunstancia.'),
+(2, 'Diagnóstico reciente de hipertensión. Bajo tratamiento con Losartán.'),
+(3, 'Historial de caídas nocturnas. Requiere revisión cada 2 horas por la noche.'),
+(1, 'Residente con dieta especial: bajo sodio y sin azúcares refinados.'),
+(2, 'Uso de marcapasos. Se debe evitar el uso de dispositivos electromagnéticos cercanos.');
+
+
+-- Tabla: NOTAS
+INSERT INTO NOTAS (id_familiar, nota) VALUES
+(1, 'El residente será operado el 10 de julio. Favor de informar cualquier cambio en su estado.'),
+(2, 'El residente recibirá la visita de su hermana, Carmen Ruiz, el próximo viernes.'),
+(3, 'Solicito notificación inmediata si hay cambios en su medicación.'),
+(1, 'Estaremos fuera del país del 15 al 30 de julio. Cualquier emergencia comunicarse con la tía del residente.'),
+(2, 'Favor de permitir videollamada con el nieto del residente el domingo por la tarde.');
+
