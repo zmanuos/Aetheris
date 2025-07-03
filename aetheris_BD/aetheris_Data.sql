@@ -30,9 +30,11 @@ INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, dis
 
 -- Tabla: PARENTESCO
 INSERT INTO PARENTESCO (parentesco) VALUES
-('Hijo'),
-('Nieto'),
-('Hermana');
+(1, 'Padre'),
+(2, 'Madre'),
+(3, 'Esposo(a)'),
+(4, 'Hijo(a)'),
+(5, 'Otro');
 
 -- Tabla: ROL
 INSERT INTO ROL (nombre) VALUES

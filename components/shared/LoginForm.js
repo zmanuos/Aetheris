@@ -32,8 +32,8 @@ export default function LoginForm({ onLoginSuccess }) {
   // **** ELIMINA ESTAS CREDENCIALES ESTÁTICAS Y EL ROLE_MAPPING ****
   // Si las necesitas para ALGÚN CASO EXCEPCIONAL de desarrollo, déjalas,
   // pero ya no deben ser la principal fuente de roles ni un fallback general.
-  const FAMILY_EMAIL_STATIC = "1";
-  const FAMILY_PASSWORD_STATIC = "1";
+  const FAMILY_EMAIL_STATIC = "2";
+  const FAMILY_PASSWORD_STATIC = "2";
   const FAMILY_ROLE_STATIC = "family"; // O "admin" como lo tenías, pero esto es confuso si es "family" estático
 
   
