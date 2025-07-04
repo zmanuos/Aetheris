@@ -1,4 +1,3 @@
-// ./Config/AppConfig.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -92,8 +91,8 @@ public static class AppConfig
                 };
             });
 
-        // --- REGISTRO DEL FILTRO DE AUTORIZACIÓN DE ADMINISTRADOR DE FIREBASE ---
-        services.AddScoped<AdminAuthFilter>();
+        // --- SE HA ELIMINADO EL REGISTRO DEL FILTRO DE AUTORIZACIÓN DE ADMINISTRADOR DE FIREBASE ---
+        // services.AddScoped<AdminAuthFilter>();
         // --- FIN REGISTRO DEL FILTRO ---
 
         services.AddCors(options =>
@@ -141,9 +140,8 @@ public static class AppConfig
     }
 }
 
-// --- CLASE DE FILTRO DE AUTORIZACIÓN PARA ADMINISTRADORES DE FIREBASE ---
-// Idealmente, esta clase debería estar en un archivo separado (ej. Filters/AdminAuthFilter.cs)
-// Se incluye aquí para completar el contexto solicitado.
+
+// --- LA CLASE AdminAuthFilter PERMANECE, PERO YA NO ESTÁ REGISTRADA NI USADA ---
 public class AdminAuthFilter : IAsyncActionFilter
 {
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)

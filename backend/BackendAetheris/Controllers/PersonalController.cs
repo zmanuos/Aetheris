@@ -6,13 +6,22 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using FirebaseAdmin.Auth;
+using FirebaseAdmin.Auth; // Todavía necesario para FirebaseAuthException y UserRecord
 using Microsoft.AspNetCore.Authorization;
+
 
 [Route("api/[controller]")]
 [ApiController]
 public class PersonalController : ControllerBase
 {
+    private readonly IFirebaseAuthService _firebaseAuthService; // Declaración del servicio inyectado
+
+    // Constructor para inyección de dependencia
+    public PersonalController(IFirebaseAuthService firebaseAuthService)
+    {
+        _firebaseAuthService = firebaseAuthService;
+    }
+
     [HttpGet]
     public ActionResult Get()
     {
@@ -131,7 +140,6 @@ public class PersonalController : ControllerBase
         }
     }
 
-    [ServiceFilter(typeof(AdminAuthFilter))]
     [HttpPost("manage/update-email")]
     public async Task<ActionResult> UpdateUserEmail([FromBody] UpdateUserEmailDto updateDto)
     {
@@ -142,12 +150,7 @@ public class PersonalController : ControllerBase
 
         try
         {
-            await FirebaseAuth.DefaultInstance.UpdateUserAsync(new UserRecordArgs
-            {
-                Uid = updateDto.FirebaseUid,
-                Email = updateDto.NewEmail,
-                EmailVerified = false
-            });
+            await _firebaseAuthService.UpdateUserEmailAsync(updateDto.FirebaseUid, updateDto.NewEmail);
 
             return Ok(new { message = "Correo electrónico del usuario actualizado exitosamente en Firebase." });
         }
@@ -169,9 +172,8 @@ public class PersonalController : ControllerBase
         }
     }
 
-    [ServiceFilter(typeof(AdminAuthFilter))]
-    [HttpPost("manage/reset-password")]
-    public async Task<ActionResult> ResetUserPassword([FromBody] ResetUserPasswordDto resetDto)
+    [HttpPost("manage/update-password")]
+    public async Task<ActionResult> SetUserPasswordDirectly([FromBody] ResetPasswordDirectlyDto resetDto)
     {
         if (!ModelState.IsValid)
         {
@@ -180,9 +182,9 @@ public class PersonalController : ControllerBase
 
         try
         {
-            string link = await FirebaseAuth.DefaultInstance.GeneratePasswordResetLinkAsync(resetDto.FirebaseUid);
+            await _firebaseAuthService.SetUserPasswordAsync(resetDto.FirebaseUid, resetDto.NewPassword);
 
-            return Ok(new { message = "Se ha enviado un correo electrónico de restablecimiento de contraseña al usuario." });
+            return Ok(new { message = "Contraseña del usuario actualizada exitosamente en Firebase." });
         }
         catch (FirebaseAuthException ex)
         {
@@ -194,7 +196,29 @@ public class PersonalController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, new { message = $"Ocurrió un error inesperado al restablecer la contraseña: {ex.Message}" });
+            return StatusCode(500, new { message = $"Ocurrió un error inesperado al establecer la contraseña: {ex.Message}" });
+        }
+    }
+
+    [HttpGet("manage/get-correo/{firebaseUid}")]
+    public async Task<ActionResult> GetFirebaseUserInfo(string firebaseUid)
+    {
+        try
+        {
+            UserRecord userRecord = await _firebaseAuthService.GetUserByUidAsync(firebaseUid);
+            return Ok(new { email = userRecord.Email });
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(new { message = "Usuario no encontrado en Firebase Authentication." });
+            }
+            return StatusCode(500, new { message = $"Error de Firebase: {ex.Message}", code = ex.AuthErrorCode.ToString() });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = $"Ocurrió un error inesperado al obtener la información del usuario: {ex.Message}" });
         }
     }
 }

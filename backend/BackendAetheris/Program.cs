@@ -3,6 +3,7 @@ using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Configuration;
 using System.IO;
 using System;
+using Microsoft.Extensions.DependencyInjection; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,16 +33,11 @@ SqlServerConnection.InitializeConfiguration(builder.Configuration);
 
 AppConfig.ConfigureServices(builder.Services, builder.Configuration);
 
+builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
+
 var app = builder.Build();
 
-    if (app.Environment.IsDevelopment())
-    {
-    _  = AdminClaimSetter.SetAdminClaim("taco@taco.com");
-        Console.WriteLine("Intento de establecer claims de administrador en el inicio de la aplicación.");
-}
 
 AppConfig.ConfigurePipeline(app);
-
-
 
 app.Run();
