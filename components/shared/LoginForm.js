@@ -16,10 +16,9 @@ import {
   View
 } from "react-native";
 
-// Importa Firebase Authentication y Firestore
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore'; // <-- Importar para trabajar con documentos de Firestore
-import { auth, db } from '../../config/firebaseConfig'; // <-- Asegúrate que 'db' se importe correctamente
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../config/firebaseConfig';
 
 
 export default function LoginForm({ onLoginSuccess }) {
@@ -29,35 +28,22 @@ export default function LoginForm({ onLoginSuccess }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // **** ELIMINA ESTAS CREDENCIALES ESTÁTICAS Y EL ROLE_MAPPING ****
-  // Si las necesitas para ALGÚN CASO EXCEPCIONAL de desarrollo, déjalas,
-  // pero ya no deben ser la principal fuente de roles ni un fallback general.
-  const FAMILY_EMAIL_STATIC = "2";
-  const FAMILY_PASSWORD_STATIC = "2";
-  const FAMILY_ROLE_STATIC = "family"; // O "admin" como lo tenías, pero esto es confuso si es "family" estático
-
-  
-
   const handleSubmit = async () => {
     setError("");
     setIsLoading(true);
 
-    // **** ELIMINA ESTA LÓGICA DE USUARIO ESTÁTICO SI YA NO LA NECESITAS ****
-    if (email === FAMILY_EMAIL_STATIC && password === FAMILY_PASSWORD_STATIC) {
-       console.log("Login successful with static credentials (development family user).");
-       if (onLoginSuccess) {
-         onLoginSuccess("admin");
-       }
-       setIsLoading(false);
-       return;
-     }
+    if (!auth) {
+      console.error("Firebase Auth no está inicializado. No se puede iniciar sesión.");
+      setError("Un error interno impide la autenticación. Contacta al soporte.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Firebase login successful for user:", user.email, "UID:", user.uid);
 
-      // Ahora, intenta obtener el documento del usuario desde Firestore usando su UID
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -68,27 +54,18 @@ export default function LoginForm({ onLoginSuccess }) {
         if (assignedRole) {
           console.log("User role fetched from Firestore:", assignedRole);
           if (onLoginSuccess) {
-            onLoginSuccess(assignedRole); // <-- ¡USA EL ROL DE FIRESTORE!
+            onLoginSuccess(assignedRole);
           }
         } else {
-          // Si el documento existe pero no tiene un campo 'role'
           console.warn("User document found in Firestore for UID:", user.uid, "but no 'role' field. Contact administrator.");
           setError("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
-          // Podrías decidir asignar un rol por defecto aquí si es un escenario válido para tu app,
-          // pero es mejor que el administrador asigne los roles explícitamente.
-          // onLoginSuccess("family"); // Ejemplo: Si todos sin rol son familiares
         }
       } else {
-        // Si no se encuentra un documento para el UID en Firestore
         console.warn("No user document found in Firestore for UID:", user.uid, ". User may not be fully set up.");
         setError("Tu cuenta no está completamente configurada. Contacta al administrador.");
-        // Este es un escenario importante: el usuario existe en Auth pero no en Firestore.
-        // Aquí NO deberías asignar un rol por defecto automáticamente, ya que indica un problema de setup.
-        // El usuario necesita un documento en Firestore con su UID y un campo 'role'.
       }
 
     } catch (firebaseError) {
-      // Manejo de errores de Firebase
       console.error("Firebase Login Error:", firebaseError.code, firebaseError.message);
       let errorMessage = "Error de autenticación. Inténtalo de nuevo.";
 

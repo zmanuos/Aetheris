@@ -24,10 +24,12 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `alerta`
+-- Estructura de tabla para la tabla `ALERTA`
 --
+CREATE DATABASE aetheris2;
+USE aetheris2;
 
-CREATE TABLE `alerta` (
+CREATE TABLE `ALERTA` (
   `id_alerta` int(11) NOT NULL,
   `id_residente` int(11) DEFAULT NULL,
   `id_alerta_tipo` int(11) DEFAULT NULL,
@@ -37,10 +39,10 @@ CREATE TABLE `alerta` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `alerta`
+-- Volcado de datos para la tabla `ALERTA`
 --
 
-INSERT INTO `alerta` (`id_alerta`, `id_residente`, `id_alerta_tipo`, `id_area`, `fecha`, `mensaje`) VALUES
+INSERT INTO `ALERTA` (`id_alerta`, `id_residente`, `id_alerta_tipo`, `id_area`, `fecha`, `mensaje`) VALUES
 (1, 2, 3, NULL, '2025-07-03 16:27:46', 'Frecuencia cardíaca crítica detectada.'),
 (2, 1, 2, NULL, '2025-07-03 16:27:46', 'Oxigenación ligeramente baja.'),
 (3, 3, 1, NULL, '2025-07-03 16:27:46', 'Chequeo normal sin anomalías.');
@@ -48,20 +50,20 @@ INSERT INTO `alerta` (`id_alerta`, `id_residente`, `id_alerta_tipo`, `id_area`, 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `alerta_tipo`
+-- Estructura de tabla para la tabla `ALERTA_TIPO`
 --
 
-CREATE TABLE `alerta_tipo` (
+CREATE TABLE `ALERTA_TIPO` (
   `id_alerta_tipo` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `alerta_tipo`
+-- Volcado de datos para la tabla `ALERTA_TIPO`
 --
 
-INSERT INTO `alerta_tipo` (`id_alerta_tipo`, `nombre`, `descripcion`) VALUES
+INSERT INTO `ALERTA_TIPO` (`id_alerta_tipo`, `nombre`, `descripcion`) VALUES
 (1, 'Baja', 'Condición no urgente. Monitoreo recomendado.'),
 (2, 'Media', 'Atención requerida, posible complicación.'),
 (3, 'Crítica', 'Emergencia médica o situación crítica.');
@@ -69,20 +71,20 @@ INSERT INTO `alerta_tipo` (`id_alerta_tipo`, `nombre`, `descripcion`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `area`
+-- Estructura de tabla para la tabla `AREA`
 --
 
-CREATE TABLE `area` (
+CREATE TABLE `AREA` (
   `id_area` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `descripcion` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `area`
+-- Volcado de datos para la tabla `AREA`
 --
 
-INSERT INTO `area` (`id_area`, `nombre`, `descripcion`) VALUES
+INSERT INTO `AREA` (`id_area`, `nombre`, `descripcion`) VALUES
 (1, 'Dormitorio', 'Área donde descansan los residentes.'),
 (2, 'Comedor', 'Zona común para alimentos.'),
 (3, 'Sala común', 'Espacio recreativo para convivencia.'),
@@ -92,10 +94,10 @@ INSERT INTO `area` (`id_area`, `nombre`, `descripcion`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `asilo`
+-- Estructura de tabla para la tabla `ASILO`
 --
 
-CREATE TABLE `asilo` (
+CREATE TABLE `ASILO` (
   `id_asilo` int(11) NOT NULL,
   `nombre` varchar(100) NOT NULL,
   `direccion` text NOT NULL,
@@ -109,19 +111,19 @@ CREATE TABLE `asilo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `asilo`
+-- Volcado de datos para la tabla `ASILO`
 --
 
-INSERT INTO `asilo` (`id_asilo`, `nombre`, `direccion`, `pais`, `ciudad`, `codigo_postal`, `telefono`, `correo`, `cantidad_residentes`, `cantidad_empleados`) VALUES
+INSERT INTO `ASILO` (`id_asilo`, `nombre`, `direccion`, `pais`, `ciudad`, `codigo_postal`, `telefono`, `correo`, `cantidad_residentes`, `cantidad_empleados`) VALUES
 (1, 'Aetheris Asylum', 'Av. Esperanza 456, Col. Tranquilidad', 'México', 'Tijuana', '22210', '6641234567', 'contacto@aetheris.mx', 3, 2);
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `chequeo`
+-- Estructura de tabla para la tabla `CHEQUEO`
 --
 
-CREATE TABLE `chequeo` (
+CREATE TABLE `CHEQUEO` (
   `id_chequeo` int(11) NOT NULL,
   `id_residente` int(11) DEFAULT NULL,
   `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
@@ -132,10 +134,10 @@ CREATE TABLE `chequeo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `chequeo`
+-- Volcado de datos para la tabla `CHEQUEO`
 --
 
-INSERT INTO `chequeo` (`id_chequeo`, `id_residente`, `fecha`, `frecuencia_cardiaca`, `oxigeno`, `peso`, `observaciones`) VALUES
+INSERT INTO `CHEQUEO` (`id_chequeo`, `id_residente`, `fecha`, `frecuencia_cardiaca`, `oxigeno`, `peso`, `observaciones`) VALUES
 (1, 1, '2025-07-03 16:27:46', 72, 97.50, 60.20, 'Chequeo normal.'),
 (2, 2, '2025-07-03 16:27:46', 88, 94.20, 72.40, 'Frecuencia cardíaca algo elevada.'),
 (3, 1, '2025-07-03 16:27:46', 76, 98.00, 60.00, 'Todo en orden.'),
@@ -144,10 +146,10 @@ INSERT INTO `chequeo` (`id_chequeo`, `id_residente`, `fecha`, `frecuencia_cardia
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `dispositivo`
+-- Estructura de tabla para la tabla `DISPOSITIVO`
 --
 
-CREATE TABLE `dispositivo` (
+CREATE TABLE `DISPOSITIVO` (
   `id_dispositivo` int(11) NOT NULL,
   `direccion_MAC` varchar(30) DEFAULT NULL,
   `estado` tinyint(1) DEFAULT 1,
@@ -155,10 +157,10 @@ CREATE TABLE `dispositivo` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `dispositivo`
+-- Volcado de datos para la tabla `DISPOSITIVO`
 --
 
-INSERT INTO `dispositivo` (`id_dispositivo`, `direccion_MAC`, `estado`, `fecha_asignacion`) VALUES
+INSERT INTO `DISPOSITIVO` (`id_dispositivo`, `direccion_MAC`, `estado`, `fecha_asignacion`) VALUES
 (1, '00:1A:7D:DA:71:01', 1, '2025-07-03 16:27:45'),
 (2, '00:1A:7D:DA:71:02', 1, '2025-07-03 16:27:45'),
 (3, '00:1A:7D:DA:71:03', 0, '2025-07-03 16:27:45');
@@ -166,10 +168,10 @@ INSERT INTO `dispositivo` (`id_dispositivo`, `direccion_MAC`, `estado`, `fecha_a
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `familiar`
+-- Estructura de tabla para la tabla `FAMILIAR`
 --
 
-CREATE TABLE `familiar` (
+CREATE TABLE `FAMILIAR` (
   `id_familiar` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `apellido` varchar(100) DEFAULT NULL,
@@ -182,10 +184,10 @@ CREATE TABLE `familiar` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `familiar`
+-- Volcado de datos para la tabla `FAMILIAR`
 --
 
-INSERT INTO `familiar` (`id_familiar`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `id_residente`, `id_parentesco`, `firebase_uid`) VALUES
+INSERT INTO `FAMILIAR` (`id_familiar`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `id_residente`, `id_parentesco`, `firebase_uid`) VALUES
 (1, 'Carlos', 'González', '1975-08-10', 'Masculino', '6645551111', 1, 1, 'carlos_firebase_uid_12345678'),
 (2, 'Ana', 'Martínez', '2000-03-22', 'Femenino', '6644442222', 2, 2, 'ana_firebase_uid_1234567890'),
 (3, 'Elihu', 'Moreno', '2005-03-29', 'Masculino', '6644442222', 3, 2, 'elihu_firebase_uid_123456789');
@@ -193,10 +195,10 @@ INSERT INTO `familiar` (`id_familiar`, `nombre`, `apellido`, `fecha_nacimiento`,
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `notas`
+-- Estructura de tabla para la tabla `NOTAS`
 --
 
-CREATE TABLE `notas` (
+CREATE TABLE `NOTAS` (
   `id_notas` int(11) NOT NULL,
   `id_familiar` int(11) DEFAULT NULL,
   `nota` text DEFAULT NULL,
@@ -205,10 +207,10 @@ CREATE TABLE `notas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `notas`
+-- Volcado de datos para la tabla `NOTAS`
 --
 
-INSERT INTO `notas` (`id_notas`, `id_familiar`, `nota`, `fecha`, `activo`) VALUES
+INSERT INTO `NOTAS` (`id_notas`, `id_familiar`, `nota`, `fecha`, `activo`) VALUES
 (1, 1, 'El residente será operado el 10 de julio. Favor de informar cualquier cambio en su estado.', '2025-07-03 16:32:13', 1),
 (2, 2, 'El residente recibirá la visita de su hermana, Carmen Ruiz, el próximo viernes.', '2025-07-03 16:32:13', 1),
 (3, 3, 'Solicito notificación inmediata si hay cambios en su medicación.', '2025-07-03 16:32:13', 1),
@@ -218,20 +220,20 @@ INSERT INTO `notas` (`id_notas`, `id_familiar`, `nota`, `fecha`, `activo`) VALUE
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `observaciones`
+-- Estructura de tabla para la tabla `OBSERVACIONES`
 --
 
-CREATE TABLE `observaciones` (
+CREATE TABLE `OBSERVACIONES` (
   `id_observaciones` int(11) NOT NULL,
   `id_residente` int(11) DEFAULT NULL,
   `observacion` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `observaciones`
+-- Volcado de datos para la tabla `OBSERVACIONES`
 --
 
-INSERT INTO `observaciones` (`id_observaciones`, `id_residente`, `observacion`) VALUES
+INSERT INTO `OBSERVACIONES` (`id_observaciones`, `id_residente`, `observacion`) VALUES
 (6, 1, 'Alergia severa a la penicilina. No administrar bajo ninguna circunstancia.'),
 (7, 2, 'Diagnóstico reciente de hipertensión. Bajo tratamiento con Losartán.'),
 (8, 3, 'Historial de caídas nocturnas. Requiere revisión cada 2 horas por la noche.'),
@@ -241,19 +243,19 @@ INSERT INTO `observaciones` (`id_observaciones`, `id_residente`, `observacion`) 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `parentesco`
+-- Estructura de tabla para la tabla `PARENTESCO`
 --
 
-CREATE TABLE `parentesco` (
+CREATE TABLE `PARENTESCO` (
   `id_parentesco` int(11) NOT NULL,
   `parentesco` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `parentesco`
+-- Volcado de datos para la tabla `PARENTESCO`
 --
 
-INSERT INTO `parentesco` (`id_parentesco`, `parentesco`) VALUES
+INSERT INTO `PARENTESCO` (`id_parentesco`, `parentesco`) VALUES
 (1, 'Padre'),
 (2, 'Madre'),
 (3, 'Esposo(a)'),
@@ -263,10 +265,10 @@ INSERT INTO `parentesco` (`id_parentesco`, `parentesco`) VALUES
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `personal`
+-- Estructura de tabla para la tabla `PERSONAL`
 --
 
-CREATE TABLE `personal` (
+CREATE TABLE `PERSONAL` (
   `id_personal` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `apellido` varchar(100) DEFAULT NULL,
@@ -278,23 +280,23 @@ CREATE TABLE `personal` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `personal`
+-- Volcado de datos para la tabla `PERSONAL`
 --
 
-INSERT INTO `personal` (`id_personal`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `firebase_uid`, `activo`) VALUES
+INSERT INTO `PERSONAL` (`id_personal`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `firebase_uid`, `activo`) VALUES
 (1, 'Luisa', 'Mendoza', '1985-02-15', 'Femenino', '6643217890', 'luisa_firebase_uid_123456789', 0),
 (2, 'Roberto', 'Delgado', '1990-07-03', 'Masculino', '6646543210', 'roberto_firebase_uid_1234567', 0);
 
 --
--- Disparadores `personal`
+-- Disparadores `PERSONAL`
 --
 DELIMITER $$
-CREATE TRIGGER `agregar_empleados` AFTER INSERT ON `personal` FOR EACH ROW UPDATE ASILO
+CREATE TRIGGER `agregar_empleados` AFTER INSERT ON `PERSONAL` FOR EACH ROW UPDATE ASILO
 SET cantidad_empleados = cantidad_empleados + 1
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `total_empleados` AFTER UPDATE ON `personal` FOR EACH ROW BEGIN
+CREATE TRIGGER `total_empleados` AFTER UPDATE ON `PERSONAL` FOR EACH ROW BEGIN
     IF OLD.activo != NEW.activo THEN
         UPDATE ASILO
         SET cantidad_empleados = (
@@ -308,10 +310,10 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `residente`
+-- Estructura de tabla para la tabla `RESIDENTE`
 --
 
-CREATE TABLE `residente` (
+CREATE TABLE `RESIDENTE` (
   `id_residente` int(11) NOT NULL,
   `nombre` varchar(100) DEFAULT NULL,
   `apellido` varchar(100) DEFAULT NULL,
@@ -319,25 +321,25 @@ CREATE TABLE `residente` (
   `genero` varchar(10) DEFAULT NULL,
   `telefono` varchar(15) DEFAULT NULL,
   `dispositivo` int(11) DEFAULT NULL,
-  `id_foto` varchar(255) DEFAULT 'default',
+  `foto` varchar(255) DEFAULT 'default',
   `fecha_ingreso` timestamp NOT NULL DEFAULT current_timestamp(),
   `activo` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Volcado de datos para la tabla `residente`
+-- Volcado de datos para la tabla `RESIDENTE`
 --
 
-INSERT INTO `residente` (`id_residente`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `dispositivo`, `id_foto`, `fecha_ingreso`, `activo`) VALUES
+INSERT INTO `RESIDENTE` (`id_residente`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `dispositivo`, `id_foto`, `fecha_ingreso`, `activo`) VALUES
 (1, 'María', 'González', '1945-05-14', 'Femenino', '6649876543', 1, 'maria.jpg', '2025-07-03 16:27:45', 1),
 (2, 'Jorge', 'Martínez', '1938-09-23', 'Masculino', '6641122334', 2, 'jorge.jpg', '2025-07-03 16:27:45', 1),
 (3, 'Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg', '2025-07-03 16:27:45', 1);
 
 --
--- Disparadores `residente`
+-- Disparadores `RESIDENTE`
 --
 DELIMITER $$
-CREATE TRIGGER `activar_dispositivo_update` AFTER UPDATE ON `residente` FOR EACH ROW BEGIN
+CREATE TRIGGER `activar_dispositivo_update` AFTER UPDATE ON `RESIDENTE` FOR EACH ROW BEGIN
     IF NEW.dispositivo IS NOT NULL AND NEW.dispositivo != OLD.dispositivo THEN
         UPDATE DISPOSITIVO
         SET estado = TRUE
@@ -347,12 +349,12 @@ END
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `agregar_residentes` AFTER INSERT ON `residente` FOR EACH ROW UPDATE ASILO
+CREATE TRIGGER `agregar_residentes` AFTER INSERT ON `RESIDENTE` FOR EACH ROW UPDATE ASILO
 SET cantidad_residentes = cantidad_residentes + 1
 $$
 DELIMITER ;
 DELIMITER $$
-CREATE TRIGGER `total_residentes` AFTER UPDATE ON `residente` FOR EACH ROW BEGIN
+CREATE TRIGGER `total_residentes` AFTER UPDATE ON `RESIDENTE` FOR EACH ROW BEGIN
     IF OLD.activo != NEW.activo THEN
         UPDATE ASILO
         SET cantidad_residentes = (
@@ -368,87 +370,87 @@ DELIMITER ;
 --
 
 --
--- Indices de la tabla `alerta`
+-- Indices de la tabla `ALERTA`
 --
-ALTER TABLE `alerta`
+ALTER TABLE `ALERTA`
   ADD PRIMARY KEY (`id_alerta`),
   ADD KEY `id_residente` (`id_residente`),
   ADD KEY `id_alerta_tipo` (`id_alerta_tipo`),
   ADD KEY `id_area` (`id_area`);
 
 --
--- Indices de la tabla `alerta_tipo`
+-- Indices de la tabla `ALERTA_TIPO`
 --
-ALTER TABLE `alerta_tipo`
+ALTER TABLE `ALERTA_TIPO`
   ADD PRIMARY KEY (`id_alerta_tipo`);
 
 --
--- Indices de la tabla `area`
+-- Indices de la tabla `AREA`
 --
-ALTER TABLE `area`
+ALTER TABLE `AREA`
   ADD PRIMARY KEY (`id_area`),
   ADD UNIQUE KEY `nombre` (`nombre`);
 
 --
--- Indices de la tabla `asilo`
+-- Indices de la tabla `ASILO`
 --
-ALTER TABLE `asilo`
+ALTER TABLE `ASILO`
   ADD PRIMARY KEY (`id_asilo`);
 
 --
--- Indices de la tabla `chequeo`
+-- Indices de la tabla `CHEQUEO`
 --
-ALTER TABLE `chequeo`
+ALTER TABLE `CHEQUEO`
   ADD PRIMARY KEY (`id_chequeo`),
   ADD KEY `id_residente` (`id_residente`);
 
 --
--- Indices de la tabla `dispositivo`
+-- Indices de la tabla `DISPOSITIVO`
 --
-ALTER TABLE `dispositivo`
+ALTER TABLE `DISPOSITIVO`
   ADD PRIMARY KEY (`id_dispositivo`),
   ADD UNIQUE KEY `direccion_MAC` (`direccion_MAC`);
 
 --
--- Indices de la tabla `familiar`
+-- Indices de la tabla `FAMILIAR`
 --
-ALTER TABLE `familiar`
+ALTER TABLE `FAMILIAR`
   ADD PRIMARY KEY (`id_familiar`),
   ADD UNIQUE KEY `firebase_uid` (`firebase_uid`),
   ADD KEY `id_parentesco` (`id_parentesco`),
   ADD KEY `id_residente` (`id_residente`);
 
 --
--- Indices de la tabla `notas`
+-- Indices de la tabla `NOTAS`
 --
-ALTER TABLE `notas`
+ALTER TABLE `NOTAS`
   ADD PRIMARY KEY (`id_notas`),
   ADD KEY `id_familiar` (`id_familiar`);
 
 --
--- Indices de la tabla `observaciones`
+-- Indices de la tabla `OBSERVACIONES`
 --
-ALTER TABLE `observaciones`
+ALTER TABLE `OBSERVACIONES`
   ADD PRIMARY KEY (`id_observaciones`),
   ADD KEY `id_residente` (`id_residente`);
 
 --
--- Indices de la tabla `parentesco`
+-- Indices de la tabla `PARENTESCO`
 --
-ALTER TABLE `parentesco`
+ALTER TABLE `PARENTESCO`
   ADD PRIMARY KEY (`id_parentesco`);
 
 --
--- Indices de la tabla `personal`
+-- Indices de la tabla `PERSONAL`
 --
-ALTER TABLE `personal`
+ALTER TABLE `PERSONAL`
   ADD PRIMARY KEY (`id_personal`),
   ADD UNIQUE KEY `firebase_uid` (`firebase_uid`);
 
 --
--- Indices de la tabla `residente`
+-- Indices de la tabla `RESIDENTE`
 --
-ALTER TABLE `residente`
+ALTER TABLE `RESIDENTE`
   ADD PRIMARY KEY (`id_residente`),
   ADD KEY `dispositivo` (`dispositivo`);
 
@@ -457,75 +459,75 @@ ALTER TABLE `residente`
 --
 
 --
--- AUTO_INCREMENT de la tabla `alerta`
+-- AUTO_INCREMENT de la tabla `ALERTA`
 --
-ALTER TABLE `alerta`
+ALTER TABLE `ALERTA`
   MODIFY `id_alerta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `alerta_tipo`
+-- AUTO_INCREMENT de la tabla `ALERTA_TIPO`
 --
-ALTER TABLE `alerta_tipo`
+ALTER TABLE `ALERTA_TIPO`
   MODIFY `id_alerta_tipo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `area`
+-- AUTO_INCREMENT de la tabla `AREA`
 --
-ALTER TABLE `area`
+ALTER TABLE `AREA`
   MODIFY `id_area` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de la tabla `asilo`
+-- AUTO_INCREMENT de la tabla `ASILO`
 --
-ALTER TABLE `asilo`
+ALTER TABLE `ASILO`
   MODIFY `id_asilo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT de la tabla `chequeo`
+-- AUTO_INCREMENT de la tabla `CHEQUEO`
 --
-ALTER TABLE `chequeo`
+ALTER TABLE `CHEQUEO`
   MODIFY `id_chequeo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
--- AUTO_INCREMENT de la tabla `dispositivo`
+-- AUTO_INCREMENT de la tabla `DISPOSITIVO`
 --
-ALTER TABLE `dispositivo`
+ALTER TABLE `DISPOSITIVO`
   MODIFY `id_dispositivo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `familiar`
+-- AUTO_INCREMENT de la tabla `FAMILIAR`
 --
-ALTER TABLE `familiar`
+ALTER TABLE `FAMILIAR`
   MODIFY `id_familiar` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT de la tabla `notas`
+-- AUTO_INCREMENT de la tabla `NOTAS`
 --
-ALTER TABLE `notas`
+ALTER TABLE `NOTAS`
   MODIFY `id_notas` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de la tabla `observaciones`
+-- AUTO_INCREMENT de la tabla `OBSERVACIONES`
 --
-ALTER TABLE `observaciones`
+ALTER TABLE `OBSERVACIONES`
   MODIFY `id_observaciones` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- AUTO_INCREMENT de la tabla `parentesco`
+-- AUTO_INCREMENT de la tabla `PARENTESCO`
 --
-ALTER TABLE `parentesco`
+ALTER TABLE `PARENTESCO`
   MODIFY `id_parentesco` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT de la tabla `personal`
+-- AUTO_INCREMENT de la tabla `PERSONAL`
 --
-ALTER TABLE `personal`
+ALTER TABLE `PERSONAL`
   MODIFY `id_personal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de la tabla `residente`
+-- AUTO_INCREMENT de la tabla `RESIDENTE`
 --
-ALTER TABLE `residente`
+ALTER TABLE `RESIDENTE`
   MODIFY `id_residente` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
@@ -533,43 +535,43 @@ ALTER TABLE `residente`
 --
 
 --
--- Filtros para la tabla `alerta`
+-- Filtros para la tabla `ALERTA`
 --
-ALTER TABLE `alerta`
-  ADD CONSTRAINT `alerta_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `residente` (`id_residente`),
-  ADD CONSTRAINT `alerta_ibfk_2` FOREIGN KEY (`id_alerta_tipo`) REFERENCES `alerta_tipo` (`id_alerta_tipo`),
-  ADD CONSTRAINT `alerta_ibfk_3` FOREIGN KEY (`id_area`) REFERENCES `area` (`id_area`);
+ALTER TABLE `ALERTA`
+  ADD CONSTRAINT `alerta_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `RESIDENTE` (`id_residente`),
+  ADD CONSTRAINT `alerta_ibfk_2` FOREIGN KEY (`id_alerta_tipo`) REFERENCES `ALERTA_TIPO` (`id_alerta_tipo`),
+  ADD CONSTRAINT `alerta_ibfk_3` FOREIGN KEY (`id_area`) REFERENCES `AREA` (`id_area`);
 
 --
--- Filtros para la tabla `chequeo`
+-- Filtros para la tabla `CHEQUEO`
 --
-ALTER TABLE `chequeo`
-  ADD CONSTRAINT `chequeo_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `residente` (`id_residente`);
+ALTER TABLE `CHEQUEO`
+  ADD CONSTRAINT `chequeo_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `RESIDENTE` (`id_residente`);
 
 --
--- Filtros para la tabla `familiar`
+-- Filtros para la tabla `FAMILIAR`
 --
-ALTER TABLE `familiar`
-  ADD CONSTRAINT `familiar_ibfk_1` FOREIGN KEY (`id_parentesco`) REFERENCES `parentesco` (`id_parentesco`),
-  ADD CONSTRAINT `familiar_ibfk_2` FOREIGN KEY (`id_residente`) REFERENCES `residente` (`id_residente`);
+ALTER TABLE `FAMILIAR`
+  ADD CONSTRAINT `familiar_ibfk_1` FOREIGN KEY (`id_parentesco`) REFERENCES `PARENTESCO` (`id_parentesco`),
+  ADD CONSTRAINT `familiar_ibfk_2` FOREIGN KEY (`id_residente`) REFERENCES `RESIDENTE` (`id_residente`);
 
 --
--- Filtros para la tabla `notas`
+-- Filtros para la tabla `NOTAS`
 --
-ALTER TABLE `notas`
-  ADD CONSTRAINT `notas_ibfk_1` FOREIGN KEY (`id_familiar`) REFERENCES `familiar` (`id_familiar`);
+ALTER TABLE `NOTAS`
+  ADD CONSTRAINT `notas_ibfk_1` FOREIGN KEY (`id_familiar`) REFERENCES `FAMILIAR` (`id_familiar`);
 
 --
--- Filtros para la tabla `observaciones`
+-- Filtros para la tabla `OBSERVACIONES`
 --
-ALTER TABLE `observaciones`
-  ADD CONSTRAINT `observaciones_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `familiar` (`id_residente`);
+ALTER TABLE `OBSERVACIONES`
+  ADD CONSTRAINT `observaciones_ibfk_1` FOREIGN KEY (`id_residente`) REFERENCES `FAMILIAR` (`id_residente`);
 
 --
--- Filtros para la tabla `residente`
+-- Filtros para la tabla `RESIDENTE`
 --
-ALTER TABLE `residente`
-  ADD CONSTRAINT `residente_ibfk_1` FOREIGN KEY (`dispositivo`) REFERENCES `dispositivo` (`id_dispositivo`);
+ALTER TABLE `RESIDENTE`
+  ADD CONSTRAINT `residente_ibfk_1` FOREIGN KEY (`dispositivo`) REFERENCES `DISPOSITIVO` (`id_dispositivo`);
 
 DELIMITER $$
 --
