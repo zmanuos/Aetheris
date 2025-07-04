@@ -1,5 +1,4 @@
-﻿﻿// Personal.cs
-using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
@@ -11,6 +10,7 @@ public class Personal
     private static string selectAll = "SELECT id_personal, nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid FROM PERSONAL";
     private static string select = "SELECT id_personal, nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid FROM PERSONAL WHERE id_personal = @ID";
     private static string insert = "INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @activo, @firebase_uid)";
+    private static string update = "UPDATE PERSONAL SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, activo = @activo WHERE id_personal = @id_personal";
 
     #endregion
 
@@ -23,7 +23,7 @@ public class Personal
     private string _genero;
     private string _telefono;
     private bool _activo;
-    private string? _firebaseUid; // Ahora es nullable con '?'
+    private string? _firebaseUid;
 
     #endregion
 
@@ -36,7 +36,7 @@ public class Personal
     public string genero { get => _genero; set => _genero = value; }
     public string telefono { get => _telefono; set => _telefono = value; }
     public bool activo { get => _activo; set => _activo = value; }
-    public string? firebaseUid { get => _firebaseUid; set => _firebaseUid = value; } // Ahora la propiedad es nullable
+    public string? firebaseUid { get => _firebaseUid; set => _firebaseUid = value; }
 
     #endregion
 
@@ -44,15 +44,14 @@ public class Personal
 
     public Personal()
     {
-        // Inicializa todas las propiedades con valores por defecto no nulos
         id = 0;
-        nombre = string.Empty; // Usar string.Empty en lugar de "" o null para strings no nulos
+        nombre = string.Empty;
         apellido = string.Empty;
         fecha_nacimiento = DateTime.MinValue;
         genero = string.Empty;
         telefono = string.Empty;
         activo = false;
-        firebaseUid = null; // 'null' es válido para 'string?'
+        firebaseUid = null;
     }
 
     public Personal(int id, string nombre, string apellido, DateTime fecha_nacimiento, string genero, string telefono, bool activo, string? firebaseUid)
@@ -108,6 +107,20 @@ public class Personal
         return rowsAffected;
     }
 
+    public int Update()
+    {
+        MySqlCommand command = new MySqlCommand(update);
+        command.Parameters.AddWithValue("@id_personal", this.id);
+        command.Parameters.AddWithValue("@nombre", this.nombre);
+        command.Parameters.AddWithValue("@apellido", this.apellido);
+        command.Parameters.AddWithValue("@fecha_nacimiento", this.fecha_nacimiento);
+        command.Parameters.AddWithValue("@genero", this.genero);
+        command.Parameters.AddWithValue("@telefono", this.telefono);
+        command.Parameters.AddWithValue("@activo", this.activo);
+
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected;
+    }
+
     #endregion
 }
-

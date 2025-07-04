@@ -1,5 +1,4 @@
-﻿
-public class PersonalResponse : JsonResponse
+﻿public class PersonalResponse : JsonResponse
 {
     public Personal Personal { get; set; }
 

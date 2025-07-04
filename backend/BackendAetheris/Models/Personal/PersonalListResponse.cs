@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 public class PersonalListResponse : JsonResponse
 {
     public List<Personal> Personal { get; set; }

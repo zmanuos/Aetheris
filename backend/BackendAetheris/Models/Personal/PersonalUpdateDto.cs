@@ -1,12 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-public class PersonalCreateDto
+public class PersonalUpdateDto
 {
-    [Required(ErrorMessage = "FirebaseUid es requerido.")]
-    [StringLength(28, MinimumLength = 28, ErrorMessage = "FirebaseUid debe tener 28 caracteres.")]
-    public string FirebaseUid { get; set; } = string.Empty;
-
     [Required(ErrorMessage = "El nombre es requerido.")]
     [StringLength(100, ErrorMessage = "El nombre no puede exceder 100 caracteres.")]
     public string Nombre { get; set; } = string.Empty;

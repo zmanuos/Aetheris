@@ -12,13 +12,15 @@ import {
     TextInput,
     ActivityIndicator,
     Dimensions,
-    KeyboardAvoidingView 
+    KeyboardAvoidingView
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 import Config from '../../config/config';
-import EmployeeCreationForm from './EmployeeCreationScreen'; 
+import EmployeeCreationForm from './EmployeeCreationScreen';
+// Importamos la nueva pantalla de edición
+import EmployeeEditScreen from './EmployeeEditScreen'; //
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -50,8 +52,11 @@ export default function EmployeeManagementScreen() {
     const [currentPage, setCurrentPage] = useState(1);
     const [employeesPerPage] = useState(8);
 
-
-    const [showCreateForm, setShowCreateForm] = useState(false); //
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    // Nuevo estado para controlar si se muestra el formulario de edición
+    const [showEditForm, setShowEditForm] = useState(false); //
+    // Estado para guardar los datos del empleado que se está editando
+    const [employeeToEdit, setEmployeeToEdit] = useState(null); //
 
     const API_URL = Config.API_BASE_URL;
 
@@ -82,18 +87,23 @@ export default function EmployeeManagementScreen() {
     };
 
     useEffect(() => {
-        if (isFocused && !showCreateForm) { 
+        // Only re-fetch if the screen is focused and no forms are active
+        // The search and filter status changes will trigger filtering on the client-side
+        // The API call is to get the base data.
+        if (isFocused && !showCreateForm && !showEditForm) {
             fetchEmployees();
         }
-    }, [isFocused, showCreateForm]); 
+    }, [isFocused, showCreateForm, showEditForm]);
 
     const handleCreateNewEmployee = () => {
-        setShowCreateForm(true); 
+        setShowCreateForm(true);
+        setShowEditForm(false); // Asegurarse de ocultar el formulario de edición
+        setEmployeeToEdit(null); // Limpiar el empleado a editar
     };
 
-    const handleCancelCreate = () => { 
+    const handleCancelCreate = () => {
         setShowCreateForm(false);
-        fetchEmployees(); 
+        fetchEmployees();
     };
 
     const handleEmployeeCreated = () => {
@@ -101,10 +111,29 @@ export default function EmployeeManagementScreen() {
         fetchEmployees();
     };
 
-    const handleEditEmployee = (employeeId) => {
-        Alert.alert('Editar', `Funcionalidad de edición para el empleado ID: ${employeeId}`);
+    // Nueva función para manejar la edición
+    const handleEditEmployee = (employee) => { //
+        setEmployeeToEdit(employee); //
+        setShowEditForm(true); //
+        setShowCreateForm(false); // Asegurarse de ocultar el formulario de creación
     };
 
+    // Nueva función para cancelar la edición
+    const handleCancelEdit = () => { //
+        setShowEditForm(false); //
+        setEmployeeToEdit(null); //
+        fetchEmployees(); //
+    };
+
+    // Nueva función que se llama cuando el empleado ha sido editado exitosamente
+    const handleEmployeeEdited = () => { //
+        setShowEditForm(false); //
+        setEmployeeToEdit(null); //
+        fetchEmployees(); //
+    };
+
+    // Filter employees based on search term and status
+    // This filtering happens on the client-side from the 'employees' state
     const filteredEmployees = employees.filter(employee => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const matchesSearchTerm = employee.nombre.toLowerCase().includes(lowerCaseSearchTerm) ||
@@ -119,6 +148,7 @@ export default function EmployeeManagementScreen() {
         return matchesSearchTerm && matchesFilterStatus;
     });
 
+    // Recalculate current page employees whenever filteredEmployees or currentPage changes
     const indexOfLastEmployee = currentPage * employeesPerPage;
     const indexOfFirstEmployee = indexOfLastEmployee - employeesPerPage;
     const currentEmployees = filteredEmployees.slice(indexOfFirstEmployee, indexOfLastEmployee);
@@ -133,15 +163,22 @@ export default function EmployeeManagementScreen() {
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                {showCreateForm && (
-                    <TouchableOpacity onPress={handleCancelCreate} style={styles.backButton}>
+                {/* Botón de regresar visible si cualquier formulario está activo */}
+                {(showCreateForm || showEditForm) && ( //
+                    <TouchableOpacity onPress={showCreateForm ? handleCancelCreate : handleCancelEdit} style={styles.backButton}> {/* */}
                         <Ionicons name="arrow-back-outline" size={20} color={WHITE} />
                         <Text style={styles.backButtonText}>Regresar</Text>
                     </TouchableOpacity>
                 )}
 
                 {showCreateForm ? (
-                    <EmployeeCreationForm onEmployeeCreated={handleEmployeeCreated} onCancel={handleCancelCreate} /> 
+                    <EmployeeCreationForm onEmployeeCreated={handleEmployeeCreated} onCancel={handleCancelCreate} />
+                ) : showEditForm && employeeToEdit ? ( // Renderiza EmployeeEditScreen si showEditForm es true y hay un empleado a editar
+                    <EmployeeEditScreen
+                        route={{ params: { employeeData: employeeToEdit } }} // Pasa los datos del empleado
+                        onEmployeeEdited={handleEmployeeEdited}
+                        onCancel={handleCancelEdit}
+                    />
                 ) : (
                     <View style={styles.mainContentArea}>
                         <View style={styles.controlsContainer}>
@@ -215,7 +252,7 @@ export default function EmployeeManagementScreen() {
                             <ActivityIndicator size="large" color={PRIMARY_GREEN} style={styles.loadingIndicator} />
                         ) : fetchError ? (
                             <Text style={styles.errorText}>{fetchError}</Text>
-                        ) : employees.length === 0 ? (
+                        ) : employees.length === 0 && searchTerm === '' && filterStatus === 'Activos' ? (
                             <Text style={styles.noEmployeesText}>No hay empleados registrados.</Text>
                         ) : (
                             <>
@@ -257,7 +294,7 @@ export default function EmployeeManagementScreen() {
                                                             <View style={[styles.tableCell, styles.actionsCell]}>
                                                                 <TouchableOpacity
                                                                     style={styles.actionButton}
-                                                                    onPress={() => handleEditEmployee(employee.id)}
+                                                                    onPress={() => handleEditEmployee(employee)} // Pasa el objeto empleado completo
                                                                 >
                                                                     <Ionicons name="create-outline" size={20} color={PRIMARY_GREEN} />
                                                                 </TouchableOpacity>
@@ -333,7 +370,7 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: BACKGROUND_LIGHT,
-        position: 'relative', 
+        position: 'relative',
     },
     keyboardAvoidingView: {
         flex: 1,
@@ -368,7 +405,7 @@ const styles = StyleSheet.create({
             },
         }),
     },
-    backButtonText: { 
+    backButtonText: {
         color: WHITE,
         fontSize: 15,
         fontWeight: '700',
