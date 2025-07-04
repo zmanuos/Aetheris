@@ -3,8 +3,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
 const HomeScreen = ({ route }) => (
+  
   <View style={styles.screenContainer}>
     <Text style={styles.screenText}>Contenido de {route.name}</Text>
+    
   </View>
 );
 export default HomeScreen;

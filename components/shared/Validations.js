@@ -11,7 +11,6 @@ export const formatName = (text) => {
 };
 
 export const isValidName = (name) => {
-    // CAMBIO: Valida que contenga solo letras, acentos, ñ y espacios, y que no esté vacío o solo contenga espacios.
     return /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]+$/.test(name) && name.trim().length > 0;
 };
 
@@ -21,13 +20,12 @@ export const isAdult = (dateString) => {
     if (parts.length !== 3) return false;
 
     const year = parseInt(parts[0]);
-    const month = parseInt(parts[1]) - 1; // Meses son 0-indexados en JS Date
+    const month = parseInt(parts[1]) - 1; 
     const day = parseInt(parts[2]);
 
     const birthDate = new Date(year, month, day);
-    // CAMBIO: Asegurarse de que la fecha sea válida antes de calcular la edad
     if (isNaN(birthDate.getTime()) || birthDate.getFullYear() !== year || birthDate.getMonth() !== month || birthDate.getDate() !== day) {
-        return false; // La fecha no es válida
+        return false; 
     }
 
     const today = new Date();
@@ -54,11 +52,7 @@ export const isValidDateFormat = (dateString) => {
     return /^\d{4}-\d{2}-\d{2}$/.test(dateString);
 };
 
-// CAMBIO: Validación de email más estricta
 export const isValidEmail = (email) => {
-    // Expresión regular para caracteres comunes de correo electrónico
-    // Permite letras, números, puntos, guiones, guiones bajos y porcentajes antes del @
-    // y letras, números, puntos y guiones después del @, seguido de un dominio de al menos 2 letras.
     return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 };
 

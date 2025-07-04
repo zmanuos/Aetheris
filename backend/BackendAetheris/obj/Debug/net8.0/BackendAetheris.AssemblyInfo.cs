@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e7b2efea713e4aa945f2ab619419f74b70ed406a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+901b3c527d1243761dc5df4c9399efbcc0d4fcd0")]
 [assembly: System.Reflection.AssemblyProductAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BackendAetheris")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

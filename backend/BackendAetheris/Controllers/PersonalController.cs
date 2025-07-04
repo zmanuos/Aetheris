@@ -1,10 +1,13 @@
-﻿using System;
+﻿// Controllers/PersonalController.cs
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using FirebaseAdmin.Auth;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -59,7 +62,7 @@ public class PersonalController : ControllerBase
 
             if (rowsAffected > 0)
             {
-                return StatusCode(201, MessageResponse.GetReponse(0, "Empleado creado exitosamente.", MessageType.Success));
+                return Ok(MessageResponse.GetReponse(0, "Empleado creado exitosamente.", MessageType.Success));
             }
             else
             {
@@ -70,9 +73,9 @@ public class PersonalController : ControllerBase
         {
             if (ex.Number == 1062)
             {
-                return Conflict(MessageResponse.GetReponse(2, "Ya existe un empleado con este Firebase UID o datos duplicados.", MessageType.Error));
+                return Conflict(MessageResponse.GetReponse(2, "Ya existe un empleado con el mismo UID de Firebase o datos duplicados.", MessageType.Error));
             }
-            return StatusCode(500, MessageResponse.GetReponse(999, $"Error de base de datos MySQL: {ex.Message}", MessageType.CriticalError));
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Error de base de datos MySQL al crear: {ex.Message}", MessageType.CriticalError));
         }
         catch (Exception ex)
         {
@@ -124,7 +127,74 @@ public class PersonalController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al actualizar el empleado: {ex.Message}", MessageType.CriticalError));
+            return StatusCode(500, new { message = $"Ocurrió un error inesperado al actualizar el empleado: {ex.Message}" });
+        }
+    }
+
+    [ServiceFilter(typeof(AdminAuthFilter))]
+    [HttpPost("manage/update-email")]
+    public async Task<ActionResult> UpdateUserEmail([FromBody] UpdateUserEmailDto updateDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await FirebaseAuth.DefaultInstance.UpdateUserAsync(new UserRecordArgs
+            {
+                Uid = updateDto.FirebaseUid,
+                Email = updateDto.NewEmail,
+                EmailVerified = false
+            });
+
+            return Ok(new { message = "Correo electrónico del usuario actualizado exitosamente en Firebase." });
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(new { message = "Usuario no encontrado en Firebase Authentication." });
+            }
+            if (ex.AuthErrorCode == AuthErrorCode.EmailAlreadyExists)
+            {
+                return Conflict(new { message = "El nuevo correo electrónico ya está en uso por otra cuenta de Firebase." });
+            }
+            return StatusCode(500, new { message = $"Error de Firebase: {ex.Message}", code = ex.AuthErrorCode.ToString() });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = $"Ocurrió un error inesperado al actualizar el correo: {ex.Message}" });
+        }
+    }
+
+    [ServiceFilter(typeof(AdminAuthFilter))]
+    [HttpPost("manage/reset-password")]
+    public async Task<ActionResult> ResetUserPassword([FromBody] ResetUserPasswordDto resetDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            string link = await FirebaseAuth.DefaultInstance.GeneratePasswordResetLinkAsync(resetDto.FirebaseUid);
+
+            return Ok(new { message = "Se ha enviado un correo electrónico de restablecimiento de contraseña al usuario." });
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(new { message = "Usuario no encontrado en Firebase Authentication." });
+            }
+            return StatusCode(500, new { message = $"Error de Firebase: {ex.Message}", code = ex.AuthErrorCode.ToString() });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { message = $"Ocurrió un error inesperado al restablecer la contraseña: {ex.Message}" });
         }
     }
 }

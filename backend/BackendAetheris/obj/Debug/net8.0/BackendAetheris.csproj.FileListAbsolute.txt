@@ -359,6 +359,7 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/ref/BackendAetheris.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/appsettings.Development.json
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/appsettings.json
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Properties/aetheris-ac3f3-firebase-adminsdk-fbsvc-0f7d01f271.json
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/BackendAetheris.staticwebassets.runtime.json
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/BackendAetheris.staticwebassets.endpoints.json
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/BackendAetheris
@@ -370,6 +371,12 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Azure.Identity.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/BouncyCastle.Cryptography.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/DnsClient.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/FirebaseAdmin.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Api.Gax.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Api.Gax.Rest.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.Auth.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.Core.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Protobuf.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Humanizer.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/K4os.Compression.LZ4.dll
@@ -408,6 +415,7 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Mono.TextTemplating.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/MySql.Data.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/MySqlConnector.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Newtonsoft.Json.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Pomelo.EntityFrameworkCore.MySql.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/SharpCompress.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Snappier.dll
@@ -425,6 +433,7 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Diagnostics.EventLog.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.IO.Pipelines.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Management.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Memory.Data.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Security.Cryptography.Pkcs.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Security.Cryptography.ProtectedData.dll
@@ -510,6 +519,7 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win-x64/native/krbcc64.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.Diagnostics.EventLog.Messages.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.Diagnostics.EventLog.dll
+/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net7.0/System.Management.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.Security.Cryptography.Pkcs.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/browser/lib/net8.0/System.Text.Encodings.Web.dll
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net8.0/System.Windows.Extensions.dll
@@ -536,12 +546,3 @@ C:/Users/OSUNA/Documents/Aetheris/Aetheris/backend/BackendAetheris/obj/Debug/net
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/BackendAetheris.pdb
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/BackendAetheris.genruntimeconfig.cache
 /home/osuna/Documents/Aetheris/backend/BackendAetheris/obj/Debug/net8.0/ref/BackendAetheris.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/FirebaseAdmin.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Api.Gax.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Api.Gax.Rest.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.Auth.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Google.Apis.Core.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/Newtonsoft.Json.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/System.Management.dll
-/home/osuna/Documents/Aetheris/backend/BackendAetheris/bin/Debug/net8.0/runtimes/win/lib/net7.0/System.Management.dll

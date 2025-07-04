@@ -1,4 +1,3 @@
-// AETHERIS/components/shared/LoginForm.js
 "use client"
 
 import { Ionicons } from "@expo/vector-icons";
@@ -43,6 +42,14 @@ export default function LoginForm({ onLoginSuccess }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       console.log("Firebase login successful for user:", user.email, "UID:", user.uid);
+
+      // --- ¡¡¡AQUÍ ES DONDE SE IMPRIMIRÁ EL TOKEN!!! ---
+      if (user) {
+          const idToken = await user.getIdToken(true); // El 'true' fuerza la actualización del token para asegurar los claims.
+          console.log("--> MI ID TOKEN DE FIREBASE ES:", idToken); // <--- ¡Copia esta cadena!
+      }
+      // --- FIN DEL CÓDIGO PARA IMPRIMIR EL TOKEN ---
+
 
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);

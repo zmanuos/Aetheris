@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using MySql.Data.MySqlClient; // Usamos MySql.Data.MySqlClient, no Microsoft.Data.SqlClient para MySQL
+using MySql.Data.MySqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
 
@@ -223,7 +223,7 @@ public class SqlServerConnection
             Console.WriteLine($"Error general al ejecutar comando: {ex.Message}");
             result = 0;
         }
-        finally // Aseguramos que la conexión se cierre y se disponga siempre
+        finally 
         {
             if (connection != null && connection.State == ConnectionState.Open)
             {

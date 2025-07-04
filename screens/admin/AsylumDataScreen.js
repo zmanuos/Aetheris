@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'; // Importa useRef aquí
+import React, { useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,20 +8,18 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
-  // Alert, // Ya no necesitamos Alert de React Native directamente para las notificaciones
   Platform,
   Image,
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 
 import Config from '../../config/config';
 const API_URL = Config.API_BASE_URL;
 
-// Importa el componente de notificación desde la ruta especificada
 import Notification from '../../components/shared/Notification';
 
-// --- COLORES BASADOS EN SIDEMENU.JS para consistencia ---
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
@@ -48,25 +46,22 @@ export default function AsylumDataScreen() {
     cantidad_empleados: 0,
   });
 
+  const [originalAsylumData, setOriginalAsylumData] = useState(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isHovered, setIsHovered] = useState(false); // Estado para el efecto hover/press
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Crea la referencia para el componente de notificación
   const notificationRef = useRef();
 
-  useEffect(() => {
-    fetchAsylumData();
-  }, []);
-
-  const fetchAsylumData = async () => {
+  const fetchAsylumData = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${API_URL}/Asilo`);
       const data = await response.json();
 
       if (response.ok && data.status === 0 && data.asilo) {
-        setAsylumData({
+        const fetchedData = {
           nombre: data.asilo.nombre || '',
           direccion: data.asilo.direccion || '',
           pais: data.asilo.pais || '',
@@ -76,26 +71,41 @@ export default function AsylumDataScreen() {
           correo: data.asilo.correo || '',
           cantidad_residentes: data.asilo.cantidad_residentes || 0,
           cantidad_empleados: data.asilo.cantidad_empleados || 0,
-        });
-        console.log("Datos del asilo cargados correctamente:", data.asilo);
-        // Opcional: Mostrar notificación de éxito al cargar los datos inicialmente
-        // notificationRef.current.show('Datos del asilo cargados.', 'info', 2000);
+        };
+        setAsylumData(fetchedData);
+        setOriginalAsylumData(fetchedData);
       } else {
         const errorMessage = data.message || `No se pudieron cargar los datos del asilo. Código de estado: ${data.status || 'desconocido'}`;
-        // Usa tu componente de notificación para errores
         notificationRef.current.show(`Error: ${errorMessage}`, 'error');
-        console.error('Error al cargar datos del asilo:', data);
       }
     } catch (error) {
-      // Usa tu componente de notificación para errores de conexión
-      notificationRef.current.show('Error de Conexión: No se pudo conectar con el servidor.', 'error', 5000); // 5 segundos para errores de conexión
-      console.error('Error de conexión o parseo:', error);
+      notificationRef.current.show('Error de Conexión: No se pudo conectar con el servidor.', 'error', 5000);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAsylumData();
+      return () => {
+        setIsEditing(false);
+      };
+    }, [fetchAsylumData])
+  );
 
   const handleSaveChanges = async () => {
+    const editableFieldsForChangeDetection = ['telefono', 'correo'];
+
+    const hasChanged = editableFieldsForChangeDetection.some(field =>
+      asylumData[field] !== originalAsylumData[field]
+    );
+
+    if (!hasChanged) {
+      setIsEditing(false);
+      return;
+    }
+
     setIsLoading(true);
 
     const formData = new FormData();
@@ -107,11 +117,6 @@ export default function AsylumDataScreen() {
     formData.append('telefono', asylumData.telefono);
     formData.append('correo', asylumData.correo);
 
-    console.log('Datos a enviar (FormData):');
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
     try {
       const response = await fetch(`${API_URL}/Asilo`, {
         method: 'PUT',
@@ -121,19 +126,15 @@ export default function AsylumDataScreen() {
       const data = await response.json();
 
       if (response.ok && data.status === 0) {
-        // Usa tu componente de notificación para el éxito
         notificationRef.current.show(data.message || 'Datos del asilo actualizados correctamente.', 'success');
         setIsEditing(false);
+        setOriginalAsylumData({ ...asylumData });
       } else {
         const errorMessage = data.message || `No se pudieron actualizar los datos del asilo. Código de estado: ${data.status || 'desconocido'}`;
-        // Usa tu componente de notificación para errores
         notificationRef.current.show(`Error: ${errorMessage}`, 'error');
-        console.error('Error al actualizar datos del asilo:', data);
       }
     } catch (error) {
-      // Usa tu componente de notificación para errores de conexión
       notificationRef.current.show('Error de Conexión: No se pudo conectar con el servidor para actualizar los datos.', 'error', 5000);
-      console.error('Error de conexión al actualizar:', error);
     } finally {
       setIsLoading(false);
     }
@@ -142,15 +143,12 @@ export default function AsylumDataScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* Contenedor principal para el layout de dos columnas */}
         <View style={styles.mainContentContainer}>
-          {/* Contenedor Izquierdo: Logo y Tarjetas */}
           <View style={styles.leftColumn}>
             <Image
-              source={require('../../assets/images/arbol2.png')} // Asegúrate de que la ruta sea correcta
+              source={require('../../assets/images/arbol2.png')}
               style={styles.mainLogoImage}
             />
-            {/* Tarjetas de Cantidad de Residentes y Empleados (ahora horizontales) */}
             <View style={styles.metricsContainer}>
               <View style={styles.metricCard}>
                 <Ionicons name="people-outline" size={24} color={PRIMARY_GREEN} />
@@ -165,7 +163,6 @@ export default function AsylumDataScreen() {
             </View>
           </View>
 
-          {/* Contenedor Derecho: Formulario */}
           <View style={styles.rightColumn}>
             <Text style={styles.sectionTitle}>Información de Contacto y Ubicación</Text>
 
@@ -173,7 +170,6 @@ export default function AsylumDataScreen() {
               <ActivityIndicator size="large" color={PRIMARY_GREEN} />
             ) : (
               <>
-                {/* Campos de solo lectura con Labels */}
                 <Text style={styles.inputLabel}>Nombre del Asilo</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons name="business-outline" size={20} color={MEDIUM_GRAY} style={styles.inputIcon} />
@@ -245,7 +241,6 @@ export default function AsylumDataScreen() {
                   />
                 </View>
 
-                {/* Campos editables con Labels */}
                 <Text style={styles.inputLabel}>Teléfono</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons name="call-outline" size={20} color={MEDIUM_GRAY} style={styles.inputIcon} />
@@ -270,7 +265,11 @@ export default function AsylumDataScreen() {
                     placeholder="Correo Electrónico"
                     placeholderTextColor={MEDIUM_GRAY}
                     value={asylumData.correo}
-                    onChangeText={(text) => setAsylumData({ ...asylumData, correo: text })}
+                    onChangeText={(text) => {
+                      // Filter out spaces instantly and convert to lowercase
+                      const filteredText = text.replace(/\s/g, '').toLowerCase();
+                      setAsylumData({ ...asylumData, correo: filteredText });
+                    }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     editable={isEditing}
@@ -279,7 +278,6 @@ export default function AsylumDataScreen() {
                   />
                 </View>
 
-                {/* Botones de acción */}
                 {isEditing ? (
                   <TouchableOpacity
                     style={styles.primaryButton}
@@ -311,13 +309,11 @@ export default function AsylumDataScreen() {
           </View>
         </View>
       </ScrollView>
-      {/* Añade el componente de notificación aquí */}
       <Notification ref={notificationRef} />
     </SafeAreaView>
   );
 }
 
-// Define los estilos base para las columnas AQUI, ANTES de StyleSheet.create
 const columnBaseStyles = {
   backgroundColor: WHITE,
   borderRadius: 15,
@@ -345,7 +341,7 @@ const styles = StyleSheet.create({
   mainContentContainer: {
     flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
     width: '95%',
-    maxWidth: IS_LARGE_SCREEN ? 880 : 550, // Aumentado el maxWidth para permitir cuadros más grandes
+    maxWidth: IS_LARGE_SCREEN ? 880 : 550,
     alignItems: IS_LARGE_SCREEN ? 'center' : 'center',
     justifyContent: 'center',
     gap: IS_LARGE_SCREEN ? 25 : 20,
@@ -353,7 +349,7 @@ const styles = StyleSheet.create({
   },
   leftColumn: {
     ...Platform.select({
-      web: { flex: 1, alignSelf: 'center' }, // Aumentado el flex a 1 para hacerlo más ancho
+      web: { flex: 1, alignSelf: 'center' },
       default: { width: '100%' },
     }),
     ...columnBaseStyles,
@@ -367,11 +363,11 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   metricsContainer: {
-    flexDirection: 'row', // HACE QUE LOS ELEMENTOS INTERNOS SE ACOMODEN HORIZONTALMENTE
-    justifyContent: 'center', // CENTRA LOS ELEMENTOS HORIZONTALMENTE
+    flexDirection: 'row',
+    justifyContent: 'center',
     width: '100%',
-    flexWrap: 'wrap', // PERMITE QUE LAS TARJETAS SE ENVUELVAN SI NO HAY ESPACIO
-    gap: 18, // ESPACIO ENTRE LAS TARJETAS
+    flexWrap: 'wrap',
+    gap: 18,
   },
   metricCard: {
     backgroundColor: ACCENT_GREEN_BACKGROUND,
@@ -379,7 +375,7 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    width: '38%', // CADA TARJETA OCUPA CASI LA MITAD PARA QUE DOS ENTREN POR FILA CON UN GAP
+    width: '38%',
     shadowColor: DARK_GRAY,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
@@ -402,7 +398,7 @@ const styles = StyleSheet.create({
   },
   rightColumn: {
     ...Platform.select({
-      web: { flex: 1.5 }, // Ajustado el flex para mantener la proporción con el leftColumn más ancho
+      web: { flex: 1.5 },
       default: { width: '100%' },
     }),
     ...columnBaseStyles,
