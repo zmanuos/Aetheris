@@ -17,9 +17,7 @@ public class ResidenteMapper
             residente.Fecha_nacimiento = (DateTime)row["fecha_nacimiento"];
             residente.Genero = (String)row["genero"];
             residente.Telefono = row.IsNull("telefono") ? "" : (string)row["telefono"];
-            
-            residente.Foto = row.IsNull("foto") ? "default" : (string)row["foto"]; 
-            
+            residente.Foto = row.IsNull("id_foto") ? "default" : (string)row["id_foto"]; 
             residente.Fecha_ingreso = (DateTime)row["fecha_ingreso"];
             residente.Activo = (bool)row["activo"];
 

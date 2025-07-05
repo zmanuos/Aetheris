@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
+using Mysqlx.Crud;
 
 public class Alerta
 {
@@ -9,6 +10,9 @@ public class Alerta
 
     private static string selectAll = "SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA";
     private static string select = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_alerta = @ID";
+    private static string insertAlertaResidente= @"INSERT INTO ALERTA (id_residente, id_alerta_tipo, mensaje) VALUES (@id_residente, @id_alerta_tipo, @mensaje)";
+    private static string insertAlertaArea = @"INSERT INTO ALERTA (id_residente, id_area, id_alerta_tipo, mensaje) VALUES (NULL, @id_area, @id_alerta_tipo, @mensaje)";
+    private static string insertAlertaGeneral = @"INSERT INTO ALERTA (id_alerta_tipo, mensaje) VALUES (NULL, NULL, @id_alerta_tipo, @mensaje)";
 
     #endregion
 
@@ -81,6 +85,42 @@ public class Alerta
             throw new AlertaNotFoundException(id);
         }
     }
+
+    public static bool AlertaResidente(int idResidente, int idAlertaTipo, string mensaje)
+    {
+        MySqlCommand command = new MySqlCommand(insertAlertaResidente);
+        command.Parameters.AddWithValue("@id_residente", idResidente);
+        command.Parameters.AddWithValue("@id_alerta_tipo", idAlertaTipo);
+        command.Parameters.AddWithValue("@mensaje", mensaje);
+
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected > 0;
+    }
+
+    public static bool AlertaArea(int idArea, int idAlertaTipo, string mensaje)
+    {
+       
+        MySqlCommand command = new MySqlCommand(insertAlertaArea);
+        command.Parameters.AddWithValue("@id_area", idArea);
+        command.Parameters.AddWithValue("@id_alerta_tipo", idAlertaTipo);
+        command.Parameters.AddWithValue("@mensaje", mensaje);
+
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected > 0;
+    }
+
+    public static bool AlertaGeneral(int idAlertaTipo, string mensaje)
+    {
+        MySqlCommand command = new MySqlCommand(insertAlertaGeneral);
+        command.Parameters.AddWithValue("@id_alerta_tipo", idAlertaTipo);
+        command.Parameters.AddWithValue("@mensaje", mensaje);
+
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected > 0;
+    }
+
+
+
 
     #endregion
 }

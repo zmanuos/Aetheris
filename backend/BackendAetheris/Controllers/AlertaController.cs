@@ -11,21 +11,54 @@ public class AlertaController : ControllerBase
         return Ok(AlertaListResponse.GetResponse(Alerta.Get()));
     }
 
-    [HttpGet("{id}")]
-    public ActionResult Get(int id)
+    [HttpPost("residente")]
+    public ActionResult PostAlertaResidente([FromForm]int id_residente, [FromForm] int alertaTipo, [FromForm] string mensaje)
     {
         try
         {
-            Alerta alerta = Alerta.Get(id);
-            return Ok(AlertaResponse.GetResponse(alerta));
+            bool result = Alerta.AlertaResidente(id_residente, alertaTipo , mensaje);
+            if (result)
+                return Ok(MessageResponse.GetReponse(0, "Alerta ingresada exitosamente", MessageType.Success));
+            else
+                return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
         }
-        catch (AlertaNotFoundException e)
+        catch (Exception ex)
         {
-            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
         }
-        catch (Exception e)
+    }
+
+    [HttpPost("area")]
+    public ActionResult PostAlertaArea([FromForm] int id_area, [FromForm] int alertaTipo, [FromForm] string mensaje)
+    {
+        try
         {
-            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+            bool result = Alerta.AlertaArea(id_area, alertaTipo, mensaje);
+            if (result)
+                return Ok(MessageResponse.GetReponse(0, "Alerta ingresadaexitosamente", MessageType.Success));
+            else
+                return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
+        }
+    }
+
+    [HttpPost("general")]
+    public ActionResult PostAlertaGeneral( [FromForm] int alertaTipo, [FromForm] string mensaje)
+    {
+        try
+        {
+            bool result = Alerta.AlertaGeneral(alertaTipo, mensaje);
+            if (result)
+                return Ok(MessageResponse.GetReponse(0, "Alerta ingresada exitosamente", MessageType.Success));
+            else
+                return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
         }
     }
 }

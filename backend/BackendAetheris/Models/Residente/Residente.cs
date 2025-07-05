@@ -10,11 +10,11 @@ public class Residente
 
     #region statement
 
-    private static string selectAll = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE";
+    private static string selectAll = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, id_foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE";
 
-    private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
+    private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, id_foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
 
-    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto_default);";
+    private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, id_foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto_default);";
 
     private static string AsignarDispositivo = "UPDATE RESIDENTE SET dispositivo = @dispositivo WHERE id_residente = @id_residente";
 
@@ -22,7 +22,7 @@ public class Residente
 
     private static string updateEstado = "UPDATE RESIDENTE SET activo = not activo WHERE id_residente = @id";
 
-    private static string updateFotoStatement = "UPDATE RESIDENTE SET foto = @foto WHERE id_residente = @id_residente";
+    private static string updateFotoStatement = "UPDATE RESIDENTE SET id_foto = @foto WHERE id_residente = @id_residente";
 
 
     #endregion

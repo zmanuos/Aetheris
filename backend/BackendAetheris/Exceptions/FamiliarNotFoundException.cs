@@ -1,12 +1,12 @@
 ﻿using System;
 
-public class UsuarioNotFoundException : Exception
+public class FamiliarNotFoundException : Exception
 {
     private string _message;
     public override string Message => _message;
 
-    public UsuarioNotFoundException(int id)
+    public FamiliarNotFoundException(int id)
     {
-        _message = $"Could not find usuario with ID {id}.";
+        _message = $"No se encontro el familiar con ID {id}.";
     }
 }

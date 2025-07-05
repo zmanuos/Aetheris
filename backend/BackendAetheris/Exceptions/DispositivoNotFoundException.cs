@@ -5,6 +5,6 @@
 
     public DispositivoNotFoundException(int id)
     {
-        _message = $"Could Not find Device With id {id}";
+        _message = $"No se encontro el dispositivo con ID {id}";
     }
 }

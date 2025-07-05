@@ -7,6 +7,6 @@ public class ChequeoNotFoundException : Exception
 
     public ChequeoNotFoundException(int id)
     {
-        _message = $"No se encontró el chequeo con ID {id}.";
+        _message = $"No se encontró ningun chequeo con ID {id}.";
     }
 }

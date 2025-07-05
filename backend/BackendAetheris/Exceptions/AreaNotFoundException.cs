@@ -1,10 +1,12 @@
-﻿public class PersonalNotFoundException : Exception
+﻿using System;
+
+public class AreaNotFoundException : Exception
 {
     private string _message;
     public override string Message => _message;
 
-    public PersonalNotFoundException(int id)
+    public AreaNotFoundException(int id)
     {
-        _message = $"Could Not find personal With id {id}";
+        _message = $"No se encontró la area con ID {id}.";
     }
 }

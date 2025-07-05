@@ -17,23 +17,127 @@
         }
       }
     },
-    "/api/Alerta/{id}": {
-      "get": {
+    "/api/Alerta/residente": {
+      "post": {
         "tags": [
           "Alerta"
         ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_residente": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "alertaTipo": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "mensaje": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "id_residente": {
+                  "style": "form"
+                },
+                "alertaTipo": {
+                  "style": "form"
+                },
+                "mensaje": {
+                  "style": "form"
+                }
+              }
             }
           }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Alerta/area": {
+      "post": {
+        "tags": [
+          "Alerta"
         ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_area": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "alertaTipo": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "mensaje": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "id_area": {
+                  "style": "form"
+                },
+                "alertaTipo": {
+                  "style": "form"
+                },
+                "mensaje": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Alerta/general": {
+      "post": {
+        "tags": [
+          "Alerta"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "alertaTipo": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "mensaje": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "alertaTipo": {
+                  "style": "form"
+                },
+                "mensaje": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Success"
@@ -515,8 +619,6 @@
               "schema": {
                 "required": [
                   "apellido",
-                  "contra",
-                  "email",
                   "fechaNacimiento",
                   "firebase_uid",
                   "genero",
@@ -528,9 +630,13 @@
                 "type": "object",
                 "properties": {
                   "nombre": {
+                    "maxLength": 100,
+                    "minLength": 0,
                     "type": "string"
                   },
                   "apellido": {
+                    "maxLength": 100,
+                    "minLength": 0,
                     "type": "string"
                   },
                   "fechaNacimiento": {
@@ -538,17 +644,13 @@
                     "format": "date-time"
                   },
                   "genero": {
+                    "maxLength": 10,
+                    "minLength": 0,
                     "type": "string"
                   },
                   "telefono": {
-                    "type": "string"
-                  },
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "contra": {
-                    "minLength": 6,
+                    "maxLength": 15,
+                    "minLength": 0,
                     "type": "string"
                   },
                   "id_residente": {
@@ -560,6 +662,8 @@
                     "format": "int32"
                   },
                   "firebase_uid": {
+                    "maxLength": 28,
+                    "minLength": 28,
                     "type": "string"
                   }
                 }
@@ -578,12 +682,6 @@
                   "style": "form"
                 },
                 "telefono": {
-                  "style": "form"
-                },
-                "email": {
-                  "style": "form"
-                },
-                "contra": {
                   "style": "form"
                 },
                 "id_residente": {
@@ -786,16 +884,75 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "LecturaResidente"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ResidenteId": {
+                    "type": "string"
+                  },
+                  "DispositivoId": {
+                    "type": "string"
+                  },
+                  "RitmoCardiaco": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "encoding": {
+                "ResidenteId": {
+                  "style": "form"
+                },
+                "DispositivoId": {
+                  "style": "form"
+                },
+                "RitmoCardiaco": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              }
+            }
+          }
+        }
       }
     },
-    "/api/LecturaResidente/{id}": {
+    "/api/LecturaResidente/{id_residente}": {
       "get": {
         "tags": [
           "LecturaResidente"
         ],
         "parameters": [
           {
-            "name": "id",
+            "name": "id_residente",
             "in": "path",
             "required": true,
             "style": "simple",
@@ -821,6 +978,49 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ContinuaResidente"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/LecturaResidente/avg/{id_residente}": {
+      "get": {
+        "tags": [
+          "LecturaResidente"
+        ],
+        "parameters": [
+          {
+            "name": "id_residente",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "number",
+                  "format": "double"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "double"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "number",
+                  "format": "double"
                 }
               }
             }
@@ -1169,6 +1369,132 @@
             "description": "Success"
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Personal"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalUpdateDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalUpdateDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonalUpdateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Personal/manage/update-email": {
+      "post": {
+        "tags": [
+          "Personal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Personal/manage/update-password": {
+      "post": {
+        "tags": [
+          "Personal"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDirectlyDto"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDirectlyDto"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDirectlyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      }
+    },
+    "/api/Personal/manage/get-correo/{firebaseUid}": {
+      "get": {
+        "tags": [
+          "Personal"
+        ],
+        "parameters": [
+          {
+            "name": "firebaseUid",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/Residente": {
@@ -1379,64 +1705,6 @@
             "style": "simple",
             "schema": {
               "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/Usuario": {
-      "get": {
-        "tags": [
-          "Usuario"
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      }
-    },
-    "/api/Usuario/{id}": {
-      "get": {
-        "tags": [
-          "Usuario"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          }
-        }
-      },
-      "put": {
-        "tags": [
-          "Usuario"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "style": "simple",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
             }
           }
         ],
@@ -1658,6 +1926,46 @@
         },
         "additionalProperties": false
       },
+      "PersonalUpdateDto": {
+        "required": [
+          "apellido",
+          "fecha_Nacimiento",
+          "genero",
+          "nombre",
+          "telefono"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "apellido": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string"
+          },
+          "fecha_Nacimiento": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "genero": {
+            "maxLength": 10,
+            "minLength": 0,
+            "type": "string"
+          },
+          "telefono": {
+            "maxLength": 15,
+            "minLength": 0,
+            "type": "string"
+          },
+          "activo": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
       "RegisterRequest": {
         "required": [
           "email",
@@ -1681,6 +1989,44 @@
           "lastName": {
             "type": "string",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ResetPasswordDirectlyDto": {
+        "required": [
+          "firebaseUid",
+          "newPassword"
+        ],
+        "type": "object",
+        "properties": {
+          "firebaseUid": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "newPassword": {
+            "maxLength": 100,
+            "minLength": 6,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateUserEmailDto": {
+        "required": [
+          "firebaseUid",
+          "newEmail"
+        ],
+        "type": "object",
+        "properties": {
+          "firebaseUid": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "newEmail": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
           }
         },
         "additionalProperties": false
