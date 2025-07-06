@@ -767,4 +767,4 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingRight: 5,
   },
-});
+});                 
