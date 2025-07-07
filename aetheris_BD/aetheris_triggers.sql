@@ -65,4 +65,17 @@
 
     DELIMITER ;
 
+DELIMITER //
 
+CREATE TRIGGER update_fecha_asignacion_on_estado_change
+AFTER UPDATE ON dispositivo
+FOR EACH ROW
+BEGIN
+    IF NEW.estado = 0 AND OLD.estado != 0 THEN
+        UPDATE dispositivo
+        SET fecha_asignacion = NULL
+        WHERE id_dispositivo = NEW.id_dispositivo; 
+    END IF;
+END //
+
+DELIMITER ;

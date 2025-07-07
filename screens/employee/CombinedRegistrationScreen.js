@@ -953,12 +953,12 @@ useEffect(() => {
 const containerBaseStyles = {
   backgroundColor: WHITE,
   borderRadius: 15,
-  padding: 15, // Reducido
+  padding: 10, // Reducido de 15 a 10
   shadowColor: DARK_GRAY,
-  shadowOffset: { width: 0, height: 4 }, // Menos pronunciado
+  shadowOffset: { width: 0, height: 4 },
   shadowOpacity: 0.1,
-  shadowRadius: 8, // Menos pronunciado
-  elevation: 6, // Menos pronunciado
+  shadowRadius: 8,
+  elevation: 6,
   borderWidth: 1.5,
   borderColor: VERY_LIGHT_GRAY,
 };
@@ -988,7 +988,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 10, // Más compacto verticalmente
+    paddingVertical: 5, // Más compacto verticalmente, reducido de 10 a 5
   },
   mainContentWrapper: {
     flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
@@ -1001,7 +1001,7 @@ const styles = StyleSheet.create({
   },
   formCard: {
     ...containerBaseStyles,
-    padding: IS_LARGE_SCREEN ? 15 : 10, // Más compacto
+    padding: IS_LARGE_SCREEN ? 10 : 8, // Más compacto, ajustado de 15 a 10 y de 10 a 8
     margin: IS_LARGE_SCREEN ? 8 : 5, // Más compacto
     alignItems: 'center',
     flex: 1,
@@ -1011,9 +1011,9 @@ const styles = StyleSheet.create({
   },
   // INICIO DE ESTILOS DE FOTO MODIFICADOS
   photoContainer: {
-    width: 150, // Más grande
-    height: 150, // Más grande
-    borderRadius: 75, // Sigue siendo un círculo
+    width: 120, // Más pequeño, de 150 a 120
+    height: 120, // Más pequeño, de 150 a 120
+    borderRadius: 60, // Sigue siendo un círculo (mitad del width/height)
     backgroundColor: VERY_LIGHT_GRAY, // Fondo más claro
     justifyContent: 'center',
     alignItems: 'center',
@@ -1032,7 +1032,7 @@ const styles = StyleSheet.create({
   },
   photoPlaceholderText: {
     color: LIGHT_GRAY, // Color de texto claro
-    fontSize: 16, // Texto más grande
+    fontSize: 14, // Texto más pequeño, de 16 a 14
     marginTop: 5,
     fontWeight: '600',
     textAlign: 'center',
@@ -1053,7 +1053,7 @@ const styles = StyleSheet.create({
     fontSize: IS_LARGE_SCREEN ? 20 : 18,
     fontWeight: '700',
     color: PRIMARY_GREEN,
-    marginBottom: 10, // Ajustado
+    marginBottom: 8, // Ajustado de 10 a 8
     textAlign: 'center',
   },
   sectionSubtitle: {
@@ -1064,7 +1064,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   inputLabel: {
-    fontSize: 13,
+    fontSize: 12, // Reducido de 13 a 12
     color: DARK_GRAY,
     marginBottom: 3,
     fontWeight: '600',
@@ -1078,13 +1078,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     backgroundColor: BACKGROUND_LIGHT,
-    height: 38, // Ligeramente más pequeño
+    height: 35, // Ligeramente más pequeño, de 38 a 35
   },
   inputField: {
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 14,
+    fontSize: 13, // Reducido de 14 a 13
     paddingLeft: 6,
     ...Platform.select({
       web: {
@@ -1105,8 +1105,8 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: ERROR_RED,
-    fontSize: 11,
-    marginBottom: 0, // Ajustado para no afectar el tamaño de los forms tanto
+    fontSize: 10, // Reducido de 11 a 10
+    marginBottom: 0,
     marginTop: 3,
     alignSelf: 'flex-start',
     paddingLeft: 4,
@@ -1118,7 +1118,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     backgroundColor: BACKGROUND_LIGHT,
-    height: 38, // Ligeramente más pequeño
+    height: 35, // Ligeramente más pequeño, de 38 a 35
     borderWidth: 1.5,
     borderColor: VERY_LIGHT_GRAY,
   },
@@ -1137,11 +1137,11 @@ const styles = StyleSheet.create({
     }),
   },
   pickerItem: {
-    fontSize: 14,
+    fontSize: 13, // Reducido de 14 a 13
   },
   dateInputText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13, // Reducido de 14 a 13
     color: MEDIUM_GRAY,
     paddingLeft: 6,
   },
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 14,
+    fontSize: 13, // Reducido de 14 a 13
     paddingLeft: 6,
     borderWidth: 0,
     backgroundColor: 'transparent',
@@ -1167,17 +1167,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   charCounter: {
-    fontSize: 11,
+    fontSize: 10, // Reducido de 11 a 10
     color: LIGHT_GRAY,
     marginLeft: 6,
   },
   primaryButton: {
     backgroundColor: PRIMARY_GREEN,
-    paddingVertical: 10,
+    paddingVertical: 8, // Reducido de 10 a 8
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 15,
+    marginTop: 10, // Reducido de 15 a 10
     marginBottom: 15,
     width: IS_LARGE_SCREEN ? 350 : '85%',
     maxWidth: 450,
@@ -1199,7 +1199,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: WHITE,
-    fontSize: 15,
+    fontSize: 14, // Reducido de 15 a 14
     fontWeight: 'bold',
   },
 });

@@ -24,6 +24,7 @@ const adminMenuItems = [
     { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
     { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
   ]},
+  { id: 'DeviceManagement', title: 'Gestión de Dispositivos', icon: 'hardware-chip-outline', type: 'item' },
   { id: 'AsylumData', title: 'Datos del Asilo', icon: 'business-outline', type: 'item' }, // <-- Admin
   { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
   { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },

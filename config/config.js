@@ -1,5 +1,5 @@
 //   ./config/config.js --  Configuracion Global
-const port = 5218;
+const port = 5214;
 const ip = "172.18.2.253"; 
 
 const Config = {

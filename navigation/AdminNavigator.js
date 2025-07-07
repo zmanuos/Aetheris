@@ -20,7 +20,10 @@ import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen'
 import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen';
 import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
 // Importa la nueva pantalla de edición
-import EmployeeEditScreen from '../screens/admin/EmployeeEditScreen'; //
+import EmployeeEditScreen from '../screens/admin/EmployeeEditScreen';
+
+// Importa la nueva pantalla de Gestión de Dispositivos
+import DeviceManagementScreen from '../screens/admin/DeviceManagementScreen'; 
 
 
 const Drawer = createDrawerNavigator();
@@ -59,7 +62,6 @@ function EmployeeManagementStackScreen() {
         component={EmployeeCreationScreen}
         options={{ title: 'Registrar Nuevo Empleado' }}
       />
-      {/* Añade la ruta para la pantalla de edición de empleado */}
       <EmployeeStack.Screen
         name="EditEmployee" //
         component={EmployeeEditScreen} //
@@ -98,6 +100,9 @@ const AdminNavigator = ({ onLogout, userRole }) => {
 
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
 
+      <Drawer.Screen 
+        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'DISPOSITIVOS' }} 
+      />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
       <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
