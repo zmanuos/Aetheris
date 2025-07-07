@@ -8,7 +8,7 @@ public class MongoDbContext
 
     public MongoDbContext()
     {
-        var connectionString = "mongodb://localhost:27017"; // o tu URL de Mongo Atlas
+        var connectionString = "mongodb://localhost:27017"; 
         var client = new MongoClient(connectionString);
         _database = client.GetDatabase("aetheris");
     }

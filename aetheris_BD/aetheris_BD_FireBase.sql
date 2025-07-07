@@ -50,7 +50,7 @@ CREATE TABLE RESIDENTE (
     genero VARCHAR(10),
     telefono VARCHAR(15),
     dispositivo INT,
-    id_foto VARCHAR(255) DEFAULT 'default',
+    foto VARCHAR(255) DEFAULT 'default',
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (dispositivo) REFERENCES DISPOSITIVO(id_dispositivo)

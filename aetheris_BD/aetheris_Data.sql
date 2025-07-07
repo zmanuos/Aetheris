@@ -23,7 +23,7 @@ INSERT INTO DISPOSITIVO (direccion_MAC, estado) VALUES
 ('00:1A:7D:DA:71:03', FALSE); -- Este estará libre, no asignado a ningún residente
 
 -- Tabla: RESIDENTE
-INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, dispositivo, id_foto) VALUES
+INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, dispositivo, foto) VALUES
 ('María', 'González', '1945-05-14', 'Femenino', '6649876543', 1, 'maria.jpg'),
 ('Jorge', 'Martínez', '1938-09-23', 'Masculino', '6641122334', 2, 'jorge.jpg'),
 ('Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg'); -- sin dispositivo aún

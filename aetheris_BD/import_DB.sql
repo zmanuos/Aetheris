@@ -330,7 +330,7 @@ CREATE TABLE `RESIDENTE` (
 -- Volcado de datos para la tabla `RESIDENTE`
 --
 
-INSERT INTO `RESIDENTE` (`id_residente`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `dispositivo`, `id_foto`, `fecha_ingreso`, `activo`) VALUES
+INSERT INTO `RESIDENTE` (`id_residente`, `nombre`, `apellido`, `fecha_nacimiento`, `genero`, `telefono`, `dispositivo`, `foto`, `fecha_ingreso`, `activo`) VALUES
 (1, 'María', 'González', '1945-05-14', 'Femenino', '6649876543', 1, 'maria.jpg', '2025-07-03 16:27:45', 1),
 (2, 'Jorge', 'Martínez', '1938-09-23', 'Masculino', '6641122334', 2, 'jorge.jpg', '2025-07-03 16:27:45', 1),
 (3, 'Luz', 'Ramírez', '1940-01-30', 'Femenino', '6649988776', NULL, 'luz.jpg', '2025-07-03 16:27:45', 1);
