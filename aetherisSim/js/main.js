@@ -10,8 +10,13 @@ async function init() {
 
     const response = await obtenerResidentes();
 
-    const residentes = response.data;
+    let residentes = response.data;
     console.log("Residentes recibidos:", residentes);
+
+    if (residentes.length > 10) {
+        residentes = residentes.slice(0, 10);
+        console.log("Simulating for the first 10 residents.");
+    }
 
     document.getElementById("button-start").addEventListener("click", () => {
         residentes.forEach(residente => {
@@ -85,16 +90,15 @@ async function enviarAlertaResidente(idResidente, alertaTipo, mensaje) {
     }
 }
 
-
 async function enviarLectura(residenteId, dispositivoId, RitmoPromedio) {
-    console.log("ENVIANDO:", residenteId, dispositivoId, RitmoPromedio); // verificación
+    console.log("ENVIANDO:", residenteId, dispositivoId, RitmoPromedio);
 
     const ritmo = parseInt(RitmoPromedio);
 
     const formData = new FormData();
     formData.append("ResidenteId", residenteId);
     formData.append("DispositivoId", dispositivoId);
-    formData.append("RitmoCardiaco", ritmo); // asegúrate que sea un número o string válido
+    formData.append("RitmoCardiaco", ritmo);
 
     try {
         const response = await fetch("https://localhost:7160/api/LecturaResidente", {
@@ -102,7 +106,6 @@ async function enviarLectura(residenteId, dispositivoId, RitmoPromedio) {
             body: formData,
             headers: {
                 "Accept": "text/plain"
-                // NO agregues Content-Type, fetch lo pone solo si usas FormData
             }
         });
 
@@ -110,50 +113,45 @@ async function enviarLectura(residenteId, dispositivoId, RitmoPromedio) {
             throw new Error(`Error HTTP: ${response.status}`);
         }
 
-        const data = await response.text(); // o .json() si esperas JSON
+        const data = await response.text();
         console.log("Respuesta del servidor:", data);
     } catch (error) {
         console.error("Error al enviar lectura:", error);
     }
 }
 
-
-
-
 function generarRitmoCardiaco(promedio, horaActual) {
     var ritmo = 0;
     const variacion = config.variation[horaActual];
 
-    var offset = Math.floor(Math.random() * (variacion + 1)); // rango de variacion
-    var signo = Math.random() < 0.3 ? -1 : 1; // signo de la variacion + o -
+    var offset = Math.floor(Math.random() * (variacion + 1));
+    var signo = Math.random() < 0.3 ? -1 : 1;
 
-    if (horaActual >= 0 && horaActual <= 6) { // Madrugada
-        // Mientras duerme se reduce su ritmo cardiaco entre 5% a 15% y luego se le resta el offset correspondiente a la hora
+    if (horaActual >= 0 && horaActual <= 6) {
         return ritmo = (promedio - (promedio * ((Math.random() * (0.15 - 0.09)) + 0.09)) - (offset/1.65));
-    } else if (horaActual >= 7 && horaActual <= 8) { // Mañana
+    } else if (horaActual >= 7 && horaActual <= 8) {
         ritmo = promedio + (offset * signo) - 5 ;
-    } else if (horaActual >= 9 && horaActual <= 16) { // Mediodía
+    } else if (horaActual >= 9 && horaActual <= 16) {
         if (signo < 0){
             ritmo = promedio + (promedio * ((Math.random() * 0.10) + 0.05)) - (offset / 5);
         } else {
             ritmo = promedio + (offset);
         }
-    } else if (horaActual >= 17 && horaActual <= 19) { // Tarde
+    } else if (horaActual >= 17 && horaActual <= 19) {
         if (signo < 0){
             ritmo = promedio - (offset / 5);
         } else {
             ritmo = promedio + (offset);
         }
-    } else if (horaActual >= 20 && horaActual <= 21) { // Noche
+    } else if (horaActual >= 20 && horaActual <= 21) {
         ritmo = (promedio - (promedio * ((Math.random() * (0.05)))) + 3);
     }
-    else if (horaActual >= 22 && horaActual <= 23) { // Noche
+    else if (horaActual >= 22 && horaActual <= 23) {
         ritmo = (promedio - (promedio * ((Math.random() * 0.05) )) - (offset / 2));
     }
 
     return ritmo;
 }
-
 
 function generarVariaciones(promedio, horaActual, variacionCritica) {
     var ritmo = 0;
@@ -163,21 +161,19 @@ function generarVariaciones(promedio, horaActual, variacionCritica) {
     ritmo = generarRitmoCardiaco(promedio, horaActual);
 
     switch (variacionCritica) {
-        case 1: // Arritmia
+        case 1:
             modificador = (ritmo * 0.70) + (ritmo * (Math.random() * 0.30));
             break;
-        case 2:  // bradicardia
+        case 2:
             modificador = (ritmo * 0.65) + ( signoCritico * (promedio * ((Math.random() * (0.05)))));
             break;
-        case 3: // taquicardia
+        case 3:
             modificador = (ritmo * 1.30) + ( signoCritico * (promedio * ((Math.random() * (0.05))))) ;
             break;
     }
 
     return { ritmo, modificador };
 }
-
-
 
 let simulacionActiva = false;
 
@@ -199,11 +195,11 @@ function simularResidente(residenteId, promedio, dispositivoId) {
     if (esCritico) {
         const rngVariacion = Math.random();
         if (rngVariacion < 0.33) {
-            variacion = 1; // arritmia
+            variacion = 1;
         } else if (rngVariacion < 0.66) {
-            variacion = 2; // bradicardia
+            variacion = 2;
         } else {
-            variacion = 3; // taquicardia
+            variacion = 3;
         }
     }
 

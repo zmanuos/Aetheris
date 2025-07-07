@@ -35,6 +35,8 @@ INSERT INTO PARENTESCO (id_parentesco, parentesco) VALUES
 (3, 'Hermano/a'),
 (4, 'Nieto/a'),
 (5, 'Sobrino/a');
+(6, 'Otro');
+
 
 
 -- Carlos González (Hijo de María González, id_residente = 1, id_parentesco = 1)

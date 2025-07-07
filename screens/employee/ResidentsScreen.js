@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,151 +7,192 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
-  // Eliminamos Alerta
   Platform,
   TextInput,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRoute } from '@react-navigation/native'; // Importamos useRoute
-
+import { useRoute, useIsFocused } from '@react-navigation/native';
 import ResidentCard from '../../components/shared/ResidentCard';
-import { useNotification } from '../../src/context/NotificationContext'; // CAMBIO: Ruta de la notificación corregida
+import Config from '../../config/config';
+import { useNotification } from '../../src/context/NotificationContext';
 
+const API_URL = Config.API_BASE_URL;
 const GRID_CONTAINER_PADDING = 10;
+const POLLING_INTERVAL_MS = 3000;
 
 export default function ResidentsScreen({ navigation }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
-  const { showNotification } = useNotification(); // Usamos el hook de notificación
-  const route = useRoute(); // Hook para acceder a los parámetros de la ruta
+  const [residents, setResidents] = useState([]);
+  const [searchText, setSearchText] = useState('');
 
-  const [residents, setResidents] = useState([
-    {
-      id_residente: 101,
-      nombre: 'Sofía',
-      apellido: 'Ramírez',
-      fecha_nacimiento: '1945-03-10T00:00:00Z',
-      genero: 'Femenino',
-      telefono: '5511223344',
-      activo: true,
-      nombre_area: 'Ala A - Hab. 1',
-      ultima_frecuencia_cardiaca: 75,
-      historial_frecuencia_cardiaca: [70, 72, 75, 73, 76, 74, 75],
-      estado_salud_general: 'Alta',
-      fecha_ingreso: '2020-01-15T00:00:00Z',
-      ubicacion_actual: 'Planta Baja, cerca de la ventana',
-      contacto_familiar_nombre: 'Laura Ramírez',
-      contacto_familiar_parentesco: 'Hija',
-      contacto_familiar_telefono: '5598765432',
-    },
-    {
-      id_residente: 102,
-      nombre: 'Roberto',
-      apellido: 'Castro',
-      fecha_nacimiento: '1938-07-22T00:00:00Z',
-      genero: 'Masculino',
-      telefono: '5522334455',
-      activo: true,
-      nombre_area: 'Ala B - Hab. 5',
-      ultima_frecuencia_cardiaca: 95,
-      historial_frecuencia_cardiaca: [88, 92, 95, 90, 93, 94, 95],
-      estado_salud_general: 'Media',
-      fecha_ingreso: '2019-05-20T00:00:00Z',
-      ubicacion_actual: 'Segundo Piso, cerca de la sala común',
-      contacto_familiar_nombre: 'Miguel Castro',
-      contacto_familiar_parentesco: 'Hijo',
-      contacto_familiar_telefono: '5512345678',
-    },
-    {
-      id_residente: 103,
-      nombre: 'Isabel',
-      apellido: 'Vargas',
-      fecha_nacimiento: '1950-01-05T00:00:00Z',
-      genero: 'Femenino',
-      telefono: '5533445566',
-      activo: false,
-      nombre_area: 'Ala C - Hab. 10',
-      ultima_frecuencia_cardiaca: 58,
-      historial_frecuencia_cardiaca: [65, 60, 58, 62, 59, 60, 58],
-      estado_salud_general: 'Baja',
-      fecha_ingreso: '2021-09-01T00:00:00Z',
-      ubicacion_actual: 'Primer Piso, patio interior',
-      contacto_familiar_nombre: 'Ana Vargas',
-      contacto_familiar_parentesco: 'Nieta',
-      contacto_familiar_telefono: '5501234567',
-    },
-    {
-      id_residente: 104,
-      nombre: 'Fernando',
-      apellido: 'López',
-      fecha_nacimiento: '1962-11-20T00:00:00Z',
-      genero: 'Masculino',
-      telefono: '5544556677',
-      activo: true,
-      nombre_area: 'Ala A - Hab. 3',
-      ultima_frecuencia_cardiaca: 80,
-      historial_frecuencia_cardiaca: [78, 80, 82, 79, 81, 80, 80],
-      estado_salud_general: 'Alta',
-      fecha_ingreso: '2022-03-01T00:00:00Z',
-      ubicacion_actual: 'Planta Baja, cerca de la entrada principal',
-      contacto_familiar_nombre: 'Pablo López',
-      contacto_familiar_parentesco: 'Sobrino',
-      contacto_familiar_telefono: '5578901234',
-    },
-    {
-      id_residente: 105,
-      nombre: 'Carmen',
-      apellido: 'Díaz',
-      fecha_nacimiento: '1930-02-14T00:00:00Z',
-      genero: 'Femenino',
-      telefono: '5555667788',
-      activo: true,
-      nombre_area: 'Ala B - Hab. 7',
-      ultima_frecuencia_cardiaca: 70,
-      historial_frecuencia_cardiaca: [68, 70, 71, 69, 72, 70, 70],
-      estado_salud_general: 'Alta',
-      fecha_ingreso: '2018-08-10T00:00:00Z',
-      ubicacion_actual: 'Segundo Piso, balcón sur',
-      contacto_familiar_nombre: 'Elena Díaz',
-      contacto_familiar_parentesco: 'Hija',
-      contacto_familiar_telefono: '5534567890',
-    },
-  ]);
+  const { showNotification } = useNotification();
+  const route = useRoute();
+  const isFocused = useIsFocused();
 
-  // useEffect para mostrar la notificación si el registro fue exitoso
+  const residentsRef = useRef(residents);
+  useEffect(() => {
+    residentsRef.current = residents;
+  }, [residents]);
+
+  const fetchResidentsData = useCallback(async (initialLoad = false) => {
+    if (initialLoad) setIsLoading(true);
+    setFetchError('');
+
+    try {
+      let currentResidentsData = residentsRef.current;
+      
+      if (initialLoad || currentResidentsData.length === 0) {
+        const residentsResponse = await fetch(`${API_URL}/Residente`);
+        if (!residentsResponse.ok) {
+          throw new Error(`HTTP error! status: ${residentsResponse.status}`);
+        }
+        const residentsJson = await residentsResponse.json();
+
+        if (Array.isArray(residentsJson)) {
+          currentResidentsData = residentsJson;
+        } else if (residentsJson && (residentsJson.data || residentsJson.items || residentsJson.residents)) {
+          currentResidentsData = residentsJson.data || residentsJson.items || residentsJson.residents;
+          if (!Array.isArray(currentResidentsData)) {
+              console.warn('Se esperaba un array en data/items/residents, pero se obtuvo:', currentResidentsData);
+              currentResidentsData = [];
+          }
+        } else {
+          console.warn('La respuesta de la API de residentes no es un array y no contiene la propiedad data/items/residents. Respuesta:', residentsJson);
+          currentResidentsData = [];
+        }
+      }
+
+      const baseStaticUrl = API_URL.replace('/api', '');
+
+      const residentsWithDynamicData = await Promise.all(currentResidentsData.map(async (resident) => {
+        let heartRateHistory = [];
+        let latestHeartRate = null;
+
+        try {
+          const heartRateResponse = await fetch(`${API_URL}/LecturaResidente/${resident.id_residente}`);
+          if (heartRateResponse.ok) {
+            const heartRateData = await heartRateResponse.json();
+            if (Array.isArray(heartRateData)) {
+              const sortedData = heartRateData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+              
+              heartRateHistory = sortedData.map(record => record.ritmoCardiaco);
+              if (sortedData.length > 0) {
+                latestHeartRate = sortedData[0].ritmoCardiaco;
+              }
+            }
+          } else {
+            console.warn(`No se pudo obtener la frecuencia cardíaca para el residente ${resident.id_residente}: ${heartRateResponse.statusText}`);
+          }
+        } catch (error) {
+          console.error(`Error al obtener la frecuencia cardíaca para el residente ${resident.id_residente}:`, error);
+        }
+
+        return {
+          ...resident,
+          foto_url: resident.foto && resident.foto !== 'nophoto.png' ? `${baseStaticUrl}/images/residents/${resident.foto}` : null,
+          historial_frecuencia_cardiaca: heartRateHistory,
+          ultima_frecuencia_cardiaca: latestHeartRate,
+        };
+      }));
+
+      setResidents(residentsWithDynamicData);
+    } catch (error) {
+      console.error('Error al obtener residentes:', error);
+      setFetchError('No se pudieron cargar los residentes. Intenta de nuevo más tarde.');
+      if (initialLoad) showNotification('Error al cargar residentes.', 'error');
+    } finally {
+      if (initialLoad) setIsLoading(false);
+    }
+  }, [showNotification]);
+
+  useEffect(() => {
+    let pollingInterval;
+    if (isFocused) {
+      fetchResidentsData(true);
+      pollingInterval = setInterval(() => {
+        fetchResidentsData(false);
+      }, POLLING_INTERVAL_MS);
+    }
+
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [isFocused, fetchResidentsData]);
+
   useEffect(() => {
     if (route.params?.registrationSuccess) {
-      showNotification('Residente registrado exitosamente!', 'success'); // CAMBIO: Mensaje de la notificación
-      // Borrar el parámetro para que no se muestre de nuevo al volver a la pantalla
+      showNotification('Residente registrado exitosamente!', 'success');
       navigation.setParams({ registrationSuccess: undefined });
     }
   }, [route.params?.registrationSuccess, showNotification, navigation]);
-
 
   const handleAddNewResident = () => {
     navigation.navigate('RegisterResidentAndFamiliar');
   };
 
   const handleViewProfile = (id) => {
-    showNotification(`Ver perfil del residente con ID: ${id}`, 'info');
+    showNotification(`Navegando a perfil del residente con ID: ${id}`, 'info');
+    // navigation.navigate('ResidentProfile', { residentId: id });
   };
 
   const handleHistory = (id) => {
-    showNotification(`Ver historial médico del residente con ID: ${id}`, 'info');
+    showNotification(`Navegando a historial médico del residente con ID: ${id}`, 'info');
+    // navigation.navigate('ResidentHistory', { residentId: id });
   };
 
   const handleEditResident = (id) => {
-    showNotification(`Editar residente con ID: ${id}`, 'info');
+    showNotification(`Navegando a edición del residente con ID: ${id}`, 'info');
+    // navigation.navigate('EditResident', { residentId: id });
   };
 
   const handleDeleteResident = (id) => {
-    // Para la confirmación de eliminación, podrías implementar un modal personalizado
-    // o un componente de confirmación si no quieres usar Alert.alert en absoluto.
-    // Por simplicidad, aquí simulamos la confirmación con una notificación.
-    showNotification(`Simulando eliminación del residente con ID: ${id}`, 'warning', 5000); // Muestra por más tiempo para visibilidad
-    // Lógica real de eliminación (no incluida aquí)
-    // showNotification(`Residente ${id} eliminado.`, 'success');
+    Alert.alert(
+      'Confirmar Eliminación',
+      '¿Estás seguro de que quieres eliminar a este residente? Esta acción es irreversible.',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Eliminar',
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              const response = await fetch(`${API_URL}/Residente/${id}`, {
+                method: 'DELETE',
+              });
+
+              if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error al eliminar residente: ${errorText || response.statusText}`);
+              }
+
+              showNotification('Residente eliminado exitosamente.', 'success');
+              fetchResidentsData(true); 
+            } catch (error) {
+              console.error('Error deleting resident:', error);
+              showNotification(`Error al eliminar: ${error.message}`, 'error');
+            } finally {
+              setIsLoading(false);
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+      { cancelable: true }
+    );
   };
+
+  const filteredResidents = residents.filter(resident =>
+    resident.nombre.toLowerCase().includes(searchText.toLowerCase()) ||
+    resident.apellido.toLowerCase().includes(searchText.toLowerCase()) ||
+    (resident.nombre_area && resident.nombre_area.toLowerCase().includes(searchText.toLowerCase()))
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -169,6 +210,8 @@ export default function ResidentsScreen({ navigation }) {
             style={styles.searchInput}
             placeholder="Buscar residente..."
             placeholderTextColor="#9CA3AF"
+            value={searchText}
+            onChangeText={setSearchText}
           />
         </View>
         <TouchableOpacity style={styles.filterButton}>
@@ -180,12 +223,12 @@ export default function ResidentsScreen({ navigation }) {
         <ActivityIndicator size="large" color="#10B981" style={styles.loadingIndicator} />
       ) : fetchError ? (
         <Text style={styles.errorText}>{fetchError}</Text>
-      ) : residents.length === 0 ? (
-        <Text style={styles.noResidentsText}>No hay residentes registrados.</Text>
+      ) : filteredResidents.length === 0 ? (
+        <Text style={styles.noResidentsText}>No hay residentes registrados que coincidan con la búsqueda.</Text>
       ) : (
         <ScrollView style={styles.scrollView}>
           <View style={styles.residentsGrid}>
-            {residents.map((resident) => (
+            {filteredResidents.map((resident) => (
               <ResidentCard
                 key={resident.id_residente}
                 resident={resident}
