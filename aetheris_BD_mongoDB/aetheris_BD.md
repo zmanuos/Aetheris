@@ -1,5 +1,5 @@
 // Crear y poblar colección lecturas_continuas_residente
-db.createCollection("lecturas_continuas_residente");
+db.createCollection("  ");
 db.lecturas_continuas_residente.insertMany([
   {
     "residenteId": "RESIDENTE001",

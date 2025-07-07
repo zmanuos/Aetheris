@@ -4,4 +4,4 @@ node_modules
 **/bin/
 **/obj/
 .vs/
-backend/BackendAetheris/obj/
+**/obj/
