@@ -17,7 +17,10 @@ public class LecturaAmbientalController : ControllerBase
     [HttpGet]
     public ActionResult<List<LecturaAmbiental>> GetTodas()
     {
-        return _coleccion.Find(_ => true).ToList();
+        return _coleccion.Find(x => true)
+            .SortByDescending(x => x.Timestamp)
+            .Limit(200)
+            .ToList();
     }
 
     
@@ -26,6 +29,25 @@ public class LecturaAmbientalController : ControllerBase
     {
         var lecturas = _coleccion.Find(x => x.Zona == zona).ToList();
         return lecturas.Count == 0 ? NotFound() : Ok(lecturas);
+    }
+
+    [HttpPost]
+    public ActionResult CrearLectura([FromForm] LecturaAmbientalPost lectura)
+    {
+        if (string.IsNullOrWhiteSpace(lectura.Zona))
+            return BadRequest("Zona es requerida.");
+
+        var nuevaLectura = new LecturaAmbiental
+        {
+            Zona = lectura.Zona,
+            Temperatura = lectura.Temperatura,
+            Humedad = lectura.Humedad,
+            Timestamp = DateTime.UtcNow
+        };
+
+        _coleccion.InsertOne(nuevaLectura);
+
+        return Ok(MessageResponse.GetReponse(0, "lectura enviada exitosamente", MessageType.Success));
     }
 
 }

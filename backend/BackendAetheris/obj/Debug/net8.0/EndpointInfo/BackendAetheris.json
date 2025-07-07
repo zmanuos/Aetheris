@@ -797,6 +797,56 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "LecturaAmbiental"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "Zona": {
+                    "type": "string"
+                  },
+                  "Temperatura": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "Humedad": {
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "Dispositivo": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                }
+              },
+              "encoding": {
+                "Zona": {
+                  "style": "form"
+                },
+                "Temperatura": {
+                  "style": "form"
+                },
+                "Humedad": {
+                  "style": "form"
+                },
+                "Dispositivo": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
       }
     },
     "/api/LecturaAmbiental/zona/{zona}": {
@@ -1827,20 +1877,24 @@
             "nullable": true
           },
           "dispositivoId": {
-            "type": "string",
+            "type": "integer",
+            "format": "int32",
             "nullable": true
           },
           "temperatura": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "humedad": {
             "type": "number",
-            "format": "double"
+            "format": "double",
+            "nullable": true
           },
           "timestamp": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false

@@ -1,4 +1,5 @@
 import { config } from './config.js';
+import { simularDiaTemperatura } from './mainTemperatura.js';
 
 var contador = 0;
 var acomuladorOriginal = 0;
@@ -22,6 +23,13 @@ async function init() {
                 simularResidente(residenteId, promedio, dispositivoId);
             }, 11000);
         });
+    });
+
+        document.getElementById("button-start-temperatura").addEventListener("click", () => {
+        console.log("Enviando datos de temperatura..");
+        const hora = new Date().getHours();
+        const mes = new Date().getMonth();
+        simularDiaTemperatura("patio", 2000, mes);
     });
 
     document.getElementById("button-stop").addEventListener("click", () => {

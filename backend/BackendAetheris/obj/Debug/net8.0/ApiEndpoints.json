@@ -492,6 +492,37 @@
   },
   {
     "ContainingType": "LecturaAmbientalController",
+    "Method": "CrearLectura",
+    "RelativePath": "api/LecturaAmbiental",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "Zona",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Temperatura",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "Humedad",
+        "Type": "System.Double",
+        "IsRequired": false
+      },
+      {
+        "Name": "Dispositivo",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LecturaAmbientalController",
     "Method": "GetPorZona",
     "RelativePath": "api/LecturaAmbiental/zona/{zona}",
     "HttpMethod": "GET",
