@@ -17,7 +17,24 @@ export var config = {
             28, 30, 30, 32, 32,            // 11:00 - 15:00: mayor estrés físico/mental, riesgo de crisis
             30, 28, 25, 22,                // 16:00 - 19:00: bajando poco a poco pero aún con riesgo
             18, 15, 12, 10                 // 20:00 - 23:00: noche, situaciones raras pero posibles (ej. apnea)
-        ]
+        ],
+        averageMonthlyTemperature: [
+            13, 14, 15, 17, 18, 20, 23, 24, 23, 20, 16, 14
+        ],
+        temperatureVariation: [
+            -4, -4, -4, -3, -3, -2, 0,
+            1,  2,  3,  4,
+            5,  6,  6,  5,  4,
+            3,  2,  1,  0,
+            -1, -2, -3, -4
+        ],
+        criticalTemperatureVariation: [
+            -6, -5, -5, -4, -3, -1, 0,
+            3,  5,  7,  9,
+            11, 13, 14, 15, 14,
+            10,  7,  5,  3,
+            0, -2, -4, -5
+    ]
 }
 
 /*

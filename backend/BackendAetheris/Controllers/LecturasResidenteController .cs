@@ -18,7 +18,10 @@ public class LecturaResidenteController : ControllerBase
     [HttpGet]
     public ActionResult<List<ContinuaResidente>> GetAll()
     {
-        var lecturas = _lecturasCollection.Find(_ => true).ToList();
+        var lecturas = _lecturasCollection.Find(x => true)
+            .SortByDescending(x => x.Timestamp)
+            .Limit(200)
+            .ToList().ToList();
         return Ok(lecturas);
     }
 
@@ -27,7 +30,9 @@ public class LecturaResidenteController : ControllerBase
     {
         var lectura = _lecturasCollection
             .Find(x => x.ResidenteId == id_residente)
-            .FirstOrDefault();
+            .SortByDescending(x => x.Timestamp)
+            .Limit(200)
+            .ToList();
 
         if (lectura == null) return NotFound();
         return Ok(lectura);
