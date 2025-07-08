@@ -1,7 +1,58 @@
-node_modules
+# Ignore Node.js modules (if you have frontend tooling)
+node_modules/
 
 # Visual Studio / .NET
-**/bin/
-**/obj/
+## Build artifacts
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.dll
+*.exe
+*.pdb
+*.suo
+*.user
+*.log
+*.rpt
+*.bak
+*.ncb
+*.scc
+*.vspscc
+*.vssscc
+
+## Visual Studio cache and solution user options
 .vs/
-**/obj/
+*.sln.docstates
+*.vsp
+*.safariextz
+*.webtest
+*.testsettings
+
+## Resharper / Rider
+.idea/
+*.ReSharper
+*.DotSettings
+_ReSharper.*/
+
+## NuGet
+*.nupkg
+*.nuget.props
+*.nuget.targets
+!/packages.config
+/packages/
+/src/packages/
+
+## Rider
+*.csproj.DotSettings
+*.sln.DotSettings
+
+## Others
+*.*proj.user
+*.resharper
+*.sqlproj.user
+*.dbmdl
+*.jfm
+*.pfx
+*.vsix
+*.vstec
+*.webconfig
