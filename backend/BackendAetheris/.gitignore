@@ -38,8 +38,8 @@ _ReSharper.*/
 *.nupkg
 *.nuget.props
 *.nuget.targets
-*.dgspec.json           # Agrega esto para BackendAetheris.csproj.nuget.dgspec.json
-*.nuget.cache           # Agrega esto para project.nuget.cache
+*.dgspec.json
+*.nuget.cache
 !/packages.config
 /packages/
 /src/packages/
@@ -62,4 +62,6 @@ _ReSharper.*/
 # Archivos generados comunes que a menudo se encuentran en obj/ o salida de construcción
 *.cache
 *.txt
-*.json
+
+# Excepciones para archivos de configuración .json
+!**/*.json

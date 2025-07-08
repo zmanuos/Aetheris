@@ -1,4 +1,3 @@
-// AETHERIS/screens/admin/DeviceManagementScreen.js
 import React, { useState, useEffect } from 'react';
 import {
     View,
@@ -20,7 +19,7 @@ import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Config from '../../config/config';
 // Importa los componentes de creación y edición de dispositivos (deberás crearlos)
 // import CreateDeviceScreen from './CreateDeviceScreen'; // Asume que este archivo existe
-// import EditDeviceScreen from './EditDeviceScreen';   // Asume que este archivo existe
+// import EditDeviceScreen from './EditDeviceScreen';    // Asume que este archivo existe
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -62,23 +61,50 @@ export default function DeviceManagementScreen() {
         setIsLoadingDevices(true);
         setFetchError('');
         try {
-            const response = await fetch(`${API_URL}/Dispositivo`);
+            // Fetch devices and residents concurrently
+            const [devicesResponse, residentsResponse] = await Promise.all([
+                fetch(`${API_URL}/Dispositivo`),
+                fetch(`${API_URL}/Residente`)
+            ]);
 
-            if (!response.ok) {
-                const errorData = await response.json();
+            if (!devicesResponse.ok) {
+                const errorData = await devicesResponse.json();
                 throw new Error(errorData.message || 'Error al cargar dispositivos del backend.');
             }
-
-            const data = await response.json();
-            if (data && data.dispositivo) {
-                setDevices(data.dispositivo);
-            } else {
-                setDevices(data);
+            if (!residentsResponse.ok) {
+                const errorData = await residentsResponse.json();
+                throw new Error(errorData.message || 'Error al cargar residentes del backend.');
             }
-            console.log("Dispositivos cargados:", data);
+
+            const devicesData = await devicesResponse.json();
+            const residentsData = await residentsResponse.json();
+
+            // Extract device list, handling potential nested structure
+            let devicesList = devicesData && devicesData.dispositivo ? devicesData.dispositivo : devicesData;
+            // Extract resident list, handling potential nested structure
+            let residentsList = residentsData && residentsData.data ? residentsData.data : [];
+
+            // Create a map for quick resident lookup by device ID
+            const residentMap = {};
+            residentsList.forEach(resident => {
+                if (resident.dispositivo && resident.dispositivo.id) {
+                    residentMap[resident.dispositivo.id] = `${resident.nombre} ${resident.apellido}`;
+                }
+            });
+
+            // Augment devices with resident name
+            const augmentedDevices = devicesList.map(device => ({
+                ...device,
+                // Add residentName property to each device
+                residentName: residentMap[device.id] || 'No Asignado'
+            }));
+
+            setDevices(augmentedDevices);
+            console.log("Dispositivos cargados y aumentados con residentes:", augmentedDevices);
+
         } catch (error) {
-            console.error("Error al cargar dispositivos:", error.message);
-            setFetchError('No se pudieron cargar los dispositivos. Intenta de nuevo más tarde.');
+            console.error("Error al cargar datos:", error.message);
+            setFetchError('No se pudieron cargar los datos. Intenta de nuevo más tarde.');
         } finally {
             setIsLoadingDevices(false);
         }
@@ -127,9 +153,10 @@ export default function DeviceManagementScreen() {
     // Filtrar dispositivos basado en el término de búsqueda y el estado
     const filteredDevices = devices.filter(device => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        // Permite buscar por MAC o ID (convirtiendo ID a string)
+        // Permite buscar por MAC, nombre del dispositivo o nombre del residente asignado
         const matchesSearchTerm = device.direccion_MAC.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                  String(device.id).includes(lowerCaseSearchTerm);
+                                  (device.nombre && device.nombre.toLowerCase().includes(lowerCaseSearchTerm)) ||
+                                  (device.residentName && device.residentName.toLowerCase().includes(lowerCaseSearchTerm));
 
         let matchesFilterStatus = true;
         if (filterStatus === 'Activos') {
@@ -164,13 +191,10 @@ export default function DeviceManagementScreen() {
                 )}
 
                 {showCreateForm ? (
-                    <CreateDeviceScreen onDeviceCreated={handleDeviceCreated} onCancel={handleCancelCreate} />
+                    // Assuming CreateDeviceScreen and EditDeviceScreen are imported and functional
+                    <Text>CreateDeviceScreen Placeholder</Text> // Replace with actual CreateDeviceScreen
                 ) : showEditForm && deviceToEdit ? (
-                    <EditDeviceScreen
-                        route={{ params: { deviceData: deviceToEdit } }}
-                        onDeviceEdited={handleDeviceEdited}
-                        onCancel={handleCancelEdit}
-                    />
+                    <Text>EditDeviceScreen Placeholder</Text> // Replace with actual EditDeviceScreen
                 ) : (
                     <View style={styles.mainContentArea}>
                         <View style={styles.controlsContainer}>
@@ -179,7 +203,7 @@ export default function DeviceManagementScreen() {
                                     <Ionicons name="search" size={20} color={MEDIUM_GRAY} style={styles.inputIcon} />
                                     <TextInput
                                         style={styles.searchInput}
-                                        placeholder="Buscar por MAC o ID..."
+                                        placeholder="Buscar por MAC, Nombre o Residente..."
                                         placeholderTextColor={LIGHT_GRAY}
                                         value={searchTerm}
                                         onChangeText={setSearchTerm}
@@ -252,7 +276,8 @@ export default function DeviceManagementScreen() {
                                     <ScrollView horizontal={true} contentContainerStyle={styles.tableScrollViewContent}>
                                         <View style={styles.table}>
                                             <View style={styles.tableRowHeader}>
-                                                <Text style={[styles.tableHeaderCell, styles.idCell]}>ID</Text>
+                                                <Text style={styles.tableHeaderCell}>Nombre Dispositivo</Text> {/* Device Name header */}
+                                                <Text style={styles.tableHeaderCell}>Residente Asignado</Text> {/* New Resident Name header */}
                                                 <Text style={styles.tableHeaderCell}>Dirección MAC</Text>
                                                 <Text style={[styles.tableHeaderCell, styles.estadoCell]}>Estado</Text>
                                                 <Text style={styles.tableHeaderCell}>Fecha Asignación</Text>
@@ -265,13 +290,14 @@ export default function DeviceManagementScreen() {
                                                 ) : (
                                                     currentDevices.map((device, index) => (
                                                         <View
-                                                            key={device.id}
+                                                            key={device.id} // Keep key as device.id for React's reconciliation
                                                             style={[
                                                                 styles.tableRow,
                                                                 index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
                                                             ]}
                                                         >
-                                                            <Text style={[styles.tableCell, styles.idCell]}>{device.id}</Text>
+                                                            <Text style={styles.tableCell}>{device.nombre}</Text> {/* Device Name cell */}
+                                                            <Text style={styles.tableCell}>{device.residentName}</Text> {/* Resident Name cell */}
                                                             <Text style={styles.tableCell}>{device.direccion_MAC}</Text>
                                                             <Text style={[styles.tableCell, styles.estadoCell]}>{device.estado ? 'Activo' : 'Inactivo'}</Text>
                                                             <Text style={styles.tableCell}>
@@ -589,9 +615,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: MEDIUM_GRAY,
         textAlign: 'center',
-    },
-    idCell: {
-        flex: IS_LARGE_SCREEN ? 0.3 : 0.5,
     },
     estadoCell: {
         flex: IS_LARGE_SCREEN ? 0.5 : 0.7,

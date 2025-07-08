@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using System;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -14,7 +14,6 @@ public class DispositivoController : ControllerBase
     {
         return Ok(DispositivoListResponse.GetResponse(Dispositivo.Get()));
     }
-
 
     [HttpGet("{id}")]
     public ActionResult Get(int id)
@@ -34,12 +33,12 @@ public class DispositivoController : ControllerBase
         }
     }
 
-    [HttpPost("{direccion_MAC}")]
-    public ActionResult Post(string direccion_MAC)
+    [HttpPost("{direccion_MAC}/{nombre}")]
+    public ActionResult Post(string direccion_MAC, string nombre)
     {
         try
         {
-            int result = Dispositivo.post(direccion_MAC);
+            int result = Dispositivo.post(direccion_MAC, nombre);
             if (result > 0)
                 return Ok(MessageResponse.GetReponse(0, "Se ha registrado el dispositivo exitosamente", MessageType.Success));
             else

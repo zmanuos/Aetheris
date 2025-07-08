@@ -163,31 +163,31 @@ public class ResidenteController : ControllerBase
         }
     }
 
-    [HttpPut("{residente}/{dispositivo}")]
-    public ActionResult AsignarDispositivo(int residente, int dispositivo)
+    [HttpPut("{residenteId}/dispositivo/{dispositivoId}")] // Modified route
+    public ActionResult AsignarDispositivo(int residenteId, int dispositivoId) // Renamed parameters for clarity
     {
-        _logger.LogInformation($"PUT AsignarDispositivo: Residente {residente}, Dispositivo {dispositivo}");
+        _logger.LogInformation($"PUT AsignarDispositivo: Residente {residenteId}, Dispositivo {dispositivoId}");
         try
         {
-            if (Residente.Update(residente, dispositivo) > 0)
+            if (Residente.Update(residenteId, dispositivoId) > 0)
             {
-                _logger.LogInformation($"PUT AsignarDispositivo: Dispositivo actualizado correctamente para residente {residente}.");
+                _logger.LogInformation($"PUT AsignarDispositivo: Dispositivo actualizado correctamente para residente {residenteId}.");
                 return Ok(CommonApiResponse.GetResponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
             } else
             {
-                _logger.LogWarning($"PUT AsignarDispositivo: No se pudo actualizar el dispositivo para residente {residente}.");
+                _logger.LogWarning($"PUT AsignarDispositivo: No se pudo actualizar el dispositivo para residente {residenteId}.");
                 return Ok(CommonApiResponse.GetResponse(1, "No se pudo actualizar el dispositivo", MessageType.Error));
             }
 
         }
         catch (Exception e)
         {
-            _logger.LogError(e, $"PUT AsignarDispositivo: Error crítico inesperado para residente {residente}, dispositivo {dispositivo}.");
+            _logger.LogError(e, $"PUT AsignarDispositivo: Error crítico inesperado para residente {residenteId}, dispositivo {dispositivoId}.");
             return Ok(CommonApiResponse.GetResponse(999, e.Message, MessageType.CriticalError));
         }
     }
 
-    [HttpPut("{id}/{telefono}")]
+    [HttpPut("{id}/telefono/{telefono}")] // Modified route
     public ActionResult UpdateTelefono(int id, string telefono)
     {
         _logger.LogInformation($"PUT UpdateTelefono: Residente {id}, Teléfono {telefono}");

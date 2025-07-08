@@ -1,4 +1,6 @@
-﻿public class DispositivoListResponse : JsonResponse
+﻿using System.Collections.Generic;
+
+public class DispositivoListResponse : JsonResponse
 {
     public List<Dispositivo> Dispositivo { get; set; }
 
