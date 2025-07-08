@@ -1,7 +1,0 @@
-node_modules
-
-# Visual Studio / .NET
-**/bin/
-**/obj/
-.vs/
-backend/BackendAetheris/obj/

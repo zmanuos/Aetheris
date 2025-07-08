@@ -42,7 +42,7 @@ const stringToHslColor = (str, s, l) => {
   return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
-const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, gridContainerPadding }) => {
+const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, onAssignDevice, gridContainerPadding }) => {
   const [imageLoadError, setImageLoadError] = useState(false);
 
   useEffect(() => {
@@ -119,6 +119,13 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, gr
           <Text style={styles.residentName}>{resident.nombre} {resident.apellido}</Text>
           <Text style={styles.residentDetails}>{age} años • Hab. {resident.nombre_area || 'N/A'}</Text>
         </View>
+        {/* Botón 'Agregar dispositivo' movido aquí, con nuevos estilos */}
+        {!resident.dispositivo && (
+          <TouchableOpacity style={styles.addDeviceButton} onPress={() => onAssignDevice(resident.id_residente)}>
+            <Ionicons name="bluetooth" size={18} color="#FFFFFF" />
+            <Text style={styles.addDeviceButtonText}>Agregar</Text>
+          </TouchableOpacity>
+        )}
         {resident.estado_salud_general && (
           <View style={[styles.healthStatusTag, { backgroundColor: getHealthStatusColor(resident.estado_salud_general) }]}>
             <Text style={styles.healthStatusText}>{resident.estado_salud_general}</Text>
@@ -193,6 +200,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 0.5,
     borderBottomColor: '#F0F0F0',
+    position: 'relative', // Para posicionar el botón de asignación
   },
   avatar: {
     width: 40,
@@ -216,7 +224,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   headerInfo: {
-    flex: 1,
+    flex: 1, // Permite que la información ocupe el espacio restante
   },
   residentName: {
     fontSize: 14,
@@ -238,6 +246,25 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 9,
     fontWeight: 'bold',
+  },
+  // Estilos para el nuevo botón 'Agregar dispositivo'
+  addDeviceButton: {
+    position: 'absolute', // Posicionamiento absoluto dentro del header
+    top: 5, // Ajusta según necesites para el margen superior
+    right: 5, // Ajusta según necesites para el margen derecho
+    backgroundColor: '#22C55E', // Color verde
+    paddingVertical: 4, // Más padding vertical para que sea un poco más grande
+    paddingHorizontal: 8, // Más padding horizontal
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addDeviceButtonText: {
+    color: '#FFFFFF',
+    fontSize: 11, // Tamaño de fuente ajustado
+    fontWeight: '600',
+    marginLeft: 4, // Margen entre el ícono y el texto
   },
   cardBody: {
     padding: 8,
@@ -283,12 +310,14 @@ const styles = StyleSheet.create({
     borderTopColor: '#F9FAFB',
     paddingVertical: 8,
     backgroundColor: '#FDFDFD',
+    flexWrap: 'wrap', 
   },
   actionButtonIcon: {
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 6,
     backgroundColor: '#EAEAEA',
+    margin: 2, 
   },
 });
 

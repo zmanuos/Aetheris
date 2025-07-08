@@ -50,16 +50,11 @@ export default function ResidentsScreen({ navigation }) {
         }
         const residentsJson = await residentsResponse.json();
 
-        if (Array.isArray(residentsJson)) {
-          currentResidentsData = residentsJson;
-        } else if (residentsJson && (residentsJson.data || residentsJson.items || residentsJson.residents)) {
-          currentResidentsData = residentsJson.data || residentsJson.items || residentsJson.residents;
-          if (!Array.isArray(currentResidentsData)) {
-              console.warn('Se esperaba un array en data/items/residents, pero se obtuvo:', currentResidentsData);
-              currentResidentsData = [];
-          }
+        // Accede al array de residentes dentro de la propiedad 'data' del JSON
+        if (residentsJson && Array.isArray(residentsJson.data)) {
+          currentResidentsData = residentsJson.data;
         } else {
-          console.warn('La respuesta de la API de residentes no es un array y no contiene la propiedad data/items/residents. Respuesta:', residentsJson);
+          console.warn('La respuesta de la API de residentes no contiene un array en la propiedad "data". Respuesta:', residentsJson);
           currentResidentsData = [];
         }
       }
@@ -69,12 +64,13 @@ export default function ResidentsScreen({ navigation }) {
       const residentsWithDynamicData = await Promise.all(currentResidentsData.map(async (resident) => {
         let heartRateHistory = [];
         let latestHeartRate = null;
+        // El campo 'dispositivo' ya viene directamente en el objeto residente del API /Residente
 
         try {
           const heartRateResponse = await fetch(`${API_URL}/LecturaResidente/${resident.id_residente}`);
           if (heartRateResponse.ok) {
             const heartRateData = await heartRateResponse.json();
-            if (Array.isArray(heartRateData)) {
+            if (Array.isArray(heartRateData) && heartRateData.length > 0) {
               const sortedData = heartRateData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
               
               heartRateHistory = sortedData.map(record => record.ritmoCardiaco);
@@ -94,6 +90,7 @@ export default function ResidentsScreen({ navigation }) {
           foto_url: resident.foto && resident.foto !== 'nophoto.png' ? `${baseStaticUrl}/images/residents/${resident.foto}` : null,
           historial_frecuencia_cardiaca: heartRateHistory,
           ultima_frecuencia_cardiaca: latestHeartRate,
+          // 'dispositivo' ya está presente en el 'resident' original, no necesitamos añadirlo aquí.
         };
       }));
 
@@ -188,6 +185,13 @@ export default function ResidentsScreen({ navigation }) {
     );
   };
 
+  const handleAssignDevice = (residentId) => {
+    showNotification(`Navegando a la asignación de dispositivo para el residente con ID: ${residentId}`, 'info');
+    // Aquí puedes navegar a una pantalla específica para asignar el dispositivo
+    // Por ejemplo: navigation.navigate('AssignDeviceScreen', { residentId: residentId });
+  };
+
+
   const filteredResidents = residents.filter(resident =>
     resident.nombre.toLowerCase().includes(searchText.toLowerCase()) ||
     resident.apellido.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -236,6 +240,7 @@ export default function ResidentsScreen({ navigation }) {
                 onDelete={handleDeleteResident}
                 onViewProfile={handleViewProfile}
                 onHistory={handleHistory}
+                onAssignDevice={handleAssignDevice} 
                 gridContainerPadding={GRID_CONTAINER_PADDING}
               />
             ))}
