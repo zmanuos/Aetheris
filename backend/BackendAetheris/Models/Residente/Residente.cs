@@ -10,9 +10,9 @@ public class Residente
 
     #region statement
 
-    private static string selectAll = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE";
+    private static string selectAll = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo, promedio_reposo, promedio_activo, promedio_agitado FROM RESIDENTE";
 
-    private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo FROM RESIDENTE where id_residente = @ID";
+    private static string select = "SELECT id_residente, nombre, apellido, fecha_nacimiento, genero, telefono, foto, dispositivo, fecha_ingreso, activo, promedio_reposo, promedio_activo, promedio_agitado FROM RESIDENTE where id_residente = @ID";
 
     private static string insert = "INSERT INTO RESIDENTE (nombre, apellido, fecha_nacimiento, genero, telefono, foto) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @foto_default);";
 
@@ -23,6 +23,14 @@ public class Residente
     private static string updateEstado = "UPDATE RESIDENTE SET activo = not activo WHERE id_residente = @id";
 
     private static string updateFotoStatement = "UPDATE RESIDENTE SET foto = @foto WHERE id_residente = @id_residente";
+
+    private static string updatePromedioReposo =  "UPDATE RESIDENTE SET promedio_reposo = @promedio_reposo WHERE id_residente = @id";
+
+    private static string updatePromedioActivo =  "UPDATE RESIDENTE SET promedio_activo = @promedio_activo WHERE id_residente = @id";
+
+    private static string updatePromedioAgitado = "UPDATE RESIDENTE SET promedio_agitado = @promedio_agitado WHERE id_residente = @id";
+
+    private static string updatePromedioRitmos =  "UPDATE RESIDENTE SET promedio_reposo = @promedio_reposo, promedio_activo = @promedio_activo, promedio_agitado = @promedio_agitado  WHERE id_residente = @id";
 
 
     #endregion
@@ -38,6 +46,9 @@ public class Residente
     private Dispositivo _dispositivo;
     private string _foto;
     private DateTime _fecha_ingreso;
+    private int _promedioReposo;
+    private int _promedioActivo;
+    private int _promedioAgitado;
     private bool _activo;
 
 
@@ -55,6 +66,10 @@ public class Residente
     public string Foto { get => _foto; set => _foto = value; }
     public DateTime Fecha_ingreso { get => _fecha_ingreso; set => _fecha_ingreso = value; }
     public bool Activo { get => _activo; set => _activo = value; }
+    public int PromedioReposo { get => _promedioReposo; set => _promedioReposo = value; }
+    public int PromedioActivo { get => _promedioActivo; set => _promedioActivo = value; }
+    public int PromedioAgitado { get => _promedioAgitado; set => _promedioAgitado = value; }
+
 
     #endregion
 
@@ -71,10 +86,13 @@ public class Residente
         Dispositivo = new Dispositivo();
         Foto = "nophoto.png";
         Fecha_ingreso = DateTime.MinValue;
+        PromedioReposo = 0;
+        PromedioActivo = 0;
+        PromedioAgitado = 0;
         Activo = false;
     }
 
-    public Residente(int id_residente, string nombre, string apellido, DateTime fecha_nacimiento, string genero, string telefono, Dispositivo dispositivo, string foto, DateTime fecha_ingreso, bool activo)
+    public Residente(int id_residente, string nombre, string apellido, DateTime fecha_nacimiento, string genero, string telefono, Dispositivo dispositivo, string foto, DateTime fecha_ingreso, bool activo, int promedioReposo, int promedioActivo, int promedioAgitado)
     {
         Id_residente = id_residente;
         Nombre = nombre;
@@ -86,6 +104,9 @@ public class Residente
         Foto = foto;
         Fecha_ingreso = fecha_ingreso;
         Activo = activo;
+        PromedioReposo = promedioReposo;
+        PromedioActivo = promedioActivo;
+        PromedioAgitado = promedioAgitado;
     }
 
     #endregion
@@ -131,6 +152,7 @@ public class Residente
         return newId;
     }
 
+
     public static bool UpdateFoto(int id_residente, string newFileName)
     {
         MySqlCommand command = new MySqlCommand(updateFotoStatement);
@@ -163,6 +185,40 @@ public class Residente
     {
         MySqlCommand command = new MySqlCommand(updateEstado);
         command.Parameters.AddWithValue("@id", id);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdatePromedioReposo(int id, int promedio)
+    {
+        MySqlCommand command = new MySqlCommand(updatePromedioReposo);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@promedio_reposo", promedio);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdatePromedioActivo(int id, int promedio)
+    {
+        MySqlCommand command = new MySqlCommand(updatePromedioActivo);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@promedio_activo", promedio);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdatePromedioAgitado(int id, int promedio)
+    {
+        MySqlCommand command = new MySqlCommand(updatePromedioAgitado);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@promedio_agitado", promedio);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool UpdatePromedioRitmos(int id, int promedioReposo, int promedioActivo, int promedioAgitado)
+    {
+        MySqlCommand command = new MySqlCommand(updatePromedioRitmos);
+        command.Parameters.AddWithValue("@id", id);
+        command.Parameters.AddWithValue("@promedio_reposo", promedioReposo);
+        command.Parameters.AddWithValue("@promedio_activo", promedioActivo);
+        command.Parameters.AddWithValue("@promedio_agitado", promedioAgitado);
         return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 

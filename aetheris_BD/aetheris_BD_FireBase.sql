@@ -42,6 +42,7 @@ CREATE TABLE DISPOSITIVO (
 );
 
 -- Residentes - Info del residente
+-- Residentes - Info del residente
 CREATE TABLE RESIDENTE (
     id_residente INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100),
@@ -53,8 +54,12 @@ CREATE TABLE RESIDENTE (
     foto VARCHAR(255) DEFAULT 'default',
     fecha_ingreso TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
+    promedio_reposo INT,
+    promedio_activo INT,
+    promedio_agitado INT,
     FOREIGN KEY (dispositivo) REFERENCES DISPOSITIVO(id_dispositivo)
 );
+
 
 
 -- Medicamentos

@@ -20,13 +20,20 @@ async function init() {
 
     document.getElementById("button-start").addEventListener("click", () => {
         residentes.forEach(residente => {
-            const residenteId = residente.id_residente;
-            const dispositivoId = residente.dispositivo.id;
-            const promedio = Math.floor(Math.random() * (90 - 70 + 1)) + 70;
-
-            setInterval(() => {
-                simularResidente(residenteId, promedio, dispositivoId);
-            }, 11000);
+            if (!residente.dispositivo) {
+                console.log("El residente " + residente.id_residente + " no tiene dispositivo asignado");
+            } else {
+                if (residente.promedioReposo != 0) {
+                    const residenteId = residente.id_residente;
+                    const dispositivoId = residente.dispositivo.id;
+                    const promedio = residente.promedioReposo;
+                    setInterval(() => {
+                        simularResidente(residenteId, promedio, dispositivoId);
+                    }, 11000);
+                } else {
+                    console.log("El residente " + residente.id_residente + " no tiene datos de sus ritmos promedios");
+                }
+            }
         });
     });
 

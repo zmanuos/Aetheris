@@ -220,4 +220,72 @@ public class ResidenteController : ControllerBase
             return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el estado del residente ", MessageType.Warning));
         }
     }
+
+    [HttpPut("ritmo")]
+    public ActionResult UpdatePromedioRitmos([FromForm] int id, [FromForm] int promedioReposo, [FromForm] int promedioActivo, [FromForm] int promedioAgitado)
+    {
+        _logger.LogInformation($"PUT UpdatePromedioRitmos: Residente {id}");
+        bool updated = Residente.UpdatePromedioRitmos(id, promedioReposo, promedioActivo, promedioAgitado);
+        if (updated)
+        {
+            _logger.LogInformation($"PUT UpdatePromedioRitmos: Ritmos promedios del residente con id {id} actualizado correctamente.");
+            return Ok(CommonApiResponse.GetResponse(0, "Ritmos promedios actualizados correctamente", MessageType.Success));
+        }
+        else
+        {
+            _logger.LogWarning($"PUT UpdatePromedioRitmos: No se pudieron actualizar los ritmos promedio del residente {id}.");
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar los ritmos promedio", MessageType.Warning));
+        }
+    }
+
+    [HttpPut("ritmo/reposo")]
+    public ActionResult UpdatePromedioReposo([FromForm]int id, [FromForm] int promedio)
+    {
+        _logger.LogInformation($"PUT UpdatePromedioReposo: Residente {id}");
+        bool updated = Residente.UpdatePromedioReposo(id, promedio);
+        if (updated)
+        {
+            _logger.LogInformation($"PUT UpdatePromedioReposo: Ritmo promedio en reposo de {promedio} del residente con id {id} actualizado correctamente.");
+            return Ok(CommonApiResponse.GetResponse(0, "Ritmo promedio en reposo actualizado correctamente", MessageType.Success));
+        }
+        else
+        {
+            _logger.LogWarning($"PUT UpdatePromedioReposo: No se pudo actualizar el ritmo promedio en reposo del residente {id}.");
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el ritmo promedio en reposo", MessageType.Warning));
+        }
+    }
+
+    [HttpPut("ritmo/activo")]
+    public ActionResult UpdatePromedioActivo([FromForm] int id, [FromForm] int promedio)
+    {
+        _logger.LogInformation($"PUT UpdatePromedioActivo: Residente {id}");
+        bool updated = Residente.UpdatePromedioActivo(id, promedio);
+        if (updated)
+        {
+            _logger.LogInformation($"PUT UpdatePromedioActivo: Ritmo promedio activado de {promedio} del residente con id {id} actualizado correctamente.");
+            return Ok(CommonApiResponse.GetResponse(0, "Ritmo promedio activado actualizado correctamente", MessageType.Success));
+        }
+        else
+        {
+            _logger.LogWarning($"PUT UpdatePromedioActivo: No se pudo actualizar el ritmo promedio activado del residente {id}.");
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el ritmo promedio activado ", MessageType.Warning));
+        }
+    }
+
+    [HttpPut("ritmo/agitado")]
+    public ActionResult UpdatePromedioAgitado([FromForm] int id, [FromForm] int promedio)
+    {
+        _logger.LogInformation($"PUT UpdatePromedioAgitado: Residente {id}");
+        bool updated = Residente.UpdatePromedioAgitado(id, promedio);
+        if (updated)
+        {
+            _logger.LogInformation($"PUT UpdatePromedioAgitado: Ritmo promedio agitado de {promedio} del residente con id {id} actualizado correctamente.");
+            return Ok(CommonApiResponse.GetResponse(0, "Ritmo promedio agitado actualizado correctamente", MessageType.Success));
+        }
+        else
+        {
+            _logger.LogWarning($"PUT UpdatePromedioAgitado: No se pudo actualizar el ritmo promedio agitado del residente {id}.");
+            return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el ritmo promedio agitado ", MessageType.Warning));
+        }
+    }
 }
