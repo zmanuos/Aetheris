@@ -14,7 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import Config from '../../config/config';
-import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
+import DateTimePicker from '@react-native-community/datetimepicker';
 import {
   formatName,
   isValidName,
@@ -47,9 +47,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
   const [employeeLastName, setEmployeeLastName] = useState(employeeData.apellido);
   const [employeePhone, setEmployeePhone] = useState(employeeData.telefono);
   const [employeeGender, setEmployeeGender] = useState(employeeData.genero);
-  // Ensure employeeBirthDate is a Date object for DateTimePicker
   const [employeeBirthDate, setEmployeeBirthDate] = useState(new Date(employeeData.fecha_nacimiento));
-  const [showEmployeeDatePicker, setShowEmployeeDatePicker] = useState(false); // State for date picker visibility
+  const [showEmployeeDatePicker, setShowEmployeeDatePicker] = useState(false);
   const [employeeActive, setEmployeeActive] = useState(employeeData.activo);
 
   const [employeeEmail, setEmployeeEmail] = useState('');
@@ -69,7 +68,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
   const [nameError, setNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
-  const [genderError, setGenderError] = useState(''); // New state for gender error
+  const [genderError, setGenderError] = useState('');
   const [birthDateError, setBirthDateError] = useState('');
 
   const API_URL = Config.API_BASE_URL;
@@ -256,8 +255,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
     handleNameBlur();
     handleLastNameBlur();
     handlePhoneBlur();
-    handleGenderChange(employeeGender); // Validate gender on save
-    handleBirthDateChangeMobile(null, employeeBirthDate); // Validate birth date on save
+    handleGenderChange(employeeGender);
+    handleBirthDateChangeMobile(null, employeeBirthDate);
     handleEmailBlur();
     if (newPassword.trim()) {
         handleNewPasswordBlur();
@@ -268,8 +267,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       nameError,
       lastNameError,
       phoneError,
-      genderError, // Include gender error
-      birthDateError, // Include birth date error
+      genderError,
+      birthDateError,
       emailError,
       newPassword.trim() ? newPasswordError : '',
       confirmNewPassword.trim() ? confirmNewPasswordError : ''
@@ -280,8 +279,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       !employeeLastName.trim() ||
       !employeePhone ||
       !employeeEmail.trim() ||
-      !employeeGender || // Check if gender is selected
-      !employeeBirthDate // Check if birth date is selected
+      !employeeGender ||
+      !employeeBirthDate
     ) {
       setFormError('Por favor, completa todos los campos obligatorios.');
       return;
@@ -297,7 +296,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       !isValidName(employeeLastName) ||
       !isValidPhoneNumber(employeePhone) ||
       !isValidEmail(employeeEmail) ||
-      !isAdult(employeeBirthDate.toISOString().split('T')[0]) || // Final check for birth date validity
+      !isAdult(employeeBirthDate.toISOString().split('T')[0]) ||
       (newPassword.trim() && newPassword.length < 6) ||
       (newPassword.trim() && newPassword !== confirmNewPassword)
     ) {
@@ -311,8 +310,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       const updatedEmployeeData = {
         nombre: employeeName,
         apellido: employeeLastName,
-        fecha_nacimiento: employeeBirthDate.toISOString(), // Use the updated Date object
-        genero: employeeGender, // Use the updated gender
+        fecha_nacimiento: employeeBirthDate.toISOString(),
+        genero: employeeGender,
         telefono: employeePhone,
         activo: employeeActive,
       };
@@ -394,7 +393,6 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       setFormError(errorMessage);
     } finally {
       setIsSaving(false);
-      // Siempre resetear las contraseñas después de un intento de guardado
       setNewPassword('');
       setConfirmNewPassword('');
     }
@@ -404,272 +402,275 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
   const formattedEmployeeDateForWebInput = employeeBirthDate.toISOString().split('T')[0];
 
   return (
-    <ScrollView contentContainerStyle={styles.formContainer}>
-      <Text style={styles.formTitle}>Editar Empleado</Text>
-      {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
+    <ScrollView
+      contentContainerStyle={[
+        styles.scrollViewContentContainer,
+        IS_LARGE_SCREEN && styles.scrollViewContentContainerWeb
+      ]}
+    >
+      <View style={styles.formContainer}>
+        <Text style={styles.formTitle}>Editar Empleado</Text>
+        {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
-      {/* Campos de Nombre y Apellido */}
-      <View style={IS_LARGE_SCREEN ? styles.rowContainer : null}>
-        <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
-          <Text style={styles.inputLabel}>Nombre</Text>
-          <View style={[styles.inputContainer, nameError ? styles.inputError : null]}>
-            <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Juan"
-              placeholderTextColor={LIGHT_GRAY}
-              value={employeeName}
-              onChangeText={handleNameChange}
-              onBlur={handleNameBlur}
-            />
-          </View>
-          {nameError ? <Text style={styles.fieldErrorText}>{nameError}</Text> : null}
-        </View>
-
-        <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
-          <Text style={styles.inputLabel}>Apellido</Text>
-          <View style={[styles.inputContainer, lastNameError ? styles.inputError : null]}>
-            <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-            <TextInput
-              style={styles.input}
-              placeholder="Ej: Pérez"
-              placeholderTextColor={LIGHT_GRAY}
-              value={employeeLastName}
-              onChangeText={handleLastNameChange}
-              onBlur={handleLastNameBlur}
-            />
-          </View>
-          {lastNameError ? <Text style={styles.fieldErrorText}>{lastNameError}</Text> : null}
-        </View>
-      </View>
-
-      {/* Campo de Teléfono */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Teléfono</Text>
-        <View style={[styles.inputContainer, phoneError ? styles.inputError : null]}>
-          <Ionicons name="call-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-          <TextInput
-            style={styles.input}
-            placeholder="Ej: 5512345678"
-            placeholderTextColor={LIGHT_GRAY}
-            value={employeePhone}
-            onChangeText={handlePhoneChange}
-            onBlur={handlePhoneBlur}
-            keyboardType="phone-pad"
-            maxLength={10}
-          />
-          <Text style={styles.charCounter}>{employeePhone.length}/10</Text>
-        </View>
-        {phoneError ? <Text style={styles.fieldErrorText}>{phoneError}</Text> : null}
-      </View>
-
-      {/* Campo de Género */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Género</Text>
-        <View style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
-          <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-          <Picker
-            selectedValue={employeeGender}
-            onValueChange={handleGenderChange}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}
-            enabled={!isSaving} // Enable gender editing
-          >
-            <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
-            <Picker.Item label="Masculino" value="Masculino" />
-            <Picker.Item label="Femenino" value="Femenino" />
-          </Picker>
-        </View>
-        {genderError ? <Text style={styles.fieldErrorText}>{genderError}</Text> : null}
-      </View>
-
-      {/* Campo de Fecha de Nacimiento */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-        {Platform.OS === 'web' ? (
-          <View style={[styles.inputContainer, birthDateError ? styles.inputError : null]}>
-            <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-            <input
-              type="date"
-              value={formattedEmployeeDateForWebInput}
-              onChange={handleBirthDateChangeWeb}
-              onBlur={() => handleBirthDateChangeWeb({ target: { value: formattedEmployeeDateForWebInput } })} // Trigger blur for validation
-              style={styles.datePickerWeb}
-              disabled={isSaving}
-            />
-          </View>
-        ) : (
-          <>
-            <TouchableOpacity
-              style={[styles.inputContainer, birthDateError ? styles.inputError : null]}
-              onPress={() => setShowEmployeeDatePicker(true)}
-              disabled={isSaving}
-            >
-              <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-              <Text style={styles.dateInputText}>{formattedEmployeeDateForDisplay}</Text>
-            </TouchableOpacity>
-            {showEmployeeDatePicker && (
-              <DateTimePicker
-                testID="employeeDatePicker"
-                value={employeeBirthDate}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleBirthDateChangeMobile}
-                maximumDate={new Date()}
+        <View style={IS_LARGE_SCREEN ? styles.rowContainer : null}>
+          <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
+            <Text style={styles.inputLabel}>Nombre</Text>
+            <View style={[styles.inputContainer, nameError ? styles.inputError : null]}>
+              <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Ej: Juan"
+                placeholderTextColor={LIGHT_GRAY}
+                value={employeeName}
+                onChangeText={handleNameChange}
+                onBlur={handleNameBlur}
               />
-            )}
-          </>
-        )}
-        {birthDateError ? <Text style={styles.fieldErrorText}>{birthDateError}</Text> : null}
-      </View>
+            </View>
+            {nameError ? <Text style={styles.fieldErrorText}>{nameError}</Text> : null}
+          </View>
 
-      {/* Campo de Estado Activo/Inactivo */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Estado (Activo/Inactivo)</Text>
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>Inactivo</Text>
-          <Switch
-            trackColor={{ false: LIGHT_GRAY, true: LIGHT_GREEN }}
-            thumbColor={employeeActive ? PRIMARY_GREEN : MEDIUM_GRAY}
-            ios_backgroundColor={LIGHT_GRAY}
-            onValueChange={setEmployeeActive}
-            value={employeeActive}
-            disabled={isSaving}
-          />
-          <Text style={styles.switchLabel}>Activo</Text>
+          <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
+            <Text style={styles.inputLabel}>Apellido</Text>
+            <View style={[styles.inputContainer, lastNameError ? styles.inputError : null]}>
+              <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Ej: Pérez"
+                placeholderTextColor={LIGHT_GRAY}
+                value={employeeLastName}
+                onChangeText={handleLastNameChange}
+                onBlur={handleLastNameBlur}
+              />
+            </View>
+            {lastNameError ? <Text style={styles.fieldErrorText}>{lastNameError}</Text> : null}
+          </View>
         </View>
-      </View>
 
-      {/* --- CAMPOS DE CREDENCIALES (MOVIDOS AL FINAL) --- */}
-
-      {/* Campo de Correo Electrónico */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Correo Electrónico</Text>
-        <View style={[styles.inputContainer, emailError ? styles.inputError : null]}>
-          <Ionicons name="mail-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
-            placeholder="Ej: correo@ejemplo.com"
-            placeholderTextColor={LIGHT_GRAY}
-            value={employeeEmail}
-            onChangeText={handleEmailChange}
-            onBlur={handleEmailBlur}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoComplete="off"
-            textContentType="none"
-            importantForAutofill="no"
-            editable={!isSaving}
-          />
-        </View>
-        {emailError ? <Text style={styles.fieldErrorText}>{emailError}</Text> : null}
-      </View>
-
-      {/* Campo de Nueva Contraseña */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Nueva Contraseña</Text>
-        <View style={[styles.inputContainer, newPasswordError ? styles.inputError : null]}>
-          <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
-            placeholder="Mínimo 6 caracteres"
-            placeholderTextColor={LIGHT_GRAY}
-            value={newPassword}
-            onChangeText={handleNewPasswordChange}
-            onBlur={handleNewPasswordBlur}
-            secureTextEntry={!showNewPassword}
-            autoComplete="off"
-            textContentType="newPassword"
-            importantForAutofill="no"
-            editable={!isSaving}
-          />
-          <TouchableOpacity onPress={toggleShowNewPassword} style={styles.eyeIconContainer}>
-            <Ionicons
-              name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={18}
-              color={MEDIUM_GRAY}
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Teléfono</Text>
+          <View style={[styles.inputContainer, phoneError ? styles.inputError : null]}>
+            <Ionicons name="call-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Ej: 5512345678"
+              placeholderTextColor={LIGHT_GRAY}
+              value={employeePhone}
+              onChangeText={handlePhoneChange}
+              onBlur={handlePhoneBlur}
+              keyboardType="phone-pad"
+              maxLength={10}
             />
-          </TouchableOpacity>
+            <Text style={styles.charCounter}>{employeePhone.length}/10</Text>
+          </View>
+          {phoneError ? <Text style={styles.fieldErrorText}>{phoneError}</Text> : null}
         </View>
-        {newPasswordError ? <Text style={styles.fieldErrorText}>{newPasswordError}</Text> : null}
-      </View>
 
-      {/* Campo de Confirmar Nueva Contraseña */}
-      <View style={styles.fieldWrapper}>
-        <Text style={styles.inputLabel}>Confirmar Nueva Contraseña</Text>
-        <View style={[styles.inputContainer, confirmNewPasswordError ? styles.inputError : null]}>
-          <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-          <TextInput
-            style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
-            placeholder="Repite la nueva contraseña"
-            placeholderTextColor={LIGHT_GRAY}
-            value={confirmNewPassword}
-            onChangeText={handleConfirmNewPasswordChange}
-            onBlur={handleConfirmNewPasswordBlur}
-            secureTextEntry={!showConfirmNewPassword}
-            autoComplete="off"
-            textContentType="newPassword"
-            importantForAutofill="no"
-            editable={!isSaving}
-          />
-          <TouchableOpacity onPress={toggleShowConfirmNewPassword} style={styles.eyeIconContainer}>
-            <Ionicons
-              name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={18}
-              color={MEDIUM_GRAY}
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Género</Text>
+          <View style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
+            <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+            <Picker
+              selectedValue={employeeGender}
+              onValueChange={handleGenderChange}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+              enabled={!isSaving}
+            >
+              <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
+              <Picker.Item label="Masculino" value="Masculino" />
+              <Picker.Item label="Femenino" value="Femenino" />
+            </Picker>
+          </View>
+          {genderError ? <Text style={styles.fieldErrorText}>{genderError}</Text> : null}
+        </View>
+
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
+          {Platform.OS === 'web' ? (
+            <View style={[styles.inputContainer, birthDateError ? styles.inputError : null]}>
+              <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+              <input
+                type="date"
+                value={formattedEmployeeDateForWebInput}
+                onChange={handleBirthDateChangeWeb}
+                onBlur={() => handleBirthDateChangeWeb({ target: { value: formattedEmployeeDateForWebInput } })}
+                style={styles.datePickerWeb}
+                disabled={isSaving}
+              />
+            </View>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={[styles.inputContainer, birthDateError ? styles.inputError : null]}
+                onPress={() => setShowEmployeeDatePicker(true)}
+                disabled={isSaving}
+              >
+                <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <Text style={styles.dateInputText}>{formattedEmployeeDateForDisplay}</Text>
+              </TouchableOpacity>
+              {showEmployeeDatePicker && (
+                <DateTimePicker
+                  testID="employeeDatePicker"
+                  value={employeeBirthDate}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={handleBirthDateChangeMobile}
+                  maximumDate={new Date()}
+                />
+              )}
+            </>
+          )}
+          {birthDateError ? <Text style={styles.fieldErrorText}>{birthDateError}</Text> : null}
+        </View>
+
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Estado (Activo/Inactivo)</Text>
+          <View style={styles.switchContainer}>
+            <Text style={styles.switchLabel}>Inactivo</Text>
+            <Switch
+              trackColor={{ false: LIGHT_GRAY, true: LIGHT_GREEN }}
+              thumbColor={employeeActive ? PRIMARY_GREEN : MEDIUM_GRAY}
+              ios_backgroundColor={LIGHT_GRAY}
+              onValueChange={setEmployeeActive}
+              value={employeeActive}
+              disabled={isSaving}
             />
-          </TouchableOpacity>
+            <Text style={styles.switchLabel}>Activo</Text>
+          </View>
         </View>
-        {confirmNewPasswordError ? <Text style={styles.fieldErrorText}>{confirmNewPasswordError}</Text> : null}
-      </View>
 
-      {/* Botón de Guardar */}
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={handleSaveEmployee}
-        disabled={isSaving}
-      >
-        <Text style={styles.primaryButtonText}>{isSaving ? <ActivityIndicator color={WHITE} /> : 'GUARDAR CAMBIOS'}</Text>
-      </TouchableOpacity>
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Correo Electrónico</Text>
+          <View style={[styles.inputContainer, emailError ? styles.inputError : null]}>
+            <Ionicons name="mail-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
+              placeholder="Ej: correo@ejemplo.com"
+              placeholderTextColor={LIGHT_GRAY}
+              value={employeeEmail}
+              onChangeText={handleEmailChange}
+              onBlur={handleEmailBlur}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoComplete="off"
+              textContentType="none"
+              importantForAutofill="no"
+              editable={!isSaving}
+            />
+          </View>
+          {emailError ? <Text style={styles.fieldErrorText}>{emailError}</Text> : null}
+        </View>
+
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Nueva Contraseña</Text>
+          <View style={[styles.inputContainer, newPasswordError ? styles.inputError : null]}>
+            <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
+              placeholder="Mínimo 6 caracteres"
+              placeholderTextColor={LIGHT_GRAY}
+              value={newPassword}
+              onChangeText={handleNewPasswordChange}
+              onBlur={handleNewPasswordBlur}
+              secureTextEntry={!showNewPassword}
+              autoComplete="off"
+              textContentType="newPassword"
+              importantForAutofill="no"
+              editable={!isSaving}
+            />
+            <TouchableOpacity onPress={toggleShowNewPassword} style={styles.eyeIconContainer}>
+              <Ionicons
+                name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={MEDIUM_GRAY}
+              />
+            </TouchableOpacity>
+          </View>
+          {newPasswordError ? <Text style={styles.fieldErrorText}>{newPasswordError}</Text> : null}
+        </View>
+
+        <View style={styles.fieldWrapper}>
+          <Text style={styles.inputLabel}>Confirmar Nueva Contraseña</Text>
+          <View style={[styles.inputContainer, confirmNewPasswordError ? styles.inputError : null]}>
+            <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
+              placeholder="Repite la nueva contraseña"
+              placeholderTextColor={LIGHT_GRAY}
+              value={confirmNewPassword}
+              onChangeText={handleConfirmNewPasswordChange}
+              onBlur={handleConfirmNewPasswordBlur}
+              secureTextEntry={!showConfirmNewPassword}
+              autoComplete="off"
+              textContentType="newPassword"
+              importantForAutofill="no"
+              editable={!isSaving}
+            />
+            <TouchableOpacity onPress={toggleShowConfirmNewPassword} style={styles.eyeIconContainer}>
+              <Ionicons
+                name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
+                size={18}
+                color={MEDIUM_GRAY}
+              />
+            </TouchableOpacity>
+          </View>
+          {confirmNewPasswordError ? <Text style={styles.fieldErrorText}>{confirmNewPasswordError}</Text> : null}
+        </View>
+
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleSaveEmployee}
+          disabled={isSaving}
+        >
+          <Text style={styles.primaryButtonText}>{isSaving ? <ActivityIndicator color={WHITE} /> : 'GUARDAR CAMBIOS'}</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
 
 const containerBaseStyles = {
   backgroundColor: WHITE,
-  borderRadius: 12, // Reduced from 15
-  padding: 12, // Reduced from 18
+  borderRadius: 12,
+  padding: 12,
   shadowColor: DARK_GRAY,
-  shadowOffset: { width: 0, height: 3 }, // Reduced shadow
-  shadowOpacity: 0.08, // Reduced shadow opacity
-  shadowRadius: 6, // Reduced shadow radius
-  elevation: 4, // Reduced elevation
-  borderWidth: 1, // Reduced from 1.5
+  shadowOffset: { width: 0, height: 3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 6,
+  elevation: 4,
+  borderWidth: 1,
   borderColor: VERY_LIGHT_GRAY,
 };
 
 const styles = StyleSheet.create({
+  scrollViewContentContainer: {
+    flexGrow: 1,
+  },
+  scrollViewContentContainerWeb: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   formContainer: {
     ...containerBaseStyles,
     alignSelf: 'center',
-    marginTop: IS_LARGE_SCREEN ? Dimensions.get('window').height * 0.03 : 10, // Adjusted margin
-    marginBottom: 15, // Reduced from 20
-    paddingVertical: 18, // Reduced from 25
-    paddingHorizontal: IS_LARGE_SCREEN ? 18 : 10, // Reduced from 25 and 12
-    width: IS_LARGE_SCREEN ? '48%' : '95%', // Adjusted width for better fit
-    maxWidth: IS_LARGE_SCREEN ? 500 : '98%', // Adjusted max width
+    marginTop: IS_LARGE_SCREEN ? 0 : 10,
+    marginBottom: IS_LARGE_SCREEN ? 0 : 10,
+    paddingVertical: 18,
+    paddingHorizontal: IS_LARGE_SCREEN ? 18 : 10,
+    width: IS_LARGE_SCREEN ? '48%' : '95%',
+    maxWidth: IS_LARGE_SCREEN ? 500 : '98%',
   },
   formTitle: {
-    fontSize: IS_LARGE_SCREEN ? 22 : 18, // Reduced font size
+    fontSize: IS_LARGE_SCREEN ? 22 : 18,
     fontWeight: '700',
     color: DARK_GRAY,
-    marginBottom: 15, // Reduced from 20
+    marginBottom: 15,
     textAlign: 'center',
   },
   inputLabel: {
-    fontSize: 12, // Reduced from 14
+    fontSize: 12,
     color: DARK_GRAY,
-    marginBottom: 2, // Reduced from 4
+    marginBottom: 2,
     fontWeight: '600',
   },
   rowContainer: {
@@ -679,28 +680,28 @@ const styles = StyleSheet.create({
   },
   rowField: {
     flex: 1,
-    marginRight: IS_LARGE_SCREEN ? 8 : 0, // Reduced from 10
+    marginRight: IS_LARGE_SCREEN ? 8 : 0,
   },
   fieldWrapper: {
-    marginBottom: 8, // Reduced from 12
+    marginBottom: 8,
     position: 'relative',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: VERY_LIGHT_GRAY,
-    borderWidth: 1, // Reduced from 1.5
-    borderRadius: 6, // Reduced from 8
-    paddingHorizontal: 8, // Reduced from 12
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
     backgroundColor: BACKGROUND_LIGHT,
-    height: 38, // Reduced from 45
+    height: 38,
   },
   input: {
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 13, // Reduced from 15
-    paddingLeft: 6, // Reduced from 8
+    fontSize: 13,
+    paddingLeft: 6,
     ...Platform.select({
       web: {
         outline: 'none',
@@ -721,11 +722,11 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 0,
-    fontSize: 16, // Reduced from 18
+    fontSize: 16,
   },
   inputError: {
     borderColor: ERROR_RED,
-    borderWidth: 1.5, // Adjusted border width for error
+    borderWidth: 1.5,
   },
   picker: {
     flex: 1,
@@ -742,21 +743,21 @@ const styles = StyleSheet.create({
     }),
   },
   pickerItem: {
-    fontSize: 13, // Reduced from 15
+    fontSize: 13,
   },
   pickerInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 6, // Reduced from 8
-    paddingHorizontal: 8, // Reduced from 12
+    borderRadius: 6,
+    paddingHorizontal: 8,
     backgroundColor: BACKGROUND_LIGHT,
-    height: 38, // Reduced from 45
-    borderWidth: 1, // Reduced from 1.5
+    height: 38,
+    borderWidth: 1,
     borderColor: VERY_LIGHT_GRAY,
   },
   dateInputText: {
     flex: 1,
-    fontSize: 13, // Reduced from 14
+    fontSize: 13,
     color: MEDIUM_GRAY,
     paddingLeft: 6,
   },
@@ -764,8 +765,8 @@ const styles = StyleSheet.create({
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 13, // Reduced from 15
-    paddingLeft: 6, // Reduced from 8
+    fontSize: 13,
+    paddingLeft: 6,
     borderWidth: 0,
     backgroundColor: 'transparent',
     WebkitAppearance: 'none',
@@ -773,37 +774,37 @@ const styles = StyleSheet.create({
     appearance: 'none',
     outline: 'none',
     cursor: 'pointer',
-    paddingRight: Platform.OS === 'web' ? 8 : 0, // Reduced from 10
+    paddingRight: Platform.OS === 'web' ? 8 : 0,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderColor: VERY_LIGHT_GRAY,
-    borderWidth: 1, // Reduced from 1.5
-    borderRadius: 6, // Reduced from 8
-    paddingHorizontal: 8, // Reduced from 12
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 8,
     backgroundColor: BACKGROUND_LIGHT,
-    height: 38, // Reduced from 45
+    height: 38,
   },
   switchLabel: {
-    fontSize: 13, // Reduced from 15
+    fontSize: 13,
     color: MEDIUM_GRAY,
     fontWeight: '500',
   },
   primaryButton: {
     backgroundColor: PRIMARY_GREEN,
-    paddingVertical: 10, // Reduced from 12
+    paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 15, // Reduced from 20
-    marginBottom: 5, // Reduced from 8
+    marginTop: 15,
+    marginBottom: 5,
     shadowColor: PRIMARY_GREEN,
-    shadowOffset: { width: 0, height: 3 }, // Reduced shadow
-    shadowOpacity: 0.12, // Reduced shadow opacity
-    shadowRadius: 6, // Reduced shadow radius
-    elevation: 3, // Reduced elevation
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
     ...Platform.select({
       web: {
         cursor: 'pointer',
@@ -817,30 +818,30 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: WHITE,
-    fontSize: 14, // Reduced from 16
+    fontSize: 14,
     fontWeight: 'bold',
   },
   errorText: {
     color: ERROR_RED,
-    marginBottom: 10, // Reduced from 15
+    marginBottom: 10,
     textAlign: 'center',
-    fontSize: 11, // Reduced from 13
+    fontSize: 11,
     fontWeight: '500',
   },
   fieldErrorText: {
     color: ERROR_RED,
-    fontSize: 10, // Reduced from 12
+    fontSize: 10,
     position: 'absolute',
-    bottom: -13, // Adjusted position
+    bottom: -13,
     left: 5,
   },
   charCounter: {
-    fontSize: 10, // Reduced from 12
+    fontSize: 10,
     color: LIGHT_GRAY,
-    marginLeft: 6, // Reduced from 8
+    marginLeft: 6,
   },
   eyeIconContainer: {
-    paddingLeft: 8, // Reduced from 10
-    paddingRight: 4, // Reduced from 5
+    paddingLeft: 8,
+    paddingRight: 4,
   },
 });
