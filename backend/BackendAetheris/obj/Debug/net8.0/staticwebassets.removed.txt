@@ -1,0 +1,3 @@
+C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\wwwroot\images\residents\13.png
+C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\wwwroot\images\residents\15.png
+C:\Users\elihu\OneDrive\Documentos\XAMPP\htdocs\Aetheris\backend\BackendAetheris\wwwroot\images\residents\46.png

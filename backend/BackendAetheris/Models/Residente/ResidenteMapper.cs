@@ -17,12 +17,12 @@ public class ResidenteMapper
             residente.Fecha_nacimiento = (DateTime)row["fecha_nacimiento"];
             residente.Genero = (String)row["genero"];
             residente.Telefono = row.IsNull("telefono") ? "" : (string)row["telefono"];
-            
             residente.Foto = row.IsNull("foto") ? "default" : (string)row["foto"]; 
-            
             residente.Fecha_ingreso = (DateTime)row["fecha_ingreso"];
             residente.Activo = (bool)row["activo"];
-
+            residente.PromedioReposo = row.IsNull("promedio_reposo") ? 0 : (Int32)row["promedio_reposo"];
+            residente.PromedioActivo = row.IsNull("promedio_activo") ? 0 : (Int32)row["promedio_activo"];
+            residente.PromedioAgitado= row.IsNull("promedio_agitado") ? 0 : (Int32)row["promedio_agitado"];
             if (!row.IsNull("dispositivo"))
             {
                 int id_dispositivo = (Int32)row["dispositivo"];

@@ -1060,6 +1060,100 @@
   },
   {
     "ContainingType": "ResidenteController",
+    "Method": "UpdatePromedioRitmos",
+    "RelativePath": "api/Residente/ritmo",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedioReposo",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedioActivo",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedioAgitado",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ResidenteController",
+    "Method": "UpdatePromedioActivo",
+    "RelativePath": "api/Residente/ritmo/activo",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedio",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ResidenteController",
+    "Method": "UpdatePromedioAgitado",
+    "RelativePath": "api/Residente/ritmo/agitado",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedio",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ResidenteController",
+    "Method": "UpdatePromedioReposo",
+    "RelativePath": "api/Residente/ritmo/reposo",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "promedio",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ResidenteController",
     "Method": "UploadPhoto",
     "RelativePath": "api/Residente/UploadPhoto",
     "HttpMethod": "POST",
