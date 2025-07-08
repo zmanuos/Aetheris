@@ -1,8 +1,8 @@
-# Ignore Node.js modules (if you have frontend tooling)
+# Ignorar módulos de Node.js (si tienes herramientas de frontend)
 node_modules/
 
 # Visual Studio / .NET
-## Build artifacts
+## Artefactos de construcción
 [Bb]in/
 [Oo]bj/
 [Dd]ebug/
@@ -20,7 +20,7 @@ node_modules/
 *.vspscc
 *.vssscc
 
-## Visual Studio cache and solution user options
+## Caché de Visual Studio y opciones de usuario de la solución
 .vs/
 *.sln.docstates
 *.vsp
@@ -38,6 +38,8 @@ _ReSharper.*/
 *.nupkg
 *.nuget.props
 *.nuget.targets
+*.dgspec.json           # Agrega esto para BackendAetheris.csproj.nuget.dgspec.json
+*.nuget.cache           # Agrega esto para project.nuget.cache
 !/packages.config
 /packages/
 /src/packages/
@@ -46,7 +48,7 @@ _ReSharper.*/
 *.csproj.DotSettings
 *.sln.DotSettings
 
-## Others
+## Otros
 *.*proj.user
 *.resharper
 *.sqlproj.user
@@ -56,3 +58,8 @@ _ReSharper.*/
 *.vsix
 *.vstec
 *.webconfig
+
+# Archivos generados comunes que a menudo se encuentran en obj/ o salida de construcción
+*.cache
+*.txt
+*.json
