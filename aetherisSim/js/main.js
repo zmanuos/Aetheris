@@ -22,6 +22,7 @@ async function init() {
         residentes.forEach(residente => {
             if (!residente.dispositivo) {
                 console.log("El residente " + residente.id_residente + " no tiene dispositivo asignado");
+                
             } else {
                 if (residente.promedioReposo != 0) {
                     const residenteId = residente.id_residente;
