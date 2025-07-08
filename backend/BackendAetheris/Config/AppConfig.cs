@@ -92,7 +92,7 @@ public static class AppConfig
             });
 
         // --- SE HA ELIMINADO EL REGISTRO DEL FILTRO DE AUTORIZACIÓN DE ADMINISTRADOR DE FIREBASE ---
-        // services.AddScoped<AdminAuthFilter>();
+        services.AddScoped<AdminAuthFilter>();
         // --- FIN REGISTRO DEL FILTRO ---
 
         services.AddCors(options =>
