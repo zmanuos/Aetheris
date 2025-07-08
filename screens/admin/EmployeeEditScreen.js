@@ -14,6 +14,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import Config from '../../config/config';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 import {
   formatName,
   isValidName,
@@ -46,11 +47,12 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
   const [employeeLastName, setEmployeeLastName] = useState(employeeData.apellido);
   const [employeePhone, setEmployeePhone] = useState(employeeData.telefono);
   const [employeeGender, setEmployeeGender] = useState(employeeData.genero);
-  const [employeeBirthDate, setEmployeeBirthDate] = useState(new Date(employeeData.fecha_nacimiento).toISOString().split('T')[0]);
+  // Ensure employeeBirthDate is a Date object for DateTimePicker
+  const [employeeBirthDate, setEmployeeBirthDate] = useState(new Date(employeeData.fecha_nacimiento));
+  const [showEmployeeDatePicker, setShowEmployeeDatePicker] = useState(false); // State for date picker visibility
   const [employeeActive, setEmployeeActive] = useState(employeeData.activo);
 
   const [employeeEmail, setEmployeeEmail] = useState('');
-  // Estos estados se mantienen vacíos intencionadamente
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
@@ -67,6 +69,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
   const [nameError, setNameError] = useState('');
   const [lastNameError, setLastNameError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [genderError, setGenderError] = useState(''); // New state for gender error
   const [birthDateError, setBirthDateError] = useState('');
 
   const API_URL = Config.API_BASE_URL;
@@ -145,6 +148,50 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
     }
   };
 
+  const handleGenderChange = (itemValue) => {
+    setEmployeeGender(itemValue);
+    if (!itemValue) {
+      setGenderError('El género es obligatorio.');
+    } else {
+      setGenderError('');
+    }
+  };
+
+  const handleBirthDateChangeMobile = (event, selectedDate) => {
+    const currentDate = selectedDate || employeeBirthDate;
+    setShowEmployeeDatePicker(Platform.OS === 'ios' ? false : false);
+    setEmployeeBirthDate(currentDate);
+    const dateString = currentDate.toISOString().split('T')[0];
+    if (!dateString) {
+      setBirthDateError('La fecha de nacimiento es obligatoria.');
+    } else if (!isValidDateFormat(dateString)) {
+      setBirthDateError('Formato de fecha inválido (YYYY-MM-DD).');
+    } else if (!isAdult(dateString)) {
+      setBirthDateError('La edad no cumple con los requisitos (mayor de 18 y no más de 120 años).');
+    } else {
+      setBirthDateError('');
+    }
+  };
+
+  const handleBirthDateChangeWeb = (event) => {
+    const dateString = event.target.value;
+    if (dateString) {
+      const date = new Date(dateString + 'T00:00:00Z');
+      if (!isNaN(date.getTime())) {
+        setEmployeeBirthDate(date);
+        if (!isAdult(dateString)) {
+          setBirthDateError('La edad no cumple con los requisitos (mayor de 18 y no más de 120 años).');
+        } else {
+          setBirthDateError('');
+        }
+      } else {
+        setBirthDateError('Formato de fecha inválido (YYYY-MM-DD).');
+      }
+    } else {
+      setBirthDateError('La fecha de nacimiento es obligatoria.');
+    }
+  };
+
   const handleEmailChange = (text) => {
     setEmployeeEmail(text);
     if (emailError && isValidEmail(text)) {
@@ -209,6 +256,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
     handleNameBlur();
     handleLastNameBlur();
     handlePhoneBlur();
+    handleGenderChange(employeeGender); // Validate gender on save
+    handleBirthDateChangeMobile(null, employeeBirthDate); // Validate birth date on save
     handleEmailBlur();
     if (newPassword.trim()) {
         handleNewPasswordBlur();
@@ -219,6 +268,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       nameError,
       lastNameError,
       phoneError,
+      genderError, // Include gender error
+      birthDateError, // Include birth date error
       emailError,
       newPassword.trim() ? newPasswordError : '',
       confirmNewPassword.trim() ? confirmNewPasswordError : ''
@@ -229,8 +280,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       !employeeLastName.trim() ||
       !employeePhone ||
       !employeeEmail.trim() ||
-      !employeeGender ||
-      !employeeBirthDate
+      !employeeGender || // Check if gender is selected
+      !employeeBirthDate // Check if birth date is selected
     ) {
       setFormError('Por favor, completa todos los campos obligatorios.');
       return;
@@ -246,6 +297,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       !isValidName(employeeLastName) ||
       !isValidPhoneNumber(employeePhone) ||
       !isValidEmail(employeeEmail) ||
+      !isAdult(employeeBirthDate.toISOString().split('T')[0]) || // Final check for birth date validity
       (newPassword.trim() && newPassword.length < 6) ||
       (newPassword.trim() && newPassword !== confirmNewPassword)
     ) {
@@ -259,8 +311,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       const updatedEmployeeData = {
         nombre: employeeName,
         apellido: employeeLastName,
-        fecha_nacimiento: new Date(employeeData.fecha_nacimiento).toISOString(),
-        genero: employeeData.genero,
+        fecha_nacimiento: employeeBirthDate.toISOString(), // Use the updated Date object
+        genero: employeeGender, // Use the updated gender
         telefono: employeePhone,
         activo: employeeActive,
       };
@@ -348,6 +400,9 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
     }
   };
 
+  const formattedEmployeeDateForDisplay = employeeBirthDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedEmployeeDateForWebInput = employeeBirthDate.toISOString().split('T')[0];
+
   return (
     <ScrollView contentContainerStyle={styles.formContainer}>
       <Text style={styles.formTitle}>Editar Empleado</Text>
@@ -357,8 +412,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       <View style={IS_LARGE_SCREEN ? styles.rowContainer : null}>
         <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
           <Text style={styles.inputLabel}>Nombre</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+          <View style={[styles.inputContainer, nameError ? styles.inputError : null]}>
+            <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Ej: Juan"
@@ -373,8 +428,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
 
         <View style={[IS_LARGE_SCREEN ? styles.rowField : null, styles.fieldWrapper]}>
           <Text style={styles.inputLabel}>Apellido</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+          <View style={[styles.inputContainer, lastNameError ? styles.inputError : null]}>
+            <Ionicons name="person-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Ej: Pérez"
@@ -391,8 +446,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       {/* Campo de Teléfono */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Teléfono</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons name="call-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+        <View style={[styles.inputContainer, phoneError ? styles.inputError : null]}>
+          <Ionicons name="call-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Ej: 5512345678"
@@ -408,52 +463,63 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
         {phoneError ? <Text style={styles.fieldErrorText}>{phoneError}</Text> : null}
       </View>
 
-      {/* Campos no editables: Género y Fecha de Nacimiento */}
+      {/* Campo de Género */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Género</Text>
-        <View style={[styles.pickerInputContainer, styles.disabledField]}>
-          <Ionicons name="person-circle-outline" size={18} color={LIGHT_GRAY} style={styles.inputIcon} />
+        <View style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
+          <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
           <Picker
             selectedValue={employeeGender}
-            onValueChange={(itemValue) => { /* Disabled, no change handler */ }}
-            style={[styles.picker, { color: LIGHT_GRAY }]}
-            itemStyle={[styles.pickerItem, { color: LIGHT_GRAY }]}
-            enabled={false}
+            onValueChange={handleGenderChange}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+            enabled={!isSaving} // Enable gender editing
           >
+            <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
             <Picker.Item label="Masculino" value="Masculino" />
             <Picker.Item label="Femenino" value="Femenino" />
           </Picker>
         </View>
+        {genderError ? <Text style={styles.fieldErrorText}>{genderError}</Text> : null}
       </View>
 
+      {/* Campo de Fecha de Nacimiento */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-        <View style={[styles.inputContainer, styles.disabledField]}>
-          <Ionicons name="calendar-outline" size={18} color={LIGHT_GRAY} style={styles.inputIcon} />
-          {Platform.OS === 'web' ? (
+        {Platform.OS === 'web' ? (
+          <View style={[styles.inputContainer, birthDateError ? styles.inputError : null]}>
+            <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
             <input
               type="date"
-              value={employeeBirthDate}
-              style={{
-                ...StyleSheet.flatten(styles.datePickerWeb),
-                color: LIGHT_GRAY,
-                border: 'none',
-                borderWidth: 0,
-                borderColor: 'transparent',
-                boxShadow: 'none',
-              }}
-              disabled={true}
+              value={formattedEmployeeDateForWebInput}
+              onChange={handleBirthDateChangeWeb}
+              onBlur={() => handleBirthDateChangeWeb({ target: { value: formattedEmployeeDateForWebInput } })} // Trigger blur for validation
+              style={styles.datePickerWeb}
+              disabled={isSaving}
             />
-          ) : (
-            <TextInput
-              style={[styles.input, { color: LIGHT_GRAY }]}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={LIGHT_GRAY}
-              value={employeeBirthDate}
-              editable={false}
-            />
-          )}
-        </View>
+          </View>
+        ) : (
+          <>
+            <TouchableOpacity
+              style={[styles.inputContainer, birthDateError ? styles.inputError : null]}
+              onPress={() => setShowEmployeeDatePicker(true)}
+              disabled={isSaving}
+            >
+              <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+              <Text style={styles.dateInputText}>{formattedEmployeeDateForDisplay}</Text>
+            </TouchableOpacity>
+            {showEmployeeDatePicker && (
+              <DateTimePicker
+                testID="employeeDatePicker"
+                value={employeeBirthDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleBirthDateChangeMobile}
+                maximumDate={new Date()}
+              />
+            )}
+          </>
+        )}
         {birthDateError ? <Text style={styles.fieldErrorText}>{birthDateError}</Text> : null}
       </View>
 
@@ -468,6 +534,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
             ios_backgroundColor={LIGHT_GRAY}
             onValueChange={setEmployeeActive}
             value={employeeActive}
+            disabled={isSaving}
           />
           <Text style={styles.switchLabel}>Activo</Text>
         </View>
@@ -478,8 +545,8 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       {/* Campo de Correo Electrónico */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Correo Electrónico</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+        <View style={[styles.inputContainer, emailError ? styles.inputError : null]}>
+          <Ionicons name="mail-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
           <TextInput
             style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
             placeholder="Ej: correo@ejemplo.com"
@@ -490,8 +557,9 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
             keyboardType="email-address"
             autoCapitalize="none"
             autoComplete="off"
-            textContentType="none" // Para iOS, evita autocompletar correos viejos
+            textContentType="none"
             importantForAutofill="no"
+            editable={!isSaving}
           />
         </View>
         {emailError ? <Text style={styles.fieldErrorText}>{emailError}</Text> : null}
@@ -500,24 +568,25 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       {/* Campo de Nueva Contraseña */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Nueva Contraseña</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+        <View style={[styles.inputContainer, newPasswordError ? styles.inputError : null]}>
+          <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
           <TextInput
             style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
-            placeholder="Nueva contraseña"
+            placeholder="Mínimo 6 caracteres"
             placeholderTextColor={LIGHT_GRAY}
-            value={newPassword} // Mantenemos el estado para la lógica interna
+            value={newPassword}
             onChangeText={handleNewPasswordChange}
             onBlur={handleNewPasswordBlur}
             secureTextEntry={!showNewPassword}
-            autoComplete="off" // Deshabilita el autocompletado en navegadores
-            textContentType="newPassword" // Importante para iOS, indica que es una nueva contraseña
-            importantForAutofill="no" // Para Android
+            autoComplete="off"
+            textContentType="newPassword"
+            importantForAutofill="no"
+            editable={!isSaving}
           />
           <TouchableOpacity onPress={toggleShowNewPassword} style={styles.eyeIconContainer}>
             <Ionicons
               name={showNewPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
+              size={18}
               color={MEDIUM_GRAY}
             />
           </TouchableOpacity>
@@ -528,24 +597,25 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       {/* Campo de Confirmar Nueva Contraseña */}
       <View style={styles.fieldWrapper}>
         <Text style={styles.inputLabel}>Confirmar Nueva Contraseña</Text>
-        <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+        <View style={[styles.inputContainer, confirmNewPasswordError ? styles.inputError : null]}>
+          <Ionicons name="lock-closed-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
           <TextInput
             style={[styles.input, Platform.OS === 'web' && styles.noWebYellowBackground]}
             placeholder="Repite la nueva contraseña"
             placeholderTextColor={LIGHT_GRAY}
-            value={confirmNewPassword} // Mantenemos el estado para la lógica interna
+            value={confirmNewPassword}
             onChangeText={handleConfirmNewPasswordChange}
             onBlur={handleConfirmNewPasswordBlur}
             secureTextEntry={!showConfirmNewPassword}
-            autoComplete="off" // Deshabilita el autocompletado en navegadores
-            textContentType="newPassword" // Importante para iOS, indica que es una nueva contraseña
-            importantForAutofill="no" // Para Android
+            autoComplete="off"
+            textContentType="newPassword"
+            importantForAutofill="no"
+            editable={!isSaving}
           />
           <TouchableOpacity onPress={toggleShowConfirmNewPassword} style={styles.eyeIconContainer}>
             <Ionicons
               name={showConfirmNewPassword ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
+              size={18}
               color={MEDIUM_GRAY}
             />
           </TouchableOpacity>
@@ -567,14 +637,14 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
 
 const containerBaseStyles = {
   backgroundColor: WHITE,
-  borderRadius: 15,
-  padding: 18,
+  borderRadius: 12, // Reduced from 15
+  padding: 12, // Reduced from 18
   shadowColor: DARK_GRAY,
-  shadowOffset: { width: 0, height: 5 },
-  shadowOpacity: 0.1,
-  shadowRadius: 10,
-  elevation: 8,
-  borderWidth: 1.5,
+  shadowOffset: { width: 0, height: 3 }, // Reduced shadow
+  shadowOpacity: 0.08, // Reduced shadow opacity
+  shadowRadius: 6, // Reduced shadow radius
+  elevation: 4, // Reduced elevation
+  borderWidth: 1, // Reduced from 1.5
   borderColor: VERY_LIGHT_GRAY,
 };
 
@@ -582,24 +652,24 @@ const styles = StyleSheet.create({
   formContainer: {
     ...containerBaseStyles,
     alignSelf: 'center',
-    marginTop: IS_LARGE_SCREEN ? Dimensions.get('window').height * 0.05 : 15,
-    marginBottom: 20,
-    paddingVertical: 25,
-    paddingHorizontal: IS_LARGE_SCREEN ? 25 : 12,
-    width: IS_LARGE_SCREEN ? '45%' : '90%',
-    maxWidth: IS_LARGE_SCREEN ? 550 : '95%',
+    marginTop: IS_LARGE_SCREEN ? Dimensions.get('window').height * 0.03 : 10, // Adjusted margin
+    marginBottom: 15, // Reduced from 20
+    paddingVertical: 18, // Reduced from 25
+    paddingHorizontal: IS_LARGE_SCREEN ? 18 : 10, // Reduced from 25 and 12
+    width: IS_LARGE_SCREEN ? '48%' : '95%', // Adjusted width for better fit
+    maxWidth: IS_LARGE_SCREEN ? 500 : '98%', // Adjusted max width
   },
   formTitle: {
-    fontSize: IS_LARGE_SCREEN ? 26 : 22,
+    fontSize: IS_LARGE_SCREEN ? 22 : 18, // Reduced font size
     fontWeight: '700',
     color: DARK_GRAY,
-    marginBottom: 20,
+    marginBottom: 15, // Reduced from 20
     textAlign: 'center',
   },
   inputLabel: {
-    fontSize: 14,
+    fontSize: 12, // Reduced from 14
     color: DARK_GRAY,
-    marginBottom: 4,
+    marginBottom: 2, // Reduced from 4
     fontWeight: '600',
   },
   rowContainer: {
@@ -609,28 +679,28 @@ const styles = StyleSheet.create({
   },
   rowField: {
     flex: 1,
-    marginRight: IS_LARGE_SCREEN ? 10 : 0,
+    marginRight: IS_LARGE_SCREEN ? 8 : 0, // Reduced from 10
   },
   fieldWrapper: {
-    marginBottom: 12,
+    marginBottom: 8, // Reduced from 12
     position: 'relative',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderColor: VERY_LIGHT_GRAY,
-    borderWidth: 1.5,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderWidth: 1, // Reduced from 1.5
+    borderRadius: 6, // Reduced from 8
+    paddingHorizontal: 8, // Reduced from 12
     backgroundColor: BACKGROUND_LIGHT,
-    height: 45,
+    height: 38, // Reduced from 45
   },
   input: {
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 15,
-    paddingLeft: 8,
+    fontSize: 13, // Reduced from 15
+    paddingLeft: 6, // Reduced from 8
     ...Platform.select({
       web: {
         outline: 'none',
@@ -643,7 +713,6 @@ const styles = StyleSheet.create({
   noWebYellowBackground: {
     ...Platform.select({
       web: {
-        // Truco para evitar el fondo amarillo de autocompletado en Chrome/Safari
         boxShadow: '0 0 0px 1000px #fcfcfc inset',
         WebkitBoxShadow: '0 0 0px 1000px #fcfcfc inset',
         caretColor: MEDIUM_GRAY,
@@ -652,7 +721,11 @@ const styles = StyleSheet.create({
   },
   inputIcon: {
     marginRight: 0,
-    fontSize: 18,
+    fontSize: 16, // Reduced from 18
+  },
+  inputError: {
+    borderColor: ERROR_RED,
+    borderWidth: 1.5, // Adjusted border width for error
   },
   picker: {
     flex: 1,
@@ -669,22 +742,30 @@ const styles = StyleSheet.create({
     }),
   },
   pickerItem: {
-    fontSize: 15,
+    fontSize: 13, // Reduced from 15
   },
   pickerInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderRadius: 6, // Reduced from 8
+    paddingHorizontal: 8, // Reduced from 12
     backgroundColor: BACKGROUND_LIGHT,
-    height: 45,
+    height: 38, // Reduced from 45
+    borderWidth: 1, // Reduced from 1.5
+    borderColor: VERY_LIGHT_GRAY,
+  },
+  dateInputText: {
+    flex: 1,
+    fontSize: 13, // Reduced from 14
+    color: MEDIUM_GRAY,
+    paddingLeft: 6,
   },
   datePickerWeb: {
     flex: 1,
     height: '100%',
     color: MEDIUM_GRAY,
-    fontSize: 15,
-    paddingLeft: 8,
+    fontSize: 13, // Reduced from 15
+    paddingLeft: 6, // Reduced from 8
     borderWidth: 0,
     backgroundColor: 'transparent',
     WebkitAppearance: 'none',
@@ -692,37 +773,37 @@ const styles = StyleSheet.create({
     appearance: 'none',
     outline: 'none',
     cursor: 'pointer',
-    paddingRight: Platform.OS === 'web' ? 10 : 0,
+    paddingRight: Platform.OS === 'web' ? 8 : 0, // Reduced from 10
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderColor: VERY_LIGHT_GRAY,
-    borderWidth: 1.5,
-    borderRadius: 8,
-    paddingHorizontal: 12,
+    borderWidth: 1, // Reduced from 1.5
+    borderRadius: 6, // Reduced from 8
+    paddingHorizontal: 8, // Reduced from 12
     backgroundColor: BACKGROUND_LIGHT,
-    height: 45,
+    height: 38, // Reduced from 45
   },
   switchLabel: {
-    fontSize: 15,
+    fontSize: 13, // Reduced from 15
     color: MEDIUM_GRAY,
     fontWeight: '500',
   },
   primaryButton: {
     backgroundColor: PRIMARY_GREEN,
-    paddingVertical: 12,
+    paddingVertical: 10, // Reduced from 12
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 8,
+    marginTop: 15, // Reduced from 20
+    marginBottom: 5, // Reduced from 8
     shadowColor: PRIMARY_GREEN,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 }, // Reduced shadow
+    shadowOpacity: 0.12, // Reduced shadow opacity
+    shadowRadius: 6, // Reduced shadow radius
+    elevation: 3, // Reduced elevation
     ...Platform.select({
       web: {
         cursor: 'pointer',
@@ -736,35 +817,30 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: WHITE,
-    fontSize: 16,
+    fontSize: 14, // Reduced from 16
     fontWeight: 'bold',
   },
   errorText: {
     color: ERROR_RED,
-    marginBottom: 15,
+    marginBottom: 10, // Reduced from 15
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 11, // Reduced from 13
     fontWeight: '500',
   },
   fieldErrorText: {
     color: ERROR_RED,
-    fontSize: 12,
+    fontSize: 10, // Reduced from 12
     position: 'absolute',
-    bottom: -15,
+    bottom: -13, // Adjusted position
     left: 5,
   },
   charCounter: {
-    fontSize: 12,
+    fontSize: 10, // Reduced from 12
     color: LIGHT_GRAY,
-    marginLeft: 8,
-  },
-  disabledField: {
-    backgroundColor: VERY_LIGHT_GRAY,
-    opacity: 0.7,
-    borderColor: LIGHT_GRAY,
+    marginLeft: 6, // Reduced from 8
   },
   eyeIconContainer: {
-    paddingLeft: 10,
-    paddingRight: 5,
+    paddingLeft: 8, // Reduced from 10
+    paddingRight: 4, // Reduced from 5
   },
-});                 
+});
