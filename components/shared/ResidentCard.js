@@ -8,6 +8,20 @@ import { LineChart } from 'react-native-chart-kit';
 const { width } = Dimensions.get('window');
 const GAP_BETWEEN_CARDS = 10;
 
+// Color palette definitions
+const PRIMARY_GREEN = '#6BB240';
+const LIGHT_GREEN = '#9CD275';
+const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
+const DARK_GRAY = '#333';
+const MEDIUM_GRAY = '#555';
+const LIGHT_GRAY = '#888';
+const VERY_LIGHT_GRAY = '#eee';
+const BACKGROUND_LIGHT = '#fcfcfc';
+const WHITE = '#fff';
+const ERROR_RED = '#DC3545';
+const BUTTON_HOVER_COLOR = '#5aa130';
+const ACCENT_BLUE = '#2563EB'; // New blue color
+
 
 const getHealthStatusColor = (status) => {
   if (!status || typeof status !== 'string') return '#9CA3AF';
@@ -22,13 +36,13 @@ const getHealthStatusColor = (status) => {
 
 const getHeartRateRange = (heartRate) => {
   if (heartRate >= 60 && heartRate <= 100) {
-    return { text: 'Normal', color: '#22C55E' };
+    return { text: 'Normal', color: PRIMARY_GREEN };
   } else if (heartRate > 100) {
-    return { text: 'Alto', color: '#EF4444' };
+    return { text: 'Alto', color: ERROR_RED };
   } else if (heartRate < 60 && heartRate !== 0) {
     return { text: 'Bajo', color: '#F59E0B' };
   }
-  return { text: 'N/A', color: '#9CA3AF' };
+  return { text: 'N/A', color: LIGHT_GRAY };
 };
 
 const getInitials = (nombre, apellido) => {
@@ -53,6 +67,7 @@ const stringToHslColor = (str, s, l) => {
 
 const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, onAssignDevice, gridContainerPadding }) => {
   const [imageLoadError, setImageLoadError] = useState(false);
+  const [selectedBPMValue, setSelectedBPMValue] = useState(null);
 
   useEffect(() => {
     setImageLoadError(false);
@@ -96,9 +111,9 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   };
 
   const chartConfig = {
-    backgroundGradientFrom: "#ffffff",
+    backgroundGradientFrom: WHITE,
     backgroundGradientFromOpacity: 0,
-    backgroundGradientTo: "#ffffff",
+    backgroundGradientTo: WHITE,
     backgroundGradientToOpacity: 0,
     color: (opacity = 1) => `rgba(0, 0, 0, ${opacity * 0.5})`,
     strokeWidth: 2,
@@ -108,10 +123,10 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
     propsForDots: {
       r: "4",
       strokeWidth: "2",
-      stroke: "#EF4444"
+      stroke: ERROR_RED
     },
     fillShadowGradientFrom: '#FF6384',
-    fillShadowGradientTo: '#ffffff',
+    fillShadowGradientTo: WHITE,
     fillShadowGradientFromOpacity: 0.3,
     fillShadowGradientToOpacity: 0,
   };
@@ -144,9 +159,10 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
           <Text style={styles.residentDetails}>{age} años • Hab. {resident.nombre_area || 'N/A'}</Text>
         </View>
         {!resident.dispositivo && (
+          // Button is back in the header as an absolutely positioned element
           <TouchableOpacity style={styles.addDeviceButton} onPress={() => onAssignDevice(resident.id_residente)}>
-            <Ionicons name="bluetooth" size={18} color="#FFFFFF" />
-            <Text style={styles.addDeviceButtonText}>Agregar</Text>
+            <Ionicons name="bluetooth" size={18} color={WHITE} />
+            <Text style={styles.addDeviceButtonText}>Agregar dispositivo</Text>
           </TouchableOpacity>
         )}
         {resident.estado_salud_general && (
@@ -160,49 +176,56 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         <View style={styles.heartRateSection}>
           <Ionicons name="heart-outline" size={14} color="#EF4444" />
           <Text style={styles.heartRateText}>FC:</Text>
-          {resident.ultima_frecuencia_cardiaca && (
+          {resident.dispositivo && resident.ultima_frecuencia_cardiaca && (
             <View style={styles.heartRateValueContainer}>
               <View style={[styles.heartRateRangeTag, { backgroundColor: heartRateRange.color }]}>
                 <Text style={styles.heartRateRangeText}>{heartRateRange.text}</Text>
               </View>
               <Text style={styles.heartRateValue}>
-                {resident.ultima_frecuencia_cardiaca}
+                {selectedBPMValue !== null ? selectedBPMValue : resident.ultima_frecuencia_cardiaca}
                 <Text style={styles.heartRateUnit}> bpm</Text>
               </Text>
             </View>
           )}
         </View>
-        {recentHeartRateData && recentHeartRateData.length > 0 ? (
-          <LineChart
-            data={heartRateChartData}
-            width={cardWidth - 16}
-            height={80}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chartStyle}
-            withVerticalLabels={true}
-            withHorizontalLabels={false}
-            withDots={true}
-            withInnerLines={false}
-            withOuterLines={false}
-            segments={3}
-          />
-        ) : (
-          <Text style={styles.noGraphData}>Sin historial de FC disponible.</Text>
-        )}
+        <View style={styles.chartContainer}>
+          {resident.dispositivo && recentHeartRateData && recentHeartRateData.length > 0 ? (
+            <LineChart
+              data={heartRateChartData}
+              width={cardWidth - 16}
+              height={80}
+              chartConfig={chartConfig}
+              bezier
+              style={styles.chartStyle}
+              withVerticalLabels={true}
+              withHorizontalLabels={false}
+              withDots={true}
+              withInnerLines={false}
+              withOuterLines={false}
+              segments={3}
+              onDataPointClick={(data) => {
+                setSelectedBPMValue(data.value);
+                setTimeout(() => setSelectedBPMValue(null), 3000);
+              }}
+            />
+          ) : (
+            // Only the message remains here when no device is assigned
+            <Text style={styles.noGraphData}>El residente no cuenta con un dispositivo asignado.</Text>
+          )}
+        </View>
       </View>
 
       <View style={styles.cardActions}>
         <TouchableOpacity style={styles.actionButton} onPress={() => onViewProfile(resident.id_residente)}>
-          <Ionicons name="eye-outline" size={16} color="#FFFFFF" style={styles.iconLeft} />
+          <Ionicons name="eye-outline" size={16} color={WHITE} style={styles.iconLeft} />
           <Text style={styles.actionButtonText}>Perfil</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => onHistory(resident.id_residente)}>
-          <Ionicons name="analytics-outline" size={16} color="#FFFFFF" style={styles.iconLeft} />
+          <Ionicons name="analytics-outline" size={16} color={WHITE} style={styles.iconLeft} />
           <Text style={styles.actionButtonText}>Historial</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => onEdit(resident.id_residente)}>
-          <Ionicons name="create-outline" size={16} color="#FFFFFF" style={styles.iconLeft} />
+          <Ionicons name="create-outline" size={16} color={WHITE} style={styles.iconLeft} />
           <Text style={styles.actionButtonText}>Editar</Text>
         </TouchableOpacity>
       </View>
@@ -212,7 +235,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: WHITE,
     borderRadius: 8,
     marginVertical: 6,
     overflow: 'hidden',
@@ -226,7 +249,7 @@ const styles = StyleSheet.create({
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 12,
     borderBottomWidth: 0.5,
     borderBottomColor: '#F0F0F0',
     position: 'relative',
@@ -236,19 +259,19 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: VERY_LIGHT_GRAY,
   },
   initialsContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 8,
-    backgroundColor: '#A0A0A0',
+    backgroundColor: LIGHT_GRAY,
     justifyContent: 'center',
     alignItems: 'center',
   },
   initialsText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -258,11 +281,11 @@ const styles = StyleSheet.create({
   residentName: {
     fontSize: 14,
     fontWeight: '700',
-    color: '#333',
+    color: DARK_GRAY,
   },
   residentDetails: {
     fontSize: 10,
-    color: '#6B7280',
+    color: LIGHT_GRAY,
     marginTop: 2,
   },
   healthStatusTag: {
@@ -272,24 +295,24 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   healthStatusText: {
-    color: 'white',
+    color: WHITE,
     fontSize: 9,
     fontWeight: 'bold',
   },
-  addDeviceButton: {
+  addDeviceButton: { // Re-added and adjusted styles for absolute positioning
     position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: '#22C55E',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    top: 15, // Maintain space above
+    right: 8,
+    backgroundColor: ACCENT_BLUE, // Blue background
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addDeviceButtonText: {
-    color: '#FFFFFF',
+  addDeviceButtonText: { // Re-added styles
+    color: WHITE, // White text
     fontSize: 11,
     fontWeight: '600',
     marginLeft: 4,
@@ -318,11 +341,11 @@ const styles = StyleSheet.create({
   heartRateValue: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#EF4444',
+    color: ERROR_RED,
   },
   heartRateUnit: {
     fontSize: 10,
-    color: '#EF4444',
+    color: ERROR_RED,
   },
   heartRateRangeTag: {
     paddingVertical: 2,
@@ -331,37 +354,44 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   heartRateRangeText: {
-    color: 'white',
+    color: WHITE,
     fontSize: 9,
     fontWeight: 'bold',
   },
-  chartStyle: {
+  chartContainer: {
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginVertical: 0,
     borderRadius: 5,
     alignSelf: 'center',
     marginTop: 5,
   },
+  chartStyle: {
+    // Styles for chart container are handled by chartContainer
+  },
+  // Removed noDeviceContent, addDeviceButtonNoDevice, addDeviceButtonTextNoDevice styles
   noGraphData: {
     textAlign: 'center',
-    color: '#9CA3AF',
+    color: LIGHT_GRAY,
     marginTop: 10,
-    fontSize: 11,
+    fontSize: 13,
   },
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     borderTopWidth: 0.5,
-    borderTopColor: '#F9FAFB',
+    borderTopColor: VERY_LIGHT_GRAY,
     paddingVertical: 8,
-    backgroundColor: '#FDFDFD',
+    backgroundColor: BACKGROUND_LIGHT,
     flexWrap: 'wrap',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#6BB240',
+    backgroundColor: PRIMARY_GREEN,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 6,
@@ -371,7 +401,7 @@ const styles = StyleSheet.create({
     elevation: 0,
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: WHITE,
     fontSize: 12,
     fontWeight: '500',
   },
