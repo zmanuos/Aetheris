@@ -1,3 +1,4 @@
+// ResidentsScreen.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
@@ -10,6 +11,7 @@ import {
   Platform,
   TextInput,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useIsFocused } from '@react-navigation/native';
@@ -20,6 +22,7 @@ import { useNotification } from '../../src/context/NotificationContext';
 const API_URL = Config.API_BASE_URL;
 const GRID_CONTAINER_PADDING = 10;
 const POLLING_INTERVAL_MS = 3000;
+const { width } = Dimensions.get('window');
 
 export default function ResidentsScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -50,7 +53,6 @@ export default function ResidentsScreen({ navigation }) {
         }
         const residentsJson = await residentsResponse.json();
 
-        // Accede al array de residentes dentro de la propiedad 'data' del JSON
         if (residentsJson && Array.isArray(residentsJson.data)) {
           currentResidentsData = residentsJson.data;
         } else {
@@ -64,7 +66,6 @@ export default function ResidentsScreen({ navigation }) {
       const residentsWithDynamicData = await Promise.all(currentResidentsData.map(async (resident) => {
         let heartRateHistory = [];
         let latestHeartRate = null;
-        // El campo 'dispositivo' ya viene directamente en el objeto residente del API /Residente
 
         try {
           const heartRateResponse = await fetch(`${API_URL}/LecturaResidente/${resident.id_residente}`);
@@ -90,7 +91,6 @@ export default function ResidentsScreen({ navigation }) {
           foto_url: resident.foto && resident.foto !== 'nophoto.png' ? `${baseStaticUrl}/images/residents/${resident.foto}` : null,
           historial_frecuencia_cardiaca: heartRateHistory,
           ultima_frecuencia_cardiaca: latestHeartRate,
-          // 'dispositivo' ya está presente en el 'resident' original, no necesitamos añadirlo aquí.
         };
       }));
 
@@ -133,64 +133,19 @@ export default function ResidentsScreen({ navigation }) {
 
   const handleViewProfile = (id) => {
     showNotification(`Navegando a perfil del residente con ID: ${id}`, 'info');
-    // navigation.navigate('ResidentProfile', { residentId: id });
   };
 
   const handleHistory = (id) => {
     showNotification(`Navegando a historial médico del residente con ID: ${id}`, 'info');
-    // navigation.navigate('ResidentHistory', { residentId: id });
   };
 
   const handleEditResident = (id) => {
     showNotification(`Navegando a edición del residente con ID: ${id}`, 'info');
-    // navigation.navigate('EditResident', { residentId: id });
-  };
-
-  const handleDeleteResident = (id) => {
-    Alert.alert(
-      'Confirmar Eliminación',
-      '¿Estás seguro de que quieres eliminar a este residente? Esta acción es irreversible.',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel',
-        },
-        {
-          text: 'Eliminar',
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              const response = await fetch(`${API_URL}/Residente/${id}`, {
-                method: 'DELETE',
-              });
-
-              if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Error al eliminar residente: ${errorText || response.statusText}`);
-              }
-
-              showNotification('Residente eliminado exitosamente.', 'success');
-              fetchResidentsData(true); 
-            } catch (error) {
-              console.error('Error deleting resident:', error);
-              showNotification(`Error al eliminar: ${error.message}`, 'error');
-            } finally {
-              setIsLoading(false);
-            }
-          },
-          style: 'destructive',
-        },
-      ],
-      { cancelable: true }
-    );
   };
 
   const handleAssignDevice = (residentId) => {
     showNotification(`Navegando a la asignación de dispositivo para el residente con ID: ${residentId}`, 'info');
-    // Aquí puedes navegar a una pantalla específica para asignar el dispositivo
-    // Por ejemplo: navigation.navigate('AssignDeviceScreen', { residentId: residentId });
   };
-
 
   const filteredResidents = residents.filter(resident =>
     resident.nombre.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -200,26 +155,25 @@ export default function ResidentsScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+      <View style={styles.headerContainer}>
+        <View style={styles.searchFilterContainer}>
+          <View style={styles.searchInputContainer}>
+            <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar residente..."
+              placeholderTextColor="#9CA3AF"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+          </View>
+          <TouchableOpacity style={styles.filterButton}>
+            <Text style={styles.filterButtonText}>Filtros</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
           <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
           <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.searchFilterContainer}>
-        <View style={styles.searchInputContainer}>
-          <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar residente..."
-            placeholderTextColor="#9CA3AF"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-        </View>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterButtonText}>Filtros</Text>
         </TouchableOpacity>
       </View>
 
@@ -237,7 +191,6 @@ export default function ResidentsScreen({ navigation }) {
                 key={resident.id_residente}
                 resident={resident}
                 onEdit={handleEditResident}
-                onDelete={handleDeleteResident}
                 onViewProfile={handleViewProfile}
                 onHistory={handleHistory}
                 onAssignDevice={handleAssignDevice} 
@@ -256,21 +209,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  header: {
+  headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
-    paddingTop: Platform.OS === 'android' ? 30 : 0,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#333',
+    paddingTop: Platform.OS === 'android' ? 30 : 10,
   },
   createButton: {
     flexDirection: 'row',
@@ -283,6 +232,7 @@ const styles = StyleSheet.create({
     borderColor: '#10B981',
     shadowColor: 'transparent',
     elevation: 0,
+    marginLeft: 10,
   },
   createButtonText: {
     color: '#10B981',
@@ -293,10 +243,7 @@ const styles = StyleSheet.create({
   searchFilterContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    flex: 1,
   },
   searchInputContainer: {
     flex: 1,
@@ -307,6 +254,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     marginRight: 10,
+    maxWidth: 300,
   },
   searchIcon: {
     marginRight: 8,
@@ -333,7 +281,7 @@ const styles = StyleSheet.create({
   residentsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingHorizontal: GRID_CONTAINER_PADDING,
   },
   loadingIndicator: {
