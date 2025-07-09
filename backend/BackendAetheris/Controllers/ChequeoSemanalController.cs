@@ -38,4 +38,32 @@ public class ChequeoSemanalController : ControllerBase
 
         return chequeo == null ? NotFound() : Ok(chequeo);
     }
+
+    [HttpPost]
+    public ActionResult CrearChequeo([FromForm] ChequeoSemanalPost chequeo)
+    {
+        if (string.IsNullOrWhiteSpace(chequeo.ResidenteId))
+            return BadRequest("El ID del residente es obligatorio.");
+
+        var nuevoChequeo = new ChequeoSemanal
+        {
+            ResidenteId = chequeo.ResidenteId,
+            FechaChequeo = chequeo.FechaChequeo,
+            Spo2 = chequeo.Spo2,
+            Pulso = chequeo.Pulso,
+            TemperaturaCorporal = chequeo.TemperaturaCorporal,
+            Peso = chequeo.Peso,
+            Altura = chequeo.Altura,
+            Imc = chequeo.Imc,
+            DispositivoSpO2 = chequeo.DispositivoSpO2,
+            DispositivoTempCorp = chequeo.DispositivoTempCorp,
+            DispositivoPeso = chequeo.DispositivoPeso,
+            DispositivoAltura = chequeo.DispositivoAltura
+        };
+
+        _coleccion.InsertOne(nuevoChequeo);
+
+        return Ok(MessageResponse.GetReponse(0, "Chequeo médico registrado exitosamente.", MessageType.Success));
+    }
 }
+

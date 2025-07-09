@@ -2,23 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
+import { LinearGradient } from 'expo-linear-gradient';
+
 
 const { width } = Dimensions.get('window');
-
 const GAP_BETWEEN_CARDS = 5;
 
+
 const getHealthStatusColor = (status) => {
-  if (!status) return '#9CA3AF';
+  if (!status || typeof status !== 'string') return '#9CA3AF'; // Gris por defecto
   switch (status.toLowerCase()) {
-    case 'alta':
-      return '#22C55E';
+    case 'alta': return '#22C55E';
     case 'media':
-    case 'moderada':
-      return '#F59E0B';
-    case 'baja':
-      return '#EF4444';
-    default:
-      return '#9CA3AF';
+    case 'moderada': return '#F59E0B';
+    case 'baja': return '#EF4444';
+    default: return '#9CA3AF';
   }
 };
 
@@ -55,18 +53,30 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
 
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
 
+  // Cálculo del promedio para la línea de referencia
+  const heartData = resident.historial_frecuencia_cardiaca.slice(-7);
+  const average = heartData.length ? (heartData.reduce((a, b) => a + b, 0) / heartData.length) : 0;
+  const healthColor = getHealthStatusColor(resident.estado_salud_general);
+
+
   const heartRateDataPoints = resident.historial_frecuencia_cardiaca || [];
-  
+
   const numberOfPointsToShow = 7;
   const recentHeartRateData = heartRateDataPoints.slice(0, numberOfPointsToShow).reverse();
 
   const heartRateChartData = {
-    labels: recentHeartRateData.map((_, index) => (index + 1).toString()), 
+    labels: recentHeartRateData.map((_, index) => (index + 1).toString()),
     datasets: [
       {
         data: recentHeartRateData,
-        color: (opacity = 1) => `rgba(255, 99, 132, ${opacity})`,
-        strokeWidth: 2 
+        color: (opacity = 1) => `${healthColor.replace(')', `, ${opacity})`).replace('rgb', 'rgba')}`,
+        strokeWidth: 2
+      },
+      {
+        data: new Array(heartData.length).fill(average),
+        color: (opacity = 1) => `rgba(107, 178, 64, ${opacity * 0.6})`,
+        strokeWidth: 1,
+        withDots: false,
       }
     ]
   };
@@ -82,9 +92,9 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
     useShadowColorFromDataset: false,
     decimalPlaces: 0,
     propsForDots: {
-      r: "3",
-      strokeWidth: "1",
-      stroke: "#FF6384"
+      r: "4",
+      strokeWidth: "2",
+      stroke: "healthColor"
     },
     fillShadowGradientFrom: '#FF6384',
     fillShadowGradientTo: '#ffffff',
@@ -133,48 +143,55 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         )}
       </View>
 
+      {/* --- CUERPO CON GRÁFICA --- */}
       <View style={styles.cardBody}>
         <View style={styles.heartRateSection}>
           <Ionicons name="heart-outline" size={14} color="#EF4444" />
-          <Text style={styles.heartRateText}>FC:</Text>
-          {resident.ultima_frecuencia_cardiaca !== null ? (
-            <Text style={styles.heartRateValue}>{resident.ultima_frecuencia_cardiaca}<Text style={styles.heartRateUnit}>bpm</Text></Text>
-          ) : (
-            <Text style={styles.heartRateValue}>N/A</Text>
+          <Text style={[styles.heartRateText, { color: getHealthStatusColor(resident.estado_salud_general) }]}>FC:</Text>
+          {resident.ultima_frecuencia_cardiaca && (
+            <Text style={[styles.heartRateValue, { color: getHealthStatusColor(resident.estado_salud_general) }]}>
+              {resident.ultima_frecuencia_cardiaca}
+              <Text style={[styles.heartRateUnit, { color: getHealthStatusColor(resident.estado_salud_general) }]}> bpm</Text>
+            </Text>
           )}
         </View>
         {recentHeartRateData && recentHeartRateData.length > 0 ? (
-            <LineChart
-              data={heartRateChartData}
-              width={cardWidth - 16}
-              height={80}
-              chartConfig={chartConfig}
-              bezier
-              style={styles.chartStyle}
-              withVerticalLabels={false}
-              withHorizontalLabels={false}
-              withDots={true}
-              withInnerLines={false}
-              withOuterLines={false}
-              segments={3}
-            />
+          <LineChart
+            data={heartRateChartData}
+            width={cardWidth - 16}
+            height={80}
+            chartConfig={chartConfig}
+            bezier
+            style={styles.chartStyle}
+            withVerticalLabels={true}
+            withHorizontalLabels={false}
+            withDots={true}
+            withInnerLines={false}
+            withOuterLines={false}
+            segments={3}
+          />
         ) : (
-            <Text style={styles.noGraphData}>Sin historial de FC disponible.</Text>
+          <Text style={styles.noGraphData}>Sin historial de FC disponible.</Text>
         )}
       </View>
 
+      {/* ... Acciones ... */}
       <View style={styles.cardActions}>
-        <TouchableOpacity style={styles.actionButtonIcon} onPress={() => onViewProfile(resident.id_residente)}>
-          <Ionicons name="eye-outline" size={18} color="#6B7280" />
+        <TouchableOpacity style={styles.primaryActionButton} onPress={() => onViewProfile(resident.id_residente)}>
+          <Ionicons name="eye-outline" size={16} color="#fff" style={styles.iconLeft} />
+          <Text style={styles.primaryActionText}>Perfil</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButtonIcon} onPress={() => onHistory(resident.id_residente)}>
-          <Ionicons name="analytics-outline" size={18} color="#6B7280" />
+        <TouchableOpacity style={styles.primaryActionButton} onPress={() => onHistory(resident.id_residente)}>
+          <Ionicons name="analytics-outline" size={16} color="#fff" style={styles.iconLeft} />
+          <Text style={styles.primaryActionText}>Historial</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButtonIcon} onPress={() => onEdit(resident.id_residente)}>
-          <Ionicons name="create-outline" size={18} color="#6B7280" />
+        <TouchableOpacity style={styles.secondaryActionButton} onPress={() => onEdit(resident.id_residente)}>
+          <Ionicons name="create-outline" size={16} color="#6B7280" style={styles.iconLeft} />
+          <Text style={styles.secondaryActionText}>Editar</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButtonIcon} onPress={() => onDelete(resident.id_residente)}>
-          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+        <TouchableOpacity style={styles.secondaryActionButton} onPress={() => onDelete(resident.id_residente)}>
+          <Ionicons name="trash-outline" size={16} color="#EF4444" style={styles.iconLeft} />
+          <Text style={[styles.secondaryActionText, { color: '#EF4444' }]}>Eliminar</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -268,6 +285,7 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     padding: 8,
+    paddingBottom: 22,
   },
   heartRateSection: {
     flexDirection: 'row',
@@ -306,18 +324,64 @@ const styles = StyleSheet.create({
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     borderTopWidth: 0.5,
     borderTopColor: '#F9FAFB',
     paddingVertical: 8,
     backgroundColor: '#FDFDFD',
-    flexWrap: 'wrap', 
+    flexWrap: 'wrap',
   },
   actionButtonIcon: {
     paddingVertical: 5,
     paddingHorizontal: 8,
     borderRadius: 6,
     backgroundColor: '#EAEAEA',
-    margin: 2, 
+    margin: 2,
+  },
+  primaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgb(107, 178, 64)',
+    minWidth: 120,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginHorizontal: 2,
+    flexShrink: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.12,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  primaryActionText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  secondaryActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    marginHorizontal: 2,
+    flexShrink: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  secondaryActionText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#6B7280',
+  },
+  iconLeft: {
+    marginRight: 4,
   },
 });
 
