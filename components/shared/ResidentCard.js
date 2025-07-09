@@ -1,6 +1,5 @@
-// ResidentCard.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image, Platform } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, Image, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 
@@ -8,7 +7,6 @@ import { LineChart } from 'react-native-chart-kit';
 const { width } = Dimensions.get('window');
 const GAP_BETWEEN_CARDS = 10;
 
-// Color palette definitions
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
@@ -20,7 +18,7 @@ const BACKGROUND_LIGHT = '#fcfcfc';
 const WHITE = '#fff';
 const ERROR_RED = '#DC3545';
 const BUTTON_HOVER_COLOR = '#5aa130';
-const ACCENT_BLUE = '#2563EB'; // New blue color
+const ACCENT_BLUE = '#2563EB';
 
 
 const getHealthStatusColor = (status) => {
@@ -68,6 +66,9 @@ const stringToHslColor = (str, s, l) => {
 const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, onAssignDevice, gridContainerPadding }) => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [selectedBPMValue, setSelectedBPMValue] = useState(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const tooltipTimeoutRef = useRef(null);
+  const tooltipOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setImageLoadError(false);
@@ -75,26 +76,36 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
 
   const totalHorizontalPadding = gridContainerPadding * 2;
   const cardWidth = Platform.select({
-    web: (width - totalHorizontalPadding - (GAP_BETWEEN_CARDS * 2)) / 2.5, 
+    web: (width - totalHorizontalPadding - (GAP_BETWEEN_CARDS * 2)) / 2.5,
     default: (width - totalHorizontalPadding - GAP_BETWEEN_CARDS) / 2,
   });
 
-
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
 
-  const heartData = resident.historial_frecuencia_cardiaca.slice(-7);
-  const average = heartData.length ? (heartData.reduce((a, b) => a + b, 0) / heartData.length) : 0;
-  const healthColor = getHealthStatusColor(resident.estado_salud_general);
-  const heartRateRange = getHeartRateRange(resident.ultima_frecuencia_cardiaca);
-
-
+  const numberOfPointsToShow = 7;
   const heartRateDataPoints = resident.historial_frecuencia_cardiaca || [];
 
-  const numberOfPointsToShow = 7;
-  const recentHeartRateData = heartRateDataPoints.slice(0, numberOfPointsToShow).reverse();
+  // **** MODIFICACIÓN CLAVE AQUÍ ****
+  // Asegura que recentHeartRateData siempre tenga los últimos 7 puntos.
+  const recentHeartRateData = heartRateDataPoints.slice(-numberOfPointsToShow);
+
+  // Calcula el BPM mostrado a partir del último punto del historial
+  // Si no hay datos en el historial, muestra N/A
+  const displayedBPM = recentHeartRateData.length > 0
+    ? recentHeartRateData[recentHeartRateData.length - 1]
+    : 'N/A';
+
+  const average = recentHeartRateData.length ? (recentHeartRateData.reduce((a, b) => a + b, 0) / recentHeartRateData.length) : 0;
+  const healthColor = getHealthStatusColor(resident.estado_salud_general);
+  const heartRateRange = getHeartRateRange(displayedBPM); // Usa el BPM derivado para el rango
+
 
   const heartRateChartData = {
-    labels: recentHeartRateData.map((_, index) => (index + 1).toString()),
+    labels: recentHeartRateData.map((_, index) => {
+      const daysAgo = numberOfPointsToShow - 1 - index;
+      if (daysAgo === 0) return 'Hoy';
+      return `D-${daysAgo}`;
+    }),
     datasets: [
       {
         data: recentHeartRateData,
@@ -102,7 +113,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         strokeWidth: 2
       },
       {
-        data: new Array(heartData.length).fill(average),
+        data: new Array(recentHeartRateData.length).fill(average),
         color: (opacity = 1) => `rgba(107, 178, 64, ${opacity * 0.6})`,
         strokeWidth: 1,
         withDots: false,
@@ -121,7 +132,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
     useShadowColorFromDataset: false,
     decimalPlaces: 0,
     propsForDots: {
-      r: "4",
+      r: "5",
       strokeWidth: "2",
       stroke: ERROR_RED
     },
@@ -129,6 +140,8 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
     fillShadowGradientTo: WHITE,
     fillShadowGradientFromOpacity: 0.3,
     fillShadowGradientToOpacity: 0,
+    formatYLabel: (label) => `${label} bpm`,
+    labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity * 0.7})`,
   };
 
   const initialsBackgroundColor = stringToHslColor(
@@ -159,7 +172,6 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
           <Text style={styles.residentDetails}>{age} años • Hab. {resident.nombre_area || 'N/A'}</Text>
         </View>
         {!resident.dispositivo && (
-          // Button is back in the header as an absolutely positioned element
           <TouchableOpacity style={styles.addDeviceButton} onPress={() => onAssignDevice(resident.id_residente)}>
             <Ionicons name="bluetooth" size={18} color={WHITE} />
             <Text style={styles.addDeviceButtonText}>Agregar dispositivo</Text>
@@ -176,41 +188,71 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         <View style={styles.heartRateSection}>
           <Ionicons name="heart-outline" size={14} color="#EF4444" />
           <Text style={styles.heartRateText}>FC:</Text>
-          {resident.dispositivo && resident.ultima_frecuencia_cardiaca && (
+          {resident.dispositivo && displayedBPM !== '' ? ( // Usa displayedBPM aquí
             <View style={styles.heartRateValueContainer}>
               <View style={[styles.heartRateRangeTag, { backgroundColor: heartRateRange.color }]}>
                 <Text style={styles.heartRateRangeText}>{heartRateRange.text}</Text>
               </View>
               <Text style={styles.heartRateValue}>
-                {selectedBPMValue !== null ? selectedBPMValue : resident.ultima_frecuencia_cardiaca}
+                {displayedBPM}
                 <Text style={styles.heartRateUnit}> bpm</Text>
               </Text>
             </View>
+          ) : (
+             <Text style={styles.heartRateValue}></Text> // Si no hay dispositivo o datos
           )}
         </View>
         <View style={styles.chartContainer}>
           {resident.dispositivo && recentHeartRateData && recentHeartRateData.length > 0 ? (
-            <LineChart
-              data={heartRateChartData}
-              width={cardWidth - 16}
-              height={80}
-              chartConfig={chartConfig}
-              bezier
-              style={styles.chartStyle}
-              withVerticalLabels={true}
-              withHorizontalLabels={false}
-              withDots={true}
-              withInnerLines={false}
-              withOuterLines={false}
-              segments={3}
-              onDataPointClick={(data) => {
-                setSelectedBPMValue(data.value);
-                setTimeout(() => setSelectedBPMValue(null), 3000);
-              }}
-            />
+            <>
+              <LineChart
+                data={heartRateChartData}
+                width={cardWidth - 16}
+                height={90}
+                chartConfig={chartConfig}
+                bezier
+                style={styles.chartStyle}
+                withVerticalLabels={true}
+                withHorizontalLabels={true}
+                withDots={true}
+                withInnerLines={false}
+                withOuterLines={false}
+                segments={3}
+                onDataPointClick={(data) => {
+                  if (tooltipTimeoutRef.current) {
+                    clearTimeout(tooltipTimeoutRef.current);
+                  }
+
+                  tooltipOpacity.setValue(0);
+                  setSelectedBPMValue(data.value);
+                  setTooltipPosition({ x: data.x - 15, y: data.y - 20 });
+
+                  Animated.timing(tooltipOpacity, {
+                    toValue: 1,
+                    duration: 150,
+                    useNativeDriver: true,
+                  }).start();
+
+                  tooltipTimeoutRef.current = setTimeout(() => {
+                    Animated.timing(tooltipOpacity, {
+                      toValue: 0,
+                      duration: 300,
+                      useNativeDriver: true,
+                    }).start(() => {
+                      setSelectedBPMValue(null);
+                      setTooltipPosition({ x: 0, y: 0 });
+                    });
+                  }, 1500);
+                }}
+              />
+              {selectedBPMValue !== null && resident.dispositivo && (
+                <Animated.View style={[styles.tooltipContainer, { left: tooltipPosition.x, top: tooltipPosition.y, opacity: tooltipOpacity }]}>
+                  <Text style={styles.tooltipText}>{selectedBPMValue} bpm</Text>
+                </Animated.View>
+              )}
+            </>
           ) : (
-            // Only the message remains here when no device is assigned
-            <Text style={styles.noGraphData}>El residente no cuenta con un dispositivo asignado.</Text>
+            <Text style={styles.noGraphData}>El residente no cuenta con un dispositivo asignado o no hay datos históricos.</Text>
           )}
         </View>
       </View>
@@ -299,11 +341,11 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: 'bold',
   },
-  addDeviceButton: { // Re-added and adjusted styles for absolute positioning
+  addDeviceButton: {
     position: 'absolute',
-    top: 15, // Maintain space above
-    right: 8,
-    backgroundColor: ACCENT_BLUE, // Blue background
+    top: 15,
+    right: 15,
+    backgroundColor: ACCENT_BLUE,
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 5,
@@ -311,15 +353,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addDeviceButtonText: { // Re-added styles
-    color: WHITE, // White text
+  addDeviceButtonText: {
+    color: WHITE,
     fontSize: 11,
     fontWeight: '600',
     marginLeft: 4,
   },
   cardBody: {
     padding: 8,
-    paddingBottom: 22,
+    paddingBottom: 30,
   },
   heartRateSection: {
     flexDirection: 'row',
@@ -359,23 +401,35 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   chartContainer: {
-    height: 80,
+    height: 90,
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: 0,
     borderRadius: 5,
     alignSelf: 'center',
     marginTop: 5,
+    position: 'relative',
   },
   chartStyle: {
-    // Styles for chart container are handled by chartContainer
   },
-  // Removed noDeviceContent, addDeviceButtonNoDevice, addDeviceButtonTextNoDevice styles
   noGraphData: {
     textAlign: 'center',
     color: LIGHT_GRAY,
     marginTop: 10,
     fontSize: 13,
+  },
+  tooltipContainer: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    paddingVertical: 3,
+    paddingHorizontal: 6,
+    borderRadius: 5,
+    zIndex: 10,
+  },
+  tooltipText: {
+    color: WHITE,
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   cardActions: {
     flexDirection: 'row',
