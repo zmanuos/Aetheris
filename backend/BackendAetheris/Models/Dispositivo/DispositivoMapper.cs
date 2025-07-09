@@ -9,10 +9,9 @@ public class DispositivoMapper
         int id = (Int32)row["id_dispositivo"];
         string direccion_MAC = (String)row["direccion_MAC"];
         bool estado = (bool)row["estado"];
-        DateTime fecha_asignacion = (DateTime)row["fecha_asignacion"];
         string nombre = (String)row["nombre"];
-
-        return new Dispositivo(id, direccion_MAC, estado, fecha_asignacion, nombre);
+        
+        return new Dispositivo(id, direccion_MAC, estado, nombre);
     }
 
     public static List<Dispositivo> ToList(DataTable table)

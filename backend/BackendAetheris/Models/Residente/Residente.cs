@@ -167,7 +167,8 @@ public class Residente
         int result = 0;
 
         MySqlCommand command = new MySqlCommand(AsignarDispositivo);
-        command.Parameters.AddWithValue("@dispositivo", dispositivo);
+        // CAMBIO AQUÍ: Usar Add para especificar MySqlDbType y asignar el valor explícitamente.
+        command.Parameters.Add("@dispositivo", MySqlDbType.Int32).Value = (dispositivo == 0 ? (object)DBNull.Value : dispositivo);
         command.Parameters.AddWithValue("@id_residente", residente);
 
         return result = SqlServerConnection.ExecuteCommand(command);

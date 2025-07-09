@@ -1,25 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     ScrollView,
-    Alert,
+    Alert, // Kept Alert for confirmation dialog
     SafeAreaView,
     Platform,
     TextInput,
     ActivityIndicator,
     Dimensions,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
+    Modal,
+    Picker,
+    Switch,
+    TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
 import Config from '../../config/config';
-// Importa los componentes de creación y edición de dispositivos (deberás crearlos)
-// import CreateDeviceScreen from './CreateDeviceScreen'; // Asume que este archivo existe
-// import EditDeviceScreen from './EditDeviceScreen';    // Asume que este archivo existe
+import Notification from '../../components/shared/Notification'; // Import Notification component
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -40,20 +42,27 @@ const IS_LARGE_SCREEN = width > 900;
 export default function DeviceManagementScreen() {
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+    const notificationRef = useRef(null); // Create a ref for the Notification
 
     const [devices, setDevices] = useState([]);
     const [isLoadingDevices, setIsLoadingDevices] = useState(true);
     const [fetchError, setFetchError] = useState('');
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [filterStatus, setFilterStatus] = useState('Activos'); // 'Activos', 'Inactivos', 'Todos'
+    const [filterStatus, setFilterStatus] = useState('Activos');
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [devicesPerPage] = useState(8); // Puedes ajustar esto si quieres más o menos dispositivos por página
+    const [devicesPerPage] = useState(8);
 
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [deviceToEdit, setDeviceToEdit] = useState(null);
+
+    const [showAssignModal, setShowAssignModal] = useState(false);
+    const [deviceForAssignment, setDeviceForAssignment] = useState(null);
+    const [allResidents, setAllResidents] = useState([]);
+    // MODIFICACIÓN: Inicializar con cadena vacía "" en lugar de null
+    const [selectedResidentId, setSelectedResidentId] = useState("");
 
     const API_URL = Config.API_BASE_URL;
 
@@ -61,7 +70,6 @@ export default function DeviceManagementScreen() {
         setIsLoadingDevices(true);
         setFetchError('');
         try {
-            // Fetch devices and residents concurrently
             const [devicesResponse, residentsResponse] = await Promise.all([
                 fetch(`${API_URL}/Dispositivo`),
                 fetch(`${API_URL}/Residente`)
@@ -79,42 +87,51 @@ export default function DeviceManagementScreen() {
             const devicesData = await devicesResponse.json();
             const residentsData = await residentsResponse.json();
 
-            // Extract device list, handling potential nested structure
+            console.log("API RESIDENTES DATA:", residentsData); // Log de la data de residentes
+            console.log("API DISPOSITIVOS DATA:", devicesData); // Log de la data de dispositivos
+
             let devicesList = devicesData && devicesData.dispositivo ? devicesData.dispositivo : devicesData;
-            // Extract resident list, handling potential nested structure
             let residentsList = residentsData && residentsData.data ? residentsData.data : [];
 
-            // Create a map for quick resident lookup by device ID
+            setAllResidents(residentsList);
+
             const residentMap = {};
             residentsList.forEach(resident => {
                 if (resident.dispositivo && resident.dispositivo.id) {
-                    residentMap[resident.dispositivo.id] = `${resident.nombre} ${resident.apellido}`;
+                    residentMap[resident.dispositivo.id] = {
+                        name: `${resident.nombre} ${resident.apellido}`,
+                        id: resident.id_residente
+                    };
                 }
             });
 
-            // Augment devices with resident name
-            const augmentedDevices = devicesList.map(device => ({
-                ...device,
-                // Add residentName property to each device
-                residentName: residentMap[device.id] || 'No Asignado'
-            }));
+            const augmentedDevices = devicesList.map(device => {
+                const residentInfo = residentMap[device.id];
+                return {
+                    ...device,
+                    residentName: residentInfo ? residentInfo.name : 'No Asignado',
+                    residentId: residentInfo ? residentInfo.id : null
+                };
+            });
 
             setDevices(augmentedDevices);
-            console.log("Dispositivos cargados y aumentados con residentes:", augmentedDevices);
 
         } catch (error) {
             console.error("Error al cargar datos:", error.message);
             setFetchError('No se pudieron cargar los datos. Intenta de nuevo más tarde.');
+            if (notificationRef.current) {
+                notificationRef.current.show('No se pudieron cargar los datos. Intenta de nuevo más tarde.', 'error');
+            }
         } finally {
             setIsLoadingDevices(false);
         }
     };
 
     useEffect(() => {
-        if (isFocused && !showCreateForm && !showEditForm) {
+        if (isFocused && !showCreateForm && !showEditForm && !showAssignModal) {
             fetchDevices();
         }
-    }, [isFocused, showCreateForm, showEditForm]);
+    }, [isFocused, showCreateForm, showEditForm, showAssignModal]);
 
     const handleCreateNewDevice = () => {
         setShowCreateForm(true);
@@ -150,10 +167,165 @@ export default function DeviceManagementScreen() {
         fetchDevices();
     };
 
-    // Filtrar dispositivos basado en el término de búsqueda y el estado
+    const handleOpenAssignModal = (device) => {
+        setDeviceForAssignment(device);
+        // MODIFICACIÓN: Si no tiene un residente asignado, inicializar con cadena vacía.
+        setSelectedResidentId(device.residentId === null ? "" : device.residentId);
+        console.log(`Abriendo modal para dispositivo: ${device.nombre}, Residente ID actual: ${device.residentId}`); // Log de apertura de modal
+        setShowAssignModal(true);
+    };
+
+    const handleCloseAssignModal = () => {
+        setShowAssignModal(false);
+        setDeviceForAssignment(null);
+        // MODIFICACIÓN: Resetear a cadena vacía
+        setSelectedResidentId("");
+        fetchDevices();
+    };
+
+    // New function to handle explicit deassignment
+    const handleDeassignDevice = async () => {
+        if (!deviceForAssignment || deviceForAssignment.residentId === null) {
+            if (notificationRef.current) {
+                notificationRef.current.show('Este dispositivo no está asignado a ningún residente.', 'error');
+            }
+            return;
+        }
+
+        const currentResidentId = deviceForAssignment.residentId;
+        const deviceId = deviceForAssignment.id;
+
+        const url = `${API_URL}/Residente/${currentResidentId}/dispositivo/0`; // Send 0 for device ID to deassign
+
+        try {
+            console.log(`Desasignando: Realizando fetch a: ${url} con método: PUT`);
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const responseData = await response.json();
+            console.log("Respuesta parseada de la API (desasignar):", responseData);
+
+            if (response.ok && responseData.status === 0) {
+                if (notificationRef.current) {
+                    notificationRef.current.show(responseData.message || 'Dispositivo desasignado correctamente.', 'success');
+                }
+                handleCloseAssignModal();
+            } else {
+                if (notificationRef.current) {
+                    notificationRef.current.show(responseData.message || 'No se pudo desasignar el dispositivo.', 'error');
+                }
+            }
+        } catch (error) {
+            console.error("Error al desasignar dispositivo (catch):", error);
+            if (notificationRef.current) {
+                notificationRef.current.show('Ocurrió un error al conectar con el servidor.', 'error');
+            }
+        }
+    };
+
+
+    const assignDevice = async () => {
+        console.log("Iniciando assignDevice...");
+        console.log("deviceForAssignment:", deviceForAssignment);
+        console.log("selectedResidentId (en assignDevice):", selectedResidentId);
+
+        // MODIFICACIÓN: Considerar cadena vacía como "no seleccionado"
+        // If selectedResidentId is empty string, it means "no resident selected for assignment"
+        if (!deviceForAssignment || selectedResidentId === "") {
+            if (notificationRef.current) {
+                notificationRef.current.show('Debe seleccionar un residente para asignar.', 'error');
+            }
+            console.log("Validación fallida: deviceForAssignment o selectedResidentId vacío.");
+            return;
+        }
+
+        // This function is now ONLY for assigning/reassigning
+        const url = `${API_URL}/Residente/${selectedResidentId}/dispositivo/${deviceForAssignment.id}`;
+        const method = 'PUT'; // Asignaciones y reasignaciones son PUT
+        
+        try {
+            console.log(`Asignando/Reasignando: Realizando fetch a: ${url} con método: ${method}`);
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            console.log("Respuesta raw del fetch (asignar):", response);
+            const responseData = await response.json();
+            console.log("Respuesta parseada de la API (asignar):", responseData);
+
+            if (response.ok && responseData.status === 0) {
+                if (notificationRef.current) {
+                    notificationRef.current.show(responseData.message || 'Operación realizada correctamente.', 'success');
+                }
+                handleCloseAssignModal();
+            } else {
+                if (notificationRef.current) {
+                    notificationRef.current.show(responseData.message || 'No se pudo realizar la operación.', 'error');
+                }
+            }
+        } catch (error) {
+            console.error("Error al asignar dispositivo (catch):", error);
+            if (notificationRef.current) {
+                notificationRef.current.show('Ocurrió un error al conectar con el servidor.', 'error');
+            }
+        }
+    };
+
+    const handleToggleDeviceStatus = async (device) => {
+        const newStatus = !device.estado;
+        Alert.alert( // Keeping Alert.alert for confirmation dialog
+            'Confirmar Cambio de Estado',
+            `¿Estás seguro de que quieres ${newStatus ? 'activar' : 'desactivar'} el dispositivo ${device.direccion_MAC}?`,
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Confirmar',
+                    onPress: async () => {
+                        try {
+                            const response = await fetch(`${API_URL}/Dispositivo/${device.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ estado: newStatus }) // Ensure you send the new status in the body
+                            });
+
+                            const responseData = await response.json();
+
+                            if (response.ok && responseData.status === 0) {
+                                if (notificationRef.current) {
+                                    notificationRef.current.show(responseData.message || 'Estado del dispositivo actualizado correctamente.', 'success');
+                                }
+                                fetchDevices();
+                            } else {
+                                if (notificationRef.current) {
+                                    notificationRef.current.show(responseData.message || 'No se pudo actualizar el estado del dispositivo.', 'error');
+                                }
+                            }
+                        } catch (error) {
+                            console.error("Error al actualizar estado del dispositivo:", error);
+                            if (notificationRef.current) {
+                                notificationRef.current.show('Ocurrió un error al conectar con el servidor.', 'error');
+                            }
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
     const filteredDevices = devices.filter(device => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
-        // Permite buscar por MAC, nombre del dispositivo o nombre del residente asignado
         const matchesSearchTerm = device.direccion_MAC.toLowerCase().includes(lowerCaseSearchTerm) ||
                                   (device.nombre && device.nombre.toLowerCase().includes(lowerCaseSearchTerm)) ||
                                   (device.residentName && device.residentName.toLowerCase().includes(lowerCaseSearchTerm));
@@ -167,7 +339,6 @@ export default function DeviceManagementScreen() {
         return matchesSearchTerm && matchesFilterStatus;
     });
 
-    // Recalculate current page devices whenever filteredDevices or currentPage changes
     const indexOfLastDevice = currentPage * devicesPerPage;
     const indexOfFirstDevice = indexOfLastDevice - devicesPerPage;
     const currentDevices = filteredDevices.slice(indexOfFirstDevice, indexOfLastDevice);
@@ -176,25 +347,34 @@ export default function DeviceManagementScreen() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+    // MODIFICACIÓN: Mostrar todos los residentes en el picker, sin filtrar por "no asignados"
+    const residentsForPicker = allResidents;
+
     return (
         <SafeAreaView style={styles.safeArea}>
             <KeyboardAvoidingView
                 style={styles.keyboardAvoidingView}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                {/* Botón de regresar visible si cualquier formulario está activo */}
                 {(showCreateForm || showEditForm) && (
-                    <TouchableOpacity onPress={showCreateForm ? handleCancelCreate : handleCancelEdit} style={styles.backButton}>
+                    <TouchableOpacity
+                        onPress={
+                            showCreateForm ? handleCancelCreate :
+                            handleCancelEdit
+                        }
+                        style={styles.backButton}
+                    >
                         <Ionicons name="arrow-back-outline" size={20} color={WHITE} />
                         <Text style={styles.backButtonText}>Regresar</Text>
                     </TouchableOpacity>
                 )}
 
                 {showCreateForm ? (
-                    // Assuming CreateDeviceScreen and EditDeviceScreen are imported and functional
-                    <Text>CreateDeviceScreen Placeholder</Text> // Replace with actual CreateDeviceScreen
+                    // Aquí iría el componente CreateDeviceScreen
+                    <Text>CreateDeviceScreen Placeholder</Text>
                 ) : showEditForm && deviceToEdit ? (
-                    <Text>EditDeviceScreen Placeholder</Text> // Replace with actual EditDeviceScreen
+                    // Aquí iría el componente EditDeviceScreen
+                    <Text>EditDeviceScreen Placeholder</Text>
                 ) : (
                     <View style={styles.mainContentArea}>
                         <View style={styles.controlsContainer}>
@@ -203,7 +383,7 @@ export default function DeviceManagementScreen() {
                                     <Ionicons name="search" size={20} color={MEDIUM_GRAY} style={styles.inputIcon} />
                                     <TextInput
                                         style={styles.searchInput}
-                                        placeholder="Buscar por MAC, Nombre o Residente..."
+                                        placeholder="Buscar por MAC, nombre o Residente..."
                                         placeholderTextColor={LIGHT_GRAY}
                                         value={searchTerm}
                                         onChangeText={setSearchTerm}
@@ -255,6 +435,8 @@ export default function DeviceManagementScreen() {
                                 </View>
                             </View>
 
+                            {/* REMOVED: Botón de Añadir Dispositivo */}
+                            {/*
                             <TouchableOpacity
                                 style={styles.createButton}
                                 onPress={handleCreateNewDevice}
@@ -262,6 +444,7 @@ export default function DeviceManagementScreen() {
                                 <Ionicons name="add-circle" size={20} color={styles.createButtonText.color} />
                                 <Text style={styles.createButtonText}>AÑADIR DISPOSITIVO</Text>
                             </TouchableOpacity>
+                            */}
                         </View>
 
                         {isLoadingDevices ? (
@@ -276,12 +459,10 @@ export default function DeviceManagementScreen() {
                                     <ScrollView horizontal={true} contentContainerStyle={styles.tableScrollViewContent}>
                                         <View style={styles.table}>
                                             <View style={styles.tableRowHeader}>
-                                                <Text style={styles.tableHeaderCell}>Nombre Dispositivo</Text> {/* Device Name header */}
-                                                <Text style={styles.tableHeaderCell}>Residente Asignado</Text> {/* New Resident Name header */}
+                                                <Text style={styles.tableHeaderCell}>Nombre</Text>
                                                 <Text style={styles.tableHeaderCell}>Dirección MAC</Text>
+                                                <Text style={styles.tableHeaderCell}>Residente Asignado</Text>
                                                 <Text style={[styles.tableHeaderCell, styles.estadoCell]}>Estado</Text>
-                                                <Text style={styles.tableHeaderCell}>Fecha Asignación</Text>
-                                                <Text style={[styles.tableHeaderCell, styles.actionsCell]}>Acciones</Text>
                                             </View>
 
                                             <ScrollView style={styles.tableBodyScrollView}>
@@ -290,26 +471,29 @@ export default function DeviceManagementScreen() {
                                                 ) : (
                                                     currentDevices.map((device, index) => (
                                                         <View
-                                                            key={device.id} // Keep key as device.id for React's reconciliation
+                                                            key={device.id}
                                                             style={[
                                                                 styles.tableRow,
                                                                 index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
                                                             ]}
                                                         >
-                                                            <Text style={styles.tableCell}>{device.nombre}</Text> {/* Device Name cell */}
-                                                            <Text style={styles.tableCell}>{device.residentName}</Text> {/* Resident Name cell */}
+                                                            <Text style={styles.tableCell}>{device.nombre}</Text>
                                                             <Text style={styles.tableCell}>{device.direccion_MAC}</Text>
-                                                            <Text style={[styles.tableCell, styles.estadoCell]}>{device.estado ? 'Activo' : 'Inactivo'}</Text>
-                                                            <Text style={styles.tableCell}>
-                                                                {new Date(device.fecha_asignacion).toLocaleDateString()}
-                                                            </Text>
-                                                            <View style={[styles.tableCell, styles.actionsCell]}>
-                                                                <TouchableOpacity
-                                                                    style={styles.actionButton}
-                                                                    onPress={() => handleEditDevice(device)}
-                                                                >
-                                                                    <Ionicons name="create-outline" size={20} color={PRIMARY_GREEN} />
-                                                                </TouchableOpacity>
+                                                            <TouchableOpacity
+                                                                style={[styles.tableCell, styles.residentNameCell]}
+                                                                onPress={() => handleOpenAssignModal(device)}
+                                                            >
+                                                                <Text style={styles.residentNameText}>{device.residentName}</Text>
+                                                                <Ionicons name="pencil" size={16} color={MEDIUM_GRAY} style={styles.editIcon} />
+                                                            </TouchableOpacity>
+                                                            <View style={[styles.tableCell, styles.estadoCell]}>
+                                                                <Switch
+                                                                    trackColor={{ false: LIGHT_GRAY, true: PRIMARY_GREEN }}
+                                                                    thumbColor={device.estado ? WHITE : WHITE}
+                                                                    ios_backgroundColor={LIGHT_GRAY}
+                                                                    onValueChange={() => handleToggleDeviceStatus(device)}
+                                                                    value={device.estado}
+                                                                />
                                                             </View>
                                                         </View>
                                                     ))
@@ -360,7 +544,85 @@ export default function DeviceManagementScreen() {
                         )}
                     </View>
                 )}
+
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={showAssignModal}
+                    onRequestClose={handleCloseAssignModal}
+                >
+                    <TouchableOpacity
+                        style={styles.modalOverlay}
+                        activeOpacity={1}
+                        onPressOut={handleCloseAssignModal}
+                    >
+                        <TouchableWithoutFeedback>
+                            <View style={styles.modalView}>
+                                <TouchableOpacity onPress={handleCloseAssignModal} style={styles.modalCloseIcon}>
+                                    <Ionicons name="close-circle-outline" size={28} color={MEDIUM_GRAY} />
+                                </TouchableOpacity>
+
+                                <Text style={styles.modalTitle}>
+                                    {deviceForAssignment ? `Gestionar Asignación para ${deviceForAssignment.nombre}` : 'Gestionar Asignación'}
+                                </Text>
+
+                                {deviceForAssignment && deviceForAssignment.residentId ? (
+                                    <View style={styles.assignmentStatusContainer}>
+                                        <Text style={styles.currentAssignmentText}>
+                                            Actualmente asignado a: <Text style={styles.assignedResidentName}>{deviceForAssignment.residentName}</Text>
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.deassignButtonSmall}
+                                            onPress={handleDeassignDevice} // Call the new deassign function
+                                        >
+                                            <Ionicons name="person-remove-outline" size={20} color={ERROR_RED} />
+                                            <Text style={styles.deassignButtonSmallText}>Desasignar</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : null}
+
+                                <View style={styles.assignmentSelectionContainer}>
+                                    <Text style={styles.selectResidentText}>
+                                        {deviceForAssignment && deviceForAssignment.residentId ? 'Reasignar a otro Residente:' : 'Asignar a un Residente:'}
+                                    </Text>
+                                    <View style={styles.pickerContainer}>
+                                        <Picker
+                                            selectedValue={selectedResidentId}
+                                            style={styles.picker}
+                                            onValueChange={(itemValue) => {
+                                                setSelectedResidentId(itemValue);
+                                                console.log(`Picker value changed to: ${itemValue}`);
+                                            }}
+                                        >
+                                            {/* MODIFICACIÓN: Usar cadena vacía como valor */}
+                                            <Picker.Item label="Seleccionar Residente..." value={""} />
+                                            {/* MODIFICACIÓN: Iterar sobre todos los residentes */}
+                                            {residentsForPicker.map((resident) => (
+                                                <Picker.Item
+                                                    key={resident.id_residente}
+                                                    label={`${resident.nombre} ${resident.apellido} (ID: ${resident.id_residente})`}
+                                                    value={resident.id_residente}
+                                                />
+                                            ))}
+                                        </Picker>
+                                    </View>
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, styles.assignButton]}
+                                        onPress={assignDevice}
+                                        // MODIFICACIÓN: Deshabilitar si el ID seleccionado es "" o null
+                                        disabled={selectedResidentId === "" || selectedResidentId === null}
+                                    >
+                                        <Text style={styles.modalButtonText}>
+                                            Asignar Dispositivo
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </TouchableOpacity>
+                </Modal>
             </KeyboardAvoidingView>
+            <Notification ref={notificationRef} /> {/* Add the Notification component here */}
         </SafeAreaView>
     );
 }
@@ -412,7 +674,6 @@ const styles = StyleSheet.create({
                 transitionProperty: 'background-color, border-color, color',
                 ':hover': {
                     backgroundColor: BUTTON_HOVER_COLOR,
-                    borderColor: BUTTON_HOVER_COLOR,
                 },
             },
         }),
@@ -565,7 +826,7 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         marginBottom: 20,
         padding: 0,
-        height: 500, // Ajusta la altura según necesites
+        height: 500,
         overflow: 'hidden',
     },
     tableScrollViewContent: {
@@ -574,7 +835,7 @@ const styles = StyleSheet.create({
     },
     table: {
         flex: 1,
-        width: IS_LARGE_SCREEN ? '100%' : 700, // Ajusta el ancho si es necesario para pantallas pequeñas
+        width: IS_LARGE_SCREEN ? '100%' : 700,
         minWidth: '100%',
     },
     tableRowHeader: {
@@ -618,6 +879,22 @@ const styles = StyleSheet.create({
     },
     estadoCell: {
         flex: IS_LARGE_SCREEN ? 0.5 : 0.7,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    residentNameCell: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+    },
+    residentNameText: {
+        fontSize: 14,
+        color: MEDIUM_GRAY,
+        textAlign: 'center',
+        marginRight: 5,
+    },
+    editIcon: {
     },
     actionsCell: {
         flexDirection: 'row',
@@ -715,5 +992,122 @@ const styles = StyleSheet.create({
     },
     paginationPageTextActive: {
         color: WHITE,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    modalView: {
+        backgroundColor: WHITE,
+        borderRadius: 10,
+        padding: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.15,
+        shadowRadius: 5,
+        elevation: 3,
+        width: IS_LARGE_SCREEN ? '30%' : '75%',
+        maxWidth: 400,
+        maxHeight: '80%',
+    },
+    modalCloseIcon: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        padding: 5,
+        zIndex: 1,
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: DARK_GRAY,
+        textAlign: 'center',
+    },
+    assignmentStatusContainer: {
+        width: '100%',
+        marginBottom: 15,
+        alignItems: 'center',
+    },
+    currentAssignmentText: {
+        fontSize: 14,
+        color: MEDIUM_GRAY,
+        marginBottom: 8,
+    },
+    assignedResidentName: {
+        fontWeight: 'bold',
+        color: PRIMARY_GREEN,
+    },
+    assignmentSelectionContainer: {
+        width: '100%',
+        marginBottom: 15,
+    },
+    selectResidentText: {
+        fontSize: 14,
+        color: DARK_GRAY,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: LIGHT_GRAY,
+        borderRadius: 8,
+        marginBottom: 15,
+        overflow: 'hidden',
+        backgroundColor: VERY_LIGHT_GRAY,
+    },
+    picker: {
+        height: 40,
+        width: '100%',
+        color: DARK_GRAY,
+    },
+    modalButton: {
+        borderRadius: 8,
+        padding: 10,
+        elevation: 1,
+        width: '100%',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    assignButton: {
+        backgroundColor: PRIMARY_GREEN,
+    },
+    deassignButtonSmall: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'transparent',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: ERROR_RED,
+        marginTop: 5,
+        ...Platform.select({
+            web: {
+                cursor: 'pointer',
+                transitionDuration: '0.2s',
+                transitionProperty: 'background-color, opacity',
+                ':hover': {
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                },
+            },
+        }),
+    },
+    deassignButtonSmallText: {
+        color: ERROR_RED,
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginLeft: 5,
+    },
+    modalButtonText: {
+        color: WHITE,
+        fontWeight: 'bold',
+        fontSize: 14,
     },
 });

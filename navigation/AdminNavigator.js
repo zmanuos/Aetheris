@@ -101,7 +101,7 @@ const AdminNavigator = ({ onLogout, userRole }) => {
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
 
       <Drawer.Screen 
-        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'DISPOSITIVOS' }} 
+        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }} 
       />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />

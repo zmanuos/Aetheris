@@ -8,21 +8,19 @@ using System.Data;
 
 public class Dispositivo
 {
-    private static string selectAll = "SELECT id_dispositivo, direccion_MAC, estado, fecha_asignacion, nombre FROM DISPOSITIVO";
-    private static string select = "SELECT id_dispositivo, direccion_MAC, estado, fecha_asignacion, nombre FROM DISPOSITIVO where id_dispositivo = @ID";
+    private static string selectAll = "SELECT id_dispositivo, direccion_MAC, estado, nombre FROM DISPOSITIVO";
+    private static string select = "SELECT id_dispositivo, direccion_MAC, estado, nombre FROM DISPOSITIVO where id_dispositivo = @ID";
     private static string UpdateEstado = "UPDATE DISPOSITIVO SET estado = NOT estado WHERE id_dispositivo = @id;";
     private static string insert = "INSERT INTO DISPOSITIVO (direccion_MAC, nombre) VALUES (@direccion_mac, @nombre);";
 
     private int _id;
     private string _direccion_MAC;
     private bool _estado;
-    private DateTime _fecha_asignacion;
     private string _nombre;
 
     public int id { get => _id; set => _id = value; }
     public string direccion_MAC { get => _direccion_MAC; set => _direccion_MAC = value; }
     public bool estado { get => _estado; set => _estado = value; }
-    public DateTime fecha_asignacion { get => _fecha_asignacion; set => _fecha_asignacion = value; }
     public string nombre { get => _nombre; set => _nombre = value; }
 
     public Dispositivo()
@@ -30,16 +28,14 @@ public class Dispositivo
         id = 0;
         direccion_MAC = "";
         estado = false;
-        fecha_asignacion = DateTime.MinValue;
         nombre = "";
     }
 
-    public Dispositivo(int _id,string _direccion_MAC, bool _estado, DateTime _fecha_asignacion, string _nombre)
+    public Dispositivo(int _id,string _direccion_MAC, bool _estado, string _nombre)
     {
         id = _id;
         direccion_MAC = _direccion_MAC;
         estado = _estado;
-        fecha_asignacion = _fecha_asignacion;
         nombre = _nombre;
     } 
 

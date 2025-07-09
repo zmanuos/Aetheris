@@ -36,9 +36,9 @@ CREATE TABLE AREA (
 -- Dispositivos - Estado de los dispositivos.
 CREATE TABLE DISPOSITIVO (
     id_dispositivo INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
     direccion_MAC VARCHAR(30) UNIQUE,
     estado BOOLEAN DEFAULT TRUE,
-    fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Residentes - Info del residente

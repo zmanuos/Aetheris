@@ -163,20 +163,31 @@ public class ResidenteController : ControllerBase
         }
     }
 
-    [HttpPut("{residenteId}/dispositivo/{dispositivoId}")] // Modified route
-    public ActionResult AsignarDispositivo(int residenteId, int dispositivoId) // Renamed parameters for clarity
+    [HttpPut("{residenteId}/dispositivo/{dispositivoId?}")] // '?' makes dispositivoId optional
+    public ActionResult AsignarDispositivo(int residenteId, int? dispositivoId) // 'int?' allows null
     {
         _logger.LogInformation($"PUT AsignarDispositivo: Residente {residenteId}, Dispositivo {dispositivoId}");
         try
         {
-            if (Residente.Update(residenteId, dispositivoId) > 0)
+            // If dispositivoId is null, treat it as 0 for de-assignment
+            int deviceToAssign = dispositivoId.GetValueOrDefault(0);
+
+            if (Residente.Update(residenteId, deviceToAssign) > 0)
             {
-                _logger.LogInformation($"PUT AsignarDispositivo: Dispositivo actualizado correctamente para residente {residenteId}.");
-                return Ok(CommonApiResponse.GetResponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
+                if (deviceToAssign == 0)
+                {
+                    _logger.LogInformation($"PUT AsignarDispositivo: Dispositivo desasignado correctamente para residente {residenteId}.");
+                    return Ok(CommonApiResponse.GetResponse(0, "Dispositivo desasignado correctamente", MessageType.Success));
+                }
+                else
+                {
+                    _logger.LogInformation($"PUT AsignarDispositivo: Dispositivo actualizado correctamente para residente {residenteId}.");
+                    return Ok(CommonApiResponse.GetResponse(0, "Dispositivo actualizado correctamente", MessageType.Success));
+                }
             } else
             {
-                _logger.LogWarning($"PUT AsignarDispositivo: No se pudo actualizar el dispositivo para residente {residenteId}.");
-                return Ok(CommonApiResponse.GetResponse(1, "No se pudo actualizar el dispositivo", MessageType.Error));
+                _logger.LogWarning($"PUT AsignarDispositivo: No se pudo actualizar/desasignar el dispositivo para residente {residenteId}.");
+                return Ok(CommonApiResponse.GetResponse(1, "No se pudo actualizar/desasignar el dispositivo", MessageType.Error));
             }
 
         }
@@ -187,7 +198,7 @@ public class ResidenteController : ControllerBase
         }
     }
 
-    [HttpPut("{id}/telefono/{telefono}")] // Modified route
+    [HttpPut("{id}/telefono/{telefono}")]
     public ActionResult UpdateTelefono(int id, string telefono)
     {
         _logger.LogInformation($"PUT UpdateTelefono: Residente {id}, Teléfono {telefono}");
