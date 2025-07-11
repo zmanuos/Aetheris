@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView, useWindowDimensions, TouchableOpacity, Animated, Easing } from 'react-native';
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,13 +20,21 @@ const HomeScreen = () => {
     const { width: screenWidth } = useWindowDimensions();
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: 0 });
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [chartCardWidth, setChartCardWidth] = useState(screenWidth * 0.9 / 2 - 10);
+
+    const onChartCardLayout = (event) => {
+        const { width } = event.nativeEvent.layout;
+        if (width !== chartCardWidth) {
+            setChartCardWidth(width);
+        }
+    };
 
     // --- Datos Estáticos ---
-    const totalPersonal = 30;
-    const totalResidentes = 120;
+    const totalPersonal = 21;
+    const totalResidentes = 71;
     const notasActivas = 2;
     const temperaturaPromedio = 23.5;
-    const dispositivosDisponibles = 100;
+    const dispositivosDisponibles = 24;
 
     // --- Datos para las Gráficas ---
     const datosRitmoCardiacoPromedio = {
@@ -40,20 +48,22 @@ const HomeScreen = () => {
         ],
     };
 
-    // Datos para el Pie Chart y ordenar por población (más común a menos común)
+    // Datos para el Pie Chart:
+    // Ordenamos de mayor a menor 'population' para que el 1 sea el que tiene más
     const datosAlertasPorTipoPastel = [
-        { name: 'Ritmo Alto', population: 5, color: DANGER_COLOR, legendFontColor: NEUTRAL_DARK, legendFontSize: 12 },
-        { name: 'Caída', population: 2, color: WARNING_COLOR, legendFontColor: NEUTRAL_DARK, legendFontSize: 12 },
-        { name: 'Oxígeno Bajo', population: 3, color: PRIMARY_ACCENT, legendFontColor: NEUTRAL_DARK, legendFontSize: 12 },
-        { name: 'Inactividad', population: 1, color: SECONDARY_ACCENT, legendFontColor: NEUTRAL_DARK, legendFontSize: 12 },
-        { name: 'Otros', population: 4, color: PURPLE, legendFontColor: NEUTRAL_DARK, legendFontSize: 12 },
-    ].sort((a, b) => b.population - a.population); // Ordenar por población descendente
+        { name: 'Ritmo Alto', population: 5, color: DANGER_COLOR, legendFontColor: NEUTRAL_DARK, legendFontSize: 14 },
+        { name: 'Caída', population: 2, color: WARNING_COLOR, legendFontColor: NEUTRAL_DARK, legendFontSize: 14 },
+        { name: 'Oxígeno Bajo', population: 4, color: PRIMARY_ACCENT, legendFontColor: NEUTRAL_DARK, legendFontSize: 14 },
+        { name: 'Inactividad', population: 3, color: SECONDARY_ACCENT, legendFontColor: NEUTRAL_DARK, legendFontSize: 14 },
+        { name: 'Otros', population: 1, color: PURPLE, legendFontColor: NEUTRAL_DARK, legendFontSize: 14 },
+    ].sort((a, b) => b.population - a.population); // ¡Este es el CAMBIO clave! Orden descendente
 
     const chartConfig = {
         backgroundGradientFrom: CARD_BACKGROUND,
         backgroundGradientTo: CARD_BACKGROUND,
         color: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+        paddingRight: 5,
     };
 
     // --- Listas de Datos ---
@@ -75,11 +85,11 @@ const HomeScreen = () => {
 
     // --- Manejadores de Eventos y Animaciones ---
     const handleDataPointClick = ({ value, x, y, index }) => {
-        setTooltipPos({ 
-            x: x + 15, // Adjusted to move it right of the point
-            y: y - 25, // Adjusted to move it above the point
-            visible: true, 
-            value 
+        setTooltipPos({
+            x: x + 15,
+            y: y - 25,
+            visible: true,
+            value
         });
         fadeAnim.setValue(1);
 
@@ -95,7 +105,7 @@ const HomeScreen = () => {
 
     // --- Renderizado del Componente ---
     return (
-        <ScrollView style={styles.container}>
+        <View style={styles.container}>
             <View style={styles.mainContent}>
                 {/* --- KPI Cards --- */}
                 <View style={styles.kpiContainer}>
@@ -122,34 +132,42 @@ const HomeScreen = () => {
                     <View style={[styles.kpiCard, styles.kpiCardOrange]}>
                         <Ionicons name="watch-outline" size={32} color={WARNING_COLOR} />
                         <Text style={styles.kpiNumber}>{dispositivosDisponibles}</Text>
-                        <Text style={styles.kpiLabel}>Dispositivos (Brazaletes)</Text>
+                        <Text style={styles.kpiLabel}>Dispositivos Disponibles</Text>
                     </View>
                 </View>
 
                 {/* --- Gráficas --- */}
-                <View style={styles.chartsAndListsContainer}>
-                    <View style={styles.leftColumn}>
+                <View style={[styles.chartsAndListsContainer, { marginBottom: 40 }]}>
+                    <View style={styles.leftColumn} onLayout={onChartCardLayout}>
                         <View style={styles.chartCard}>
                             <Text style={styles.chartTitle}>Ritmo Cardíaco Promedio (Últimos 7 Días)</Text>
                             <View style={{ flex: 1, alignItems: 'center' }}>
                                 <LineChart
                                     data={datosRitmoCardiacoPromedio}
-                                    width={screenWidth * 0.9 / 2 - 20} // Adjusted width for better left alignment
-                                    height={220}
-                                    chartConfig={{ ...chartConfig, ...lineChartConfig }}
+                                    width={chartCardWidth - 20}
+                                    height={240}
+                                    chartConfig={{
+                                        ...chartConfig,
+                                        ...lineChartConfig,
+                                        yAxisLabel: '',
+                                        propsForLabels: {
+                                            fontSize: 9,
+                                            fill: NEUTRAL_MEDIUM,
+                                        },
+                                    }}
                                     bezier
                                     style={styles.chartStyle}
                                     onDataPointClick={handleDataPointClick}
                                     fromZero={false}
-                                    paddingLeft="20" // Adjust as needed to move labels right
+                                    paddingLeft="20"
                                 />
                                 {tooltipPos.visible && (
                                     <Animated.View
                                         style={[
                                             styles.tooltip,
                                             {
-                                                left: tooltipPos.x, // Adjusted position
-                                                top: tooltipPos.y, // Adjusted position
+                                                left: tooltipPos.x,
+                                                top: tooltipPos.y,
                                                 opacity: fadeAnim,
                                             },
                                         ]}
@@ -163,12 +181,12 @@ const HomeScreen = () => {
 
                     <View style={styles.rightColumn}>
                         <View style={styles.chartCard}>
-                            <Text style={styles.chartTitle}>Distribución de Alertas por Tipo</Text>
+                            <Text style={styles.chartTitle}>Tendencia de tipo de alerta (Últimos 30 dias)</Text>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 <PieChart
                                     data={datosAlertasPorTipoPastel}
                                     width={screenWidth * 0.9 / 2}
-                                    height={200}
+                                    height={220}
                                     chartConfig={chartConfig}
                                     accessor={'population'}
                                     backgroundColor={'transparent'}
@@ -177,7 +195,7 @@ const HomeScreen = () => {
                                     absolute
                                     renderDecorator={({ data, width, height, ...rest }) => {
                                         const total = data.reduce((sum, item) => sum + item.population, 0);
-                                        const radius = Math.min(width, height) / 2; // Approximate radius
+                                        const radius = Math.min(width, height) / 2;
                                         const centerX = width / 2;
                                         const centerY = height / 2;
                                         let currentAngle = 0;
@@ -201,7 +219,7 @@ const HomeScreen = () => {
                                                         left: x - (percentage.length * 3),
                                                         top: y - 10,
                                                         color: NEUTRAL_DARK,
-                                                        fontSize: 12,
+                                                        fontSize: 14,
                                                         fontWeight: 'bold',
                                                         textAlign: 'center',
                                                     }}
@@ -222,7 +240,7 @@ const HomeScreen = () => {
                     <View style={styles.leftColumn}>
                         <View style={styles.compactListCard}>
                             <Text style={styles.chartTitle}>Alertas Recientes</Text>
-                            <ScrollView nestedScrollEnabled={true}>
+                            <ScrollView nestedScrollEnabled={true} style={{ flex: 1 }}>
                                 {ultimasAlertas.map((item) => (
                                     <View key={item.id} style={[styles.activityItem, { borderLeftColor: DANGER_COLOR }]}>
                                         <Ionicons name="warning-outline" size={20} color={DANGER_COLOR} style={styles.activityIcon} />
@@ -241,7 +259,7 @@ const HomeScreen = () => {
                     <View style={styles.rightColumn}>
                         <View style={styles.compactListCard}>
                             <Text style={styles.chartTitle}>Consultas Recientes</Text>
-                            <ScrollView nestedScrollEnabled={true}>
+                            <ScrollView nestedScrollEnabled={true} style={{ flex: 1 }}>
                                 {ultimosChequeos.map((item) => (
                                     <View key={item.id} style={[styles.activityItem, { borderLeftColor: SECONDARY_ACCENT }]}>
                                         <Ionicons name="heart-circle-outline" size={20} color={SECONDARY_ACCENT} style={styles.activityIcon} />
@@ -262,7 +280,7 @@ const HomeScreen = () => {
                     </View>
                 </View>
             </View>
-        </ScrollView>
+        </View>
     );
 };
 
@@ -280,12 +298,11 @@ const lineChartConfig = {
         strokeWidth: 0.5,
         stroke: NEUTRAL_LIGHT,
     },
-    // Adjust axis labels
     propsForLabels: {
         fontSize: 10,
         fill: NEUTRAL_MEDIUM,
     },
-    decimalPlaces: 0, // Ensure integer values for the Y-axis
+    decimalPlaces: 0,
 };
 
 // --- Estilos ---
@@ -299,12 +316,13 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: 1300,
         alignSelf: 'center',
+        flex: 1,
     },
     kpiContainer: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 15,
     },
     kpiCard: {
         backgroundColor: CARD_BACKGROUND,
@@ -346,7 +364,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         width: '100%',
-        marginBottom: 20,
+        flex: 1,
     },
     leftColumn: {
         flex: 1,
@@ -368,7 +386,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 6,
         elevation: 3,
-        height: 250, 
+        height: 255,
         borderWidth: 1,
         borderColor: NEUTRAL_LIGHT,
     },
@@ -376,13 +394,13 @@ const styles = StyleSheet.create({
         backgroundColor: CARD_BACKGROUND,
         borderRadius: 12,
         padding: 15,
-        marginBottom: 20,
+        marginBottom: 35,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 6,
         elevation: 3,
-        height: 280,
+        height: 300,
         borderWidth: 1,
         borderColor: NEUTRAL_LIGHT,
     },
