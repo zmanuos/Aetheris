@@ -1,19 +1,6 @@
 // AETHERIS/screens/admin/EmployeeManagementScreen.js
 import React, { useState, useEffect } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    Alert,
-    SafeAreaView,
-    Platform,
-    TextInput,
-    ActivityIndicator,
-    Dimensions,
-    KeyboardAvoidingView
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, SafeAreaView, Platform, TextInput, ActivityIndicator, Dimensions, KeyboardAvoidingView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
@@ -36,7 +23,6 @@ const BUTTON_HOVER_COLOR = '#5aa130';
 
 const { width, height } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
-
 
 export default function EmployeeManagementScreen() {
     const navigation = useNavigation();
@@ -263,12 +249,17 @@ export default function EmployeeManagementScreen() {
                                                 <Text style={[styles.tableHeaderCell, styles.idCell]}>ID</Text>
                                                 <Text style={styles.tableHeaderCell}>Nombre</Text>
                                                 <Text style={styles.tableHeaderCell}>Apellido</Text>
-                                                <Text style={styles.tableHeaderCell}>Nacimiento</Text>
-                                                <Text style={styles.tableHeaderCell}>Género</Text>
-                                                <Text style={styles.tableHeaderCell}>Teléfono</Text>
+                                                {IS_LARGE_SCREEN && (
+                                                    <>
+                                                        <Text style={styles.tableHeaderCell}>Nacimiento</Text>
+                                                        <Text style={styles.tableHeaderCell}>Género</Text>
+                                                        <Text style={styles.tableHeaderCell}>Teléfono</Text>
+                                                    </>
+                                                )}
                                                 <Text style={[styles.tableHeaderCell, styles.activeCell]}>Activo</Text>
                                                 <Text style={[styles.tableHeaderCell, styles.actionsCell]}>Acciones</Text>
                                             </View>
+
 
                                             <ScrollView style={styles.tableBodyScrollView}>
                                                 {currentEmployees.length === 0 ? (
@@ -285,11 +276,15 @@ export default function EmployeeManagementScreen() {
                                                             <Text style={[styles.tableCell, styles.idCell]}>{employee.id}</Text>
                                                             <Text style={styles.tableCell}>{employee.nombre}</Text>
                                                             <Text style={styles.tableCell}>{employee.apellido}</Text>
-                                                            <Text style={styles.tableCell}>
-                                                                {new Date(employee.fecha_nacimiento).toLocaleDateString()}
-                                                            </Text>
-                                                            <Text style={styles.tableCell}>{employee.genero}</Text>
-                                                            <Text style={styles.tableCell}>{employee.telefono}</Text>
+                                                            {IS_LARGE_SCREEN && (
+                                                                <>
+                                                                    <Text style={styles.tableCell}>
+                                                                        {new Date(employee.fecha_nacimiento).toLocaleDateString()}
+                                                                    </Text>
+                                                                    <Text style={styles.tableCell}>{employee.genero}</Text>
+                                                                    <Text style={styles.tableCell}>{employee.telefono}</Text>
+                                                                </>
+                                                            )}
                                                             <Text style={[styles.tableCell, styles.activeCell]}>{employee.activo ? 'Sí' : 'No'}</Text>
                                                             <View style={[styles.tableCell, styles.actionsCell]}>
                                                                 <TouchableOpacity
@@ -420,51 +415,19 @@ const styles = StyleSheet.create({
         width: '100%',
         maxWidth: IS_LARGE_SCREEN ? 1000 : 'auto',
         flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
-        justifyContent: 'space-between',
+        justifyContent: IS_LARGE_SCREEN ? 'space-between' : 'flex-start',
         alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
         marginBottom: 20,
         gap: IS_LARGE_SCREEN ? 0 : 15,
     },
-    createButton: {
-        flexDirection: 'row',
-        backgroundColor: PRIMARY_GREEN,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        shadowColor: PRIMARY_GREEN,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 6,
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.3s',
-                transitionProperty: 'background-color',
-                ':hover': {
-                    backgroundColor: BUTTON_HOVER_COLOR,
-                },
-            },
-        }),
-    },
-    createButtonText: {
-        color: WHITE,
-        fontSize: 15,
-        fontWeight: 'bold',
-        marginLeft: 8,
-    },
     searchFilterGroup: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
+        flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
         gap: 10,
-        flexWrap: 'wrap',
+        width: IS_LARGE_SCREEN ? 'auto' : '100%',
     },
     searchInputContainer: {
-        flex: IS_LARGE_SCREEN ? 0.6 : 1,
+        flex: IS_LARGE_SCREEN ? 1 : 'none',
+        width: IS_LARGE_SCREEN ? '70%' : '100%',
         flexDirection: 'row',
         alignItems: 'center',
         height: 45,
@@ -496,7 +459,10 @@ const styles = StyleSheet.create({
     },
     filterButtonsContainer: {
         flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: 8,
+        justifyContent: IS_LARGE_SCREEN ? 'flex-start' : 'flex-start',
+        width: IS_LARGE_SCREEN ? 'auto' : '100%',
     },
     filterButton: {
         backgroundColor: VERY_LIGHT_GRAY,
@@ -530,181 +496,173 @@ const styles = StyleSheet.create({
     filterButtonTextActive: {
         color: WHITE,
     },
-    errorText: {
-        color: ERROR_RED,
-        textAlign: 'center',
-        marginBottom: 15,
-        fontSize: 14,
-        fontWeight: '500',
-    },
-    loadingIndicator: {
-        marginTop: 50,
-    },
-    noEmployeesText: {
-        textAlign: 'center',
-        marginTop: 50,
-        fontSize: 16,
-        color: MEDIUM_GRAY,
-    },
-    tableContainer: {
-        ...containerBaseStyles,
-        width: '100%',
-        maxWidth: IS_LARGE_SCREEN ? 1000 : 'auto',
-        alignSelf: 'center',
-        marginBottom: 20,
-        padding: 0,
-        height: 500,
-        overflow: 'hidden',
-    },
-    tableScrollViewContent: {
-        flexGrow: 1,
-        justifyContent: 'flex-start',
-    },
-    table: {
-        flex: 1,
-        width: IS_LARGE_SCREEN ? '100%' : 900,
-        minWidth: '100%',
-    },
-    tableRowHeader: {
+    createButton: {
+        marginTop: IS_LARGE_SCREEN ? 0 : 15,
+        alignSelf: IS_LARGE_SCREEN ? 'auto' : 'center',
+        width: IS_LARGE_SCREEN ? 'auto' : '100%',
         flexDirection: 'row',
-        backgroundColor: WHITE,
-        paddingVertical: 15,
-        paddingHorizontal: 10,
-        borderBottomWidth: 2,
-        borderBottomColor: VERY_LIGHT_GRAY,
-    },
-    tableHeaderCell: {
-        flex: 1,
-        fontWeight: 'bold',
-        fontSize: 13,
-        color: DARK_GRAY,
-        textAlign: 'center',
-        textTransform: 'uppercase',
-    },
-    tableBodyScrollView: {
-        flex: 1,
-    },
-    tableRow: {
-        flexDirection: 'row',
-        paddingVertical: 14,
-        paddingHorizontal: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: VERY_LIGHT_GRAY,
+        backgroundColor: PRIMARY_GREEN,
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        borderRadius: 10,
         alignItems: 'center',
-    },
-    tableRowEven: {
-        backgroundColor: WHITE,
-    },
-    tableRowOdd: {
-        backgroundColor: BACKGROUND_LIGHT,
-    },
-    tableCell: {
-        flex: 1,
-        fontSize: 14,
-        color: MEDIUM_GRAY,
-        textAlign: 'center',
-    },
-    idCell: {
-        flex: IS_LARGE_SCREEN ? 0.3 : 0.5,
-    },
-    activeCell: {
-        flex: IS_LARGE_SCREEN ? 0.4 : 0.5,
-    },
-    actionsCell: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        flex: IS_LARGE_SCREEN ? 0.7 : 1,
-    },
-    actionButton: {
-        padding: 5,
-        borderRadius: 5,
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.2s',
-                transitionProperty: 'background-color',
-                ':hover': {
-                    backgroundColor: VERY_LIGHT_GRAY,
-                },
-            },
-        }),
-    },
-    noResultsText: {
-        textAlign: 'center',
-        marginTop: 20,
-        fontSize: 16,
-        color: MEDIUM_GRAY,
-        padding: 20,
-    },
-    paginationContainer: {
-        flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20,
-        marginBottom: 20,
-        width: '100%',
-        maxWidth: IS_LARGE_SCREEN ? 1000 : 'auto',
-    },
-    paginationButton: {
-        padding: 8,
-        borderRadius: 8,
-        marginHorizontal: 5,
-        backgroundColor: WHITE,
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY,
-        shadowColor: DARK_GRAY,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
+        shadowColor: PRIMARY_GREEN,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.25,
+        shadowRadius: 8,
+        elevation: 6,
         ...Platform.select({
             web: {
                 cursor: 'pointer',
                 transitionDuration: '0.2s',
                 transitionProperty: 'background-color, border-color',
                 ':hover': {
-                    backgroundColor: ACCENT_GREEN_BACKGROUND,
-                    borderColor: LIGHT_GREEN,
+                    backgroundColor: BUTTON_HOVER_COLOR,
+                    borderColor: BUTTON_HOVER_COLOR,
                 },
             },
         }),
     },
-    paginationPageButton: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
-        marginHorizontal: 3,
+    createButtonText: {
+        color: WHITE,
+        fontWeight: '700',
+        fontSize: 15,
+        marginLeft: 8,
+    },
+    tableContainer: {
+        width: '100%',
+        maxHeight: 450,
+        borderRadius: 12,
         backgroundColor: WHITE,
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY,
-        shadowColor: DARK_GRAY,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.2s',
-                transitionProperty: 'background-color, border-color, color',
-                ':hover': {
-                    backgroundColor: ACCENT_GREEN_BACKGROUND,
-                    borderColor: LIGHT_GREEN,
-                },
-            },
-        }),
+        padding: 10,
+        alignContent: 'center',
+        alignItems: 'center',
+        ...containerBaseStyles,
+    },
+    tableScrollViewContent: {
+        width: '100%',
+        minWidth: IS_LARGE_SCREEN ? 1000 : '100%',
+        alignItems: 'center',
+    },
+    table: {
+        width: '100%',
+        borderRadius: 10,
+
+    },
+    tableRowHeader: {
+        flexDirection: 'row',
+        backgroundColor: ACCENT_GREEN_BACKGROUND,
+        borderBottomColor: PRIMARY_GREEN,
+        borderBottomWidth: 2,
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+    },
+    tableHeaderCell: {
+        fontWeight: '700',
+        fontSize: 14,
+        color: PRIMARY_GREEN,
+        paddingHorizontal: 8,
+        flex: 1,
+        textAlign: 'center',
+    },
+    idCell: {
+        flex: 0.5,
+    },
+    activeCell: {
+        flex: 0.6,
+    },
+    actionsCell: {
+        flex: 0.8,
+    },
+    tableBodyScrollView: {
+        maxHeight: 350,
+    },
+    tableRow: {
+        flexDirection: 'row',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
+        alignItems: 'center',
+        borderBottomColor: VERY_LIGHT_GRAY,
+        borderBottomWidth: 1,
+    },
+    tableRowEven: {
+        backgroundColor: '#f9f9f9',
+    },
+    tableRowOdd: {
+        backgroundColor: WHITE,
+    },
+    tableCell: {
+        flex: 1,
+        fontSize: 14,
+        color: DARK_GRAY,
+        paddingHorizontal: 8,
+        textAlign: 'center',
+    },
+    actionButton: {
+        paddingHorizontal: 6,
+        paddingVertical: 4,
+        borderRadius: 6,
+        backgroundColor: 'transparent',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    paginationContainer: {
+        marginTop: 20,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 8,
+    },
+    paginationButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+        backgroundColor: VERY_LIGHT_GRAY,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    paginationPageButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+        backgroundColor: VERY_LIGHT_GRAY,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     paginationPageButtonActive: {
         backgroundColor: PRIMARY_GREEN,
-        borderColor: PRIMARY_GREEN,
     },
     paginationPageText: {
         color: MEDIUM_GRAY,
-        fontSize: 14,
         fontWeight: '600',
     },
     paginationPageTextActive: {
         color: WHITE,
+    },
+    loadingIndicator: {
+        marginTop: 50,
+    },
+    errorText: {
+        marginTop: 50,
+        color: ERROR_RED,
+        fontSize: 16,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    noEmployeesText: {
+        marginTop: 50,
+        color: MEDIUM_GRAY,
+        fontSize: 16,
+        fontWeight: '700',
+        textAlign: 'center',
+    },
+    noResultsText: {
+        marginVertical: 15,
+        fontSize: 14,
+        color: MEDIUM_GRAY,
+        textAlign: 'center',
     },
 });

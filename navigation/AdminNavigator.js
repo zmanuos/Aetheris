@@ -2,6 +2,7 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
+import { Platform } from 'react-native';
 
 import Header from '../components/navigation/Header';
 import SideMenu from '../components/navigation/SideMenu';
@@ -77,7 +78,7 @@ const AdminNavigator = ({ onLogout, userRole }) => {
       initialRouteName="Home"
       drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} userRole={userRole} />}
       screenOptions={({ navigation, route }) => ({
-        drawerType: 'permanent',
+        drawerType: Platform.OS === 'web' ? 'permanent' : 'front',
         drawerStyle: {
           width: 260,
           backgroundColor: '#fcfcfc',

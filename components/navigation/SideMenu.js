@@ -4,6 +4,8 @@ import { View, Text, StyleSheet, FlatList, Pressable, Image } from 'react-native
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigationState } from '@react-navigation/native';
+import { Platform } from 'react-native';
+
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';

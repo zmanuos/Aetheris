@@ -151,7 +151,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   );
 
   return (
-    <View style={[styles.card, { width: cardWidth, marginHorizontal: GAP_BETWEEN_CARDS / 2 }]}>
+    <View style={[styles.card, { width: '100%' }]}>
       <View style={styles.cardHeader}>
         {resident.foto_url && !imageLoadError ? (
           <Image

@@ -19,10 +19,13 @@ import ResidentCard from '../../components/shared/ResidentCard';
 import Config from '../../config/config';
 import { useNotification } from '../../src/context/NotificationContext';
 
+
 const API_URL = Config.API_BASE_URL;
 const GRID_CONTAINER_PADDING = 10;
 const POLLING_INTERVAL_MS = 3000;
 const { width } = Dimensions.get('window');
+const IS_LARGE_SCREEN = width > 900;
+
 
 export default function ResidentsScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -45,7 +48,7 @@ export default function ResidentsScreen({ navigation }) {
 
     try {
       let currentResidentsData = residentsRef.current;
-      
+
       if (initialLoad || currentResidentsData.length === 0) {
         const residentsResponse = await fetch(`${API_URL}/Residente`);
         if (!residentsResponse.ok) {
@@ -73,7 +76,7 @@ export default function ResidentsScreen({ navigation }) {
             const heartRateData = await heartRateResponse.json();
             if (Array.isArray(heartRateData) && heartRateData.length > 0) {
               const sortedData = heartRateData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-              
+
               heartRateHistory = sortedData.map(record => record.ritmoCardiaco);
               if (sortedData.length > 0) {
                 latestHeartRate = sortedData[0].ritmoCardiaco;
@@ -156,25 +159,30 @@ export default function ResidentsScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.headerContainer}>
-        <View style={styles.searchFilterContainer}>
-          <View style={styles.searchInputContainer}>
-            <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar residente..."
-              placeholderTextColor="#9CA3AF"
-              value={searchText}
-              onChangeText={setSearchText}
-            />
+        <View style={styles.topControlsGroup}>
+          <View style={styles.searchFilterContainer}>
+            <View style={styles.searchInputContainer}>
+              <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Buscar residente..."
+                placeholderTextColor="#9CA3AF"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+            </View>
+            <View style={{ marginTop: IS_LARGE_SCREEN ? 0 : 10 }}>
+              <TouchableOpacity style={styles.filterButton}>
+                <Text style={styles.filterButtonText}>Filtros</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterButtonText}>Filtros</Text>
+
+          <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
+            <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
+            <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
-          <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
-          <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>
-        </TouchableOpacity>
       </View>
 
       {isLoading ? (
@@ -187,17 +195,27 @@ export default function ResidentsScreen({ navigation }) {
         <ScrollView style={styles.scrollView}>
           <View style={styles.residentsGrid}>
             {filteredResidents.map((resident) => (
-              <ResidentCard
+              <View
                 key={resident.id_residente}
-                resident={resident}
-                onEdit={handleEditResident}
-                onViewProfile={handleViewProfile}
-                onHistory={handleHistory}
-                onAssignDevice={handleAssignDevice} 
-                gridContainerPadding={GRID_CONTAINER_PADDING}
-              />
+                style={{
+                  width: IS_LARGE_SCREEN ? '48%' : '100%', // Casi 50% para 2 cards por fila en web
+                  paddingHorizontal: 5,
+                  marginBottom: 15,
+                }}
+              >
+                <ResidentCard
+                  resident={resident}
+                  onEdit={handleEditResident}
+                  onViewProfile={handleViewProfile}
+                  onHistory={handleHistory}
+                  onAssignDevice={handleAssignDevice}
+                  gridContainerPadding={GRID_CONTAINER_PADDING}
+                />
+              </View>
             ))}
           </View>
+
+
         </ScrollView>
       )}
     </SafeAreaView>
@@ -210,29 +228,34 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
+    justifyContent: IS_LARGE_SCREEN ? 'space-between' : 'flex-start',
+    alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#fff',
-    borderBottomWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
     paddingTop: Platform.OS === 'android' ? 30 : 10,
+    paddingBottom: 15,
+    backgroundColor: '#fff',
+  },
+
+  topControlsGroup: {
+    flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
+    justifyContent: IS_LARGE_SCREEN ? 'space-between' : 'flex-start',
+    alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
+    width: '100%',
+    gap: 0, // por compatibilidad
   },
   createButton: {
+    marginTop: IS_LARGE_SCREEN ? 0 : 10,
     flexDirection: 'row',
     backgroundColor: '#6BB240',
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
     alignItems: 'center',
-    borderWidth: 0,
-    shadowColor: 'transparent',
-    elevation: 0,
-    marginLeft: 10,
+    justifyContent: 'center',
+    width: IS_LARGE_SCREEN ? 'auto' : '100%',
   },
+
   createButtonText: {
     color: '#fff',
     fontSize: 15,
@@ -240,9 +263,12 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   searchFilterContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
+    alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
     flex: 1,
+    width: '100%',
+    marginBottom: IS_LARGE_SCREEN ? 0 : 10,
+    gap: 0, // React Native no soporta gap, usamos margenes
   },
   searchInputContainer: {
     flex: 1,
@@ -252,8 +278,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    marginRight: 10,
-    maxWidth: 300,
+    marginRight: IS_LARGE_SCREEN ? 10 : 0,
+    maxWidth: IS_LARGE_SCREEN ? 300 : '100%',
+    width: IS_LARGE_SCREEN ? 'auto' : '100%',
+    flexShrink: 1,
+
   },
   searchIcon: {
     marginRight: 8,
@@ -268,6 +297,11 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 8,
+    marginTop: IS_LARGE_SCREEN ? 0 : 10,
+    marginLeft: IS_LARGE_SCREEN ? 0 : 0,
+    width: IS_LARGE_SCREEN ? 'auto' : '100%',
+    alignItems: 'center',
+    flexShrink: 1,
   },
   filterButtonText: {
     color: '#4B5563',
@@ -280,9 +314,10 @@ const styles = StyleSheet.create({
   residentsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    paddingHorizontal: GRID_CONTAINER_PADDING,
+    justifyContent: 'space-between', 
+    paddingHorizontal: 0,
   },
+
   loadingIndicator: {
     marginTop: 50,
   },

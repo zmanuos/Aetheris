@@ -2,23 +2,25 @@ import 'react-native-gesture-handler';
 import React, { useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-console.log("--- App.js: Iniciando carga del archivo ---"); 
 
-import './config/firebaseConfig'; 
+console.log("--- App.js: Iniciando carga del archivo ---");
 
-console.log("--- App.js: firebaseConfig importado ---"); 
+import './config/firebaseConfig';
+
+console.log("--- App.js: firebaseConfig importado ---");
 
 import AuthNavigator from './navigation/AuthNavigator';
 import AdminNavigator from './navigation/AdminNavigator';
 import FamilyNavigator from './navigation/FamilyNavigator';
 
 // IMPORTE EL NOTIFICATIONPROVIDER AQUÍ
-import { NotificationProvider } from './src/context/NotificationContext'; 
+import { NotificationProvider } from './src/context/NotificationContext';
 // Asegúrate de que la ruta 'src/context/NotificationContext' sea correcta según dónde creaste el archivo.
 
 export default function App() {
-  console.log("--- App.js: Componente App renderizando ---"); 
+  console.log("--- App.js: Componente App renderizando ---");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
@@ -35,7 +37,7 @@ export default function App() {
   };
 
   const renderAppNavigator = () => {
-    console.log("--- App.js: renderAppNavigator ejecutándose ---"); 
+    console.log("--- App.js: renderAppNavigator ejecutándose ---");
     if (!isAuthenticated) {
       return <AuthNavigator onLoginSuccess={handleLoginSuccess} />;
     } else if (userRole === 'admin') {
@@ -50,12 +52,13 @@ export default function App() {
   };
 
   return (
-    // ENVUELVE EL NAVIGATIONCONTAINER CON EL NOTIFICATIONPROVIDER
     <NotificationProvider>
-      <NavigationContainer>
-        <StatusBar style="dark" />
-        {renderAppNavigator()}
-      </NavigationContainer>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <StatusBar style="dark" />
+          {renderAppNavigator()}
+        </NavigationContainer>
+      </SafeAreaProvider>
     </NotificationProvider>
   );
 }
