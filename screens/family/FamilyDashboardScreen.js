@@ -1,6 +1,6 @@
 // AETHERIS/screens/family/FamilyDashboardScreen.js
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, Platform, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -110,10 +110,12 @@ export default function FamilyDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f6fa',
-  },
+ container: {
+  flex: 1,
+  backgroundColor: '#f5f6fa',
+  paddingLeft: Platform.OS === 'web' ? 260 : 0, 
+},
+
   content: {
     padding: 16,
     paddingBottom: 60,

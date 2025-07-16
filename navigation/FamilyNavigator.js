@@ -19,7 +19,7 @@ const FamilyNavigator = ({ onLogout, userRole }) => { // <-- Recibe userRole aqu
       // Pasa onLogout Y userRole al SideMenu UNIFICADO
       drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} userRole={userRole} />}
       screenOptions={({ navigation, route }) => ({
-        drawerType: 'permanent',
+        drawerType: 'slide',
         drawerStyle: {
           width: 260,
           backgroundColor: '#fcfcfc',

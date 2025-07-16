@@ -13,12 +13,13 @@ import {
     Dimensions,
     KeyboardAvoidingView,
     Modal,
-    Picker,
     Switch,
     TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
+import { Picker } from '@react-native-picker/picker';
+
 
 import Config from '../../config/config';
 import Notification from '../../components/shared/Notification'; // Import Notification component
@@ -246,7 +247,7 @@ export default function DeviceManagementScreen() {
         // This function is now ONLY for assigning/reassigning
         const url = `${API_URL}/Residente/${selectedResidentId}/dispositivo/${deviceForAssignment.id}`;
         const method = 'PUT'; // Asignaciones y reasignaciones son PUT
-        
+
         try {
             console.log(`Asignando/Reasignando: Realizando fetch a: ${url} con método: ${method}`);
             const response = await fetch(url, {
@@ -327,8 +328,8 @@ export default function DeviceManagementScreen() {
     const filteredDevices = devices.filter(device => {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
         const matchesSearchTerm = device.direccion_MAC.toLowerCase().includes(lowerCaseSearchTerm) ||
-                                  (device.nombre && device.nombre.toLowerCase().includes(lowerCaseSearchTerm)) ||
-                                  (device.residentName && device.residentName.toLowerCase().includes(lowerCaseSearchTerm));
+            (device.nombre && device.nombre.toLowerCase().includes(lowerCaseSearchTerm)) ||
+            (device.residentName && device.residentName.toLowerCase().includes(lowerCaseSearchTerm));
 
         let matchesFilterStatus = true;
         if (filterStatus === 'Activos') {
@@ -360,7 +361,7 @@ export default function DeviceManagementScreen() {
                     <TouchableOpacity
                         onPress={
                             showCreateForm ? handleCancelCreate :
-                            handleCancelEdit
+                                handleCancelEdit
                         }
                         style={styles.backButton}
                     >
@@ -688,7 +689,9 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: IS_LARGE_SCREEN ? 20 : 10,
         alignItems: 'center',
+        marginTop: 60, // para que no se superponga con el backButton
     },
+
     controlsContainer: {
         width: '100%',
         maxWidth: IS_LARGE_SCREEN ? 1000 : 'auto',
@@ -697,7 +700,9 @@ const styles = StyleSheet.create({
         alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
         marginBottom: 20,
         gap: IS_LARGE_SCREEN ? 0 : 15,
+        flexWrap: IS_LARGE_SCREEN ? 'nowrap' : 'wrap', // Asegura que en móvil se envuelvan
     },
+
     createButton: {
         flexDirection: 'row',
         backgroundColor: PRIMARY_GREEN,
@@ -822,8 +827,9 @@ const styles = StyleSheet.create({
     tableContainer: {
         ...containerBaseStyles,
         width: '100%',
-        maxWidth: IS_LARGE_SCREEN ? 1000 : 'auto',
+        maxWidth: IS_LARGE_SCREEN ? 1000 : '100%',
         alignSelf: 'center',
+        marginTop: 40,
         marginBottom: 20,
         padding: 0,
         height: 500,
@@ -835,8 +841,8 @@ const styles = StyleSheet.create({
     },
     table: {
         flex: 1,
-        width: IS_LARGE_SCREEN ? '100%' : 700,
-        minWidth: '100%',
+        width: '100%',
+        minWidth: '0',
     },
     tableRowHeader: {
         flexDirection: 'row',
@@ -864,6 +870,7 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: VERY_LIGHT_GRAY,
         alignItems: 'center',
+        flexWrap: 'nowrap', // evitar que se rompa fila
     },
     tableRowEven: {
         backgroundColor: WHITE,
@@ -876,6 +883,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: MEDIUM_GRAY,
         textAlign: 'center',
+        minWidth: 60, // para que no queden celdas demasiado chicas
     },
     estadoCell: {
         flex: IS_LARGE_SCREEN ? 0.5 : 0.7,

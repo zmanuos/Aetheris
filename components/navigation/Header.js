@@ -1,28 +1,49 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  useWindowDimensions,
+  Pressable,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const Header = ({ title }) => {
+const Header = ({ title, onMenuPress }) => {
+  const { width } = useWindowDimensions();
+  const showMenuButton = Platform.OS !== 'web' || width < 1024;
+
   return (
-    <View style={styles.headerContainer}>
-      <View style={styles.leftContainer}>
-        <Text style={styles.screenTitle}>{title}</Text>
-      </View>
-
-      <View style={styles.rightIconsContainer}>
-        <View style={styles.notificationWrapper}>
-          <Ionicons name="notifications-outline" size={24} color="#666" />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationCount}>3</Text>
-          </View>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
+      <View style={styles.headerContainer}>
+        <View style={styles.leftContainer}>
+          {showMenuButton && (
+            <Pressable onPress={onMenuPress} style={styles.menuButton}>
+              <Ionicons name="menu" size={28} color="#333" />
+            </Pressable>
+          )}
+          <Text style={styles.screenTitle}>{title}</Text>
         </View>
-        <Ionicons name="settings-outline" size={24} color="#666" />
+
+        <View style={styles.rightIconsContainer}>
+          <View style={styles.notificationWrapper}>
+            <Ionicons name="notifications-outline" size={24} color="#666" />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationCount}>3</Text>
+            </View>
+          </View>
+          <Ionicons name="settings-outline" size={24} color="#666" />
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    backgroundColor: '#fff',
+  },
   headerContainer: {
     width: '100%',
     height: 60,
@@ -43,12 +64,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerLogo: {
-    width: 35,
-    height: 35,
-    marginRight: 10,
-    resizeMode: 'contain',
-    tintColor: '#6BB240',
+  menuButton: {
+    marginRight: 12,
   },
   screenTitle: {
     fontSize: 20,

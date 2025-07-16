@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    width: 500,
+    width: CARD_WIDTH,  // <- usa esta variable dinámica
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
