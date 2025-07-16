@@ -32,7 +32,6 @@ export default function LoginForm({ onLoginSuccess }) {
     setIsLoading(true);
 
     if (!auth) {
-      console.error("Firebase Auth no está inicializado. No se puede iniciar sesión.");
       setError("Un error interno impide la autenticación. Contacta al soporte.");
       setIsLoading(false);
       return;
@@ -41,15 +40,6 @@ export default function LoginForm({ onLoginSuccess }) {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log("Firebase login successful for user:", user.email, "UID:", user.uid);
-
-      // --- ¡¡¡AQUÍ ES DONDE SE IMPRIMIRÁ EL TOKEN!!! ---
-      if (user) {
-          const idToken = await user.getIdToken(true); // El 'true' fuerza la actualización del token para asegurar los claims.
-          console.log("--> MI ID TOKEN DE FIREBASE ES:", idToken); // <--- ¡Copia esta cadena!
-      }
-      // --- FIN DEL CÓDIGO PARA IMPRIMIR EL TOKEN ---
-
 
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
@@ -59,21 +49,17 @@ export default function LoginForm({ onLoginSuccess }) {
         const assignedRole = userData.role;
 
         if (assignedRole) {
-          console.log("User role fetched from Firestore:", assignedRole);
           if (onLoginSuccess) {
-            onLoginSuccess(assignedRole);
+            onLoginSuccess(assignedRole, user.uid); // Pass user.uid here
           }
         } else {
-          console.warn("User document found in Firestore for UID:", user.uid, "but no 'role' field. Contact administrator.");
           setError("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
         }
       } else {
-        console.warn("No user document found in Firestore for UID:", user.uid, ". User may not be fully set up.");
         setError("Tu cuenta no está completamente configurada. Contacta al administrador.");
       }
 
     } catch (firebaseError) {
-      console.error("Firebase Login Error:", firebaseError.code, firebaseError.message);
       let errorMessage = "Error de autenticación. Inténtalo de nuevo.";
 
       switch (firebaseError.code) {

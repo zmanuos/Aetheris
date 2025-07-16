@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,43 +6,433 @@ import {
   Platform,
   useWindowDimensions,
   Pressable,
+  ScrollView,
+  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const Header = ({ title, onMenuPress }) => {
+const Header = ({ title, onMenuPress, navigation }) => {
   const { width } = useWindowDimensions();
   const showMenuButton = Platform.OS !== 'web' || width < 1024;
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [error, setError] = useState(null);
+  const [newNotificationsCount, setNewNotificationsCount] = useState(0);
+  const [viewedNotifications, setViewedNotifications] = useState(new Set());
+  const [notificationIds, setNotificationIds] = useState(new Set());
+
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
+  const [hoveredSettingsItem, setHoveredSettingsItem] = useState(null);
+
+  const [hoveredNotificationId, setHoveredNotificationId] = useState(null);
+
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const toastTimeoutRef = useRef(null);
+
+  const dropdownAnimation = useRef(new Animated.Value(0)).current;
+  const badgeAnimation = useRef(new Animated.Value(0)).current;
+  const settingsDropdownAnimation = useRef(new Animated.Value(0)).current;
+  const intervalRef = useRef(null);
+
+  const showToast = (message) => {
+    setToastMessage(message);
+    setToastVisible(true);
+    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+    toastTimeoutRef.current = setTimeout(() => setToastVisible(false), 3000);
+  };
+
+  const fetchNotifications = async (isInitialLoad = false) => {
+    try {
+      if (isInitialLoad) {
+        setLoading(true);
+      }
+      setError(null);
+
+      const response = await new Promise(resolve => setTimeout(() => {
+        const mockData = {
+          notificaciones: [
+            { tipo: 'alerta', idReferencia: 1, residenteNombre: 'Juan', residenteApellido: 'Pérez', descripcion: 'Alerta crítica: Nivel de glucosa bajo.', tipoDetalleAlerta: 'Crítica', fecha: '2025-07-16T09:45:00Z' },
+            { tipo: 'nota', idReferencia: 2, residenteNombre: 'Maria', residenteApellido: 'García', descripcion: 'Nota de seguimiento: Residente solicitó asistencia.', fecha: '2025-07-16T09:40:00Z' },
+            { tipo: 'alerta', idReferencia: 3, residenteNombre: 'Carlos', residenteApellido: 'Martínez', descripcion: 'Alerta de medicación: Dosis de insulina pendiente.', tipoDetalleAlerta: 'Urgente', fecha: '2025-07-16T09:35:00Z' },
+            { tipo: 'nota', idReferencia: 4, residenteNombre: 'Ana', residenteApellido: 'López', descripcion: 'Nota: Visita programada para mañana a las 10 AM.', fecha: '2025-07-16T09:30:00Z' },
+            { tipo: 'alerta', idReferencia: 5, residenteNombre: 'Pedro', residenteApellido: 'Sánchez', descripcion: 'Alerta crítica: Presión arterial elevada.', tipoDetalleAlerta: 'Crítica', fecha: '2025-07-16T09:25:00Z' },
+            { tipo: 'nota', idReferencia: 6, residenteNombre: 'Laura', residenteApellido: 'Díaz', descripcion: 'Nota: Residente ha descansado bien hoy.', fecha: '2025-07-16T09:20:00Z' },
+            { tipo: 'alerta', idReferencia: 7, residenteNombre: 'Sofía', residenteApellido: 'Ruiz', descripcion: 'Alerta de rutina: Recordatorio de ejercicios.', tipoDetalleAlerta: 'Informativa', fecha: '2025-07-16T09:15:00Z' },
+            { tipo: 'nota', idReferencia: 8, residenteNombre: 'Diego', residenteApellido: 'Gómez', descripcion: 'Nota: Se requiere revisión de expediente.', fecha: '2025-07-16T09:10:00Z' },
+            { tipo: 'alerta', idReferencia: 9, residenteNombre: 'Elena', residenteApellido: 'Fernández', descripcion: 'Alerta: Residente necesita asistencia para caminar.', tipoDetalleAlerta: 'Urgente', fecha: '2025-07-16T09:05:00Z' },
+            { tipo: 'nota', idReferencia: 10, residenteNombre: 'Miguel', residenteApellido: 'Torres', descripcion: 'Nota: El médico revisará los resultados de análisis.', fecha: '2025-07-16T09:00:00Z' },
+          ]
+        };
+        resolve({ ok: true, json: () => Promise.resolve(mockData) });
+      }, 500));
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const recentNotifications = data.notificaciones.slice(0, 10);
+
+      const currentIds = new Set(recentNotifications.map(n => `${n.tipo}-${n.idReferencia}`));
+
+      if (!isInitialLoad && notificationIds.size > 0) {
+        const newIds = [...currentIds].filter(id => !notificationIds.has(id));
+        if (newIds.length > 0) {
+          setNewNotificationsCount(prev => prev + newIds.length);
+          animateBadge();
+          showToast('¡Tienes nuevas notificaciones!');
+        }
+      }
+
+      setNotifications(recentNotifications);
+      setNotificationIds(currentIds);
+
+      if (isInitialLoad) {
+        setViewedNotifications(allViewed => new Set([...allViewed, ...currentIds]));
+      }
+
+    } catch (error) {
+      setError('Error al cargar notificaciones');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications(true);
+
+    intervalRef.current = setInterval(() => {
+      fetchNotifications(false);
+    }, 10000);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const animateBadge = () => {
+    badgeAnimation.setValue(0);
+    Animated.sequence([
+      Animated.spring(badgeAnimation, {
+        toValue: 1,
+        tension: 150,
+        friction: 4,
+        useNativeDriver: true,
+      }),
+      Animated.timing(badgeAnimation, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.spring(badgeAnimation, {
+        toValue: 1,
+        tension: 100,
+        friction: 3,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const toggleDropdown = () => {
+    if (showSettingsDropdown) {
+      toggleSettingsDropdown();
+    }
+
+    if (showDropdown) {
+      Animated.timing(dropdownAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start(() => setShowDropdown(false));
+    } else {
+      setShowDropdown(true);
+      setNewNotificationsCount(0);
+      const allViewed = new Set(
+        notifications.map(n => `${n.tipo}-${n.idReferencia}`)
+      );
+      setViewedNotifications(prev => new Set([...prev, ...allViewed]));
+      Animated.timing(dropdownAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
+  const toggleSettingsDropdown = () => {
+    if (showDropdown) {
+      toggleDropdown();
+    }
+    if (showSettingsDropdown) {
+      Animated.timing(settingsDropdownAnimation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start(() => {
+        setShowSettingsDropdown(false);
+      });
+    } else {
+      setShowSettingsDropdown(true);
+      Animated.timing(settingsDropdownAnimation, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+
+    if (diffInMinutes < 1) {
+      return 'Ahora';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours}h`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days}d`;
+    }
+  };
+
+  const getNotificationIcon = (tipo, tipoDetalleAlerta) => {
+    if (tipo === 'nota') {
+      return { name: 'chatbubble', color: '#4A90E2' };
+    } else if (tipo === 'alerta') {
+      return tipoDetalleAlerta === 'Crítica'
+        ? { name: 'warning', color: '#E74C3C' }
+        : { name: 'alert-circle', color: '#F39C12' };
+    }
+    return { name: 'information-circle', color: '#95A5A6' };
+  };
+
+  const NotificationItem = ({ notification }) => {
+    const icon = getNotificationIcon(notification.tipo, notification.tipoDetalleAlerta);
+    const notificationId = `${notification.tipo}-${notification.idReferencia}`;
+    const isViewed = viewedNotifications.has(notificationId);
+    const isHovered = hoveredNotificationId === notificationId;
+
+    return (
+      <Pressable
+        onPress={() => {
+          setViewedNotifications(prev => new Set([...prev, notificationId]));
+        }}
+        onPressIn={() => setHoveredNotificationId(notificationId)}
+        onPressOut={() => setHoveredNotificationId(null)}
+        onHoverIn={Platform.OS === 'web' ? () => setHoveredNotificationId(notificationId) : undefined}
+        onHoverOut={Platform.OS === 'web' ? () => setHoveredNotificationId(null) : undefined}
+        style={[
+          styles.notificationItem,
+          !isViewed && styles.unreadNotification,
+          isHovered && styles.dropdownItemHover,
+        ]}
+      >
+        <View style={styles.notificationIconContainer}>
+          <Ionicons name={icon.name} size={16} color={icon.color} />
+          {!isViewed && <View style={styles.newIndicator} />}
+        </View>
+
+        <View style={styles.notificationContent}>
+          <View style={styles.notificationHeader}>
+            <Text style={styles.notificationTitle} numberOfLines={1}>
+              {notification.residenteNombre} {notification.residenteApellido}
+            </Text>
+            <Text style={styles.notificationTime}>
+              {formatDate(notification.fecha)}
+            </Text>
+          </View>
+
+          <Text style={styles.notificationDescription} numberOfLines={2}>
+            {notification.descripcion}
+          </Text>
+
+          <View style={styles.notificationFooter}>
+            <Text style={styles.notificationType}>
+              {notification.tipo === 'nota' ? 'Nota' : 'Alerta'}
+              {notification.tipoDetalleAlerta && ` • ${notification.tipoDetalleAlerta}`}
+            </Text>
+          </View>
+        </View>
+      </Pressable>
+    );
+  };
+
+  const dropdownHeight = dropdownAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 400],
+  });
+
+  const settingsDropdownHeight = settingsDropdownAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 50],
+  });
+
+  const SettingsDropdownItem = ({ iconName, text, onPress, itemKey }) => {
+    const [isHovered, setIsHovered] = useState(false);
+
+    return (
+      <Pressable
+        onPress={() => {
+          onPress();
+        }}
+        onHoverIn={Platform.OS === 'web' ? () => setIsHovered(true) : undefined}
+        onHoverOut={Platform.OS === 'web' ? () => setIsHovered(false) : undefined}
+      >
+        <View style={[styles.dropdownItem, isHovered && styles.dropdownItemHover]}>
+          <Ionicons name={iconName} size={18} color="#666" style={styles.dropdownItemIcon} />
+          <Text style={styles.dropdownItemText}>{text}</Text>
+        </View>
+      </Pressable>
+    );
+  };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safeArea}>
-      <View style={styles.headerContainer}>
-        <View style={styles.leftContainer}>
-          {showMenuButton && (
-            <Pressable onPress={onMenuPress} style={styles.menuButton}>
-              <Ionicons name="menu" size={28} color="#333" />
-            </Pressable>
-          )}
-          <Text style={styles.screenTitle}>{title}</Text>
+    <View style={{ flex: 1 }}>
+      {toastVisible && (
+        <View style={styles.toastContainer}>
+          <Text style={styles.toastText}>{toastMessage}</Text>
         </View>
+      )}
+      <SafeAreaView edges={['top']} style={styles.safeArea}>
+        <View style={styles.headerContainer}>
+          <View style={styles.leftContainer}>
+            {showMenuButton && (
+              <Pressable onPress={onMenuPress} style={styles.menuButton}>
+                <Ionicons name="menu" size={28} color="#333" />
+              </Pressable>
+            )}
+            <Text style={styles.screenTitle}>{title}</Text>
+          </View>
 
-        <View style={styles.rightIconsContainer}>
-          <View style={styles.notificationWrapper}>
-            <Ionicons name="notifications-outline" size={24} color="#666" />
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationCount}>3</Text>
+          <View style={styles.rightIconsContainer}>
+            <View style={styles.notificationWrapper}>
+              <Pressable
+                onPress={toggleDropdown}
+                style={styles.notificationButton}
+              >
+                <Ionicons name="notifications-outline" size={24} color="#666" />
+                {newNotificationsCount > 0 && (
+                  <Animated.View
+                    style={[
+                      styles.notificationBadge,
+                      {
+                        transform: [{ scale: badgeAnimation }],
+                      }
+                    ]}
+                  >
+                    <Text style={styles.notificationCount}>
+                      {newNotificationsCount > 99 ? '99+' : newNotificationsCount}
+                    </Text>
+                  </Animated.View>
+                )}
+              </Pressable>
+
+              {showDropdown && (
+                <Animated.View
+                  style={[
+                    styles.dropdown,
+                    { height: dropdownHeight }
+                  ]}
+                >
+                  <View style={styles.dropdownHeader}>
+                    <Text style={styles.dropdownTitle}>Notificaciones</Text>
+                    <Pressable onPress={() => fetchNotifications(false)}>
+                      <Ionicons name="refresh" size={18} color="#666" />
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.dropdownContent}>
+                    {loading && (
+                      <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="small" color="#6BB240" />
+                        <Text style={styles.loadingText}>Actualizando...</Text>
+                      </View>
+                    )}
+
+                    {error && (
+                      <View style={styles.errorContainer}>
+                        <Text style={styles.errorText}>{error}</Text>
+                        <Pressable onPress={() => fetchNotifications(false)} style={styles.retryButton}>
+                          <Text style={styles.retryButtonText}>Reintentar</Text>
+                        </Pressable>
+                      </View>
+                    )}
+
+                    {!loading && !error && (
+                      <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
+                        {notifications.length > 0 ? (
+                          notifications.map((notification) => (
+                            <NotificationItem
+                              key={`${notification.tipo}-${notification.idReferencia}`}
+                              notification={notification}
+                            />
+                          ))
+                        ) : (
+                          <View style={styles.emptyContainer}>
+                            <Ionicons name="notifications-off-outline" size={32} color="#BDC3C7" />
+                            <Text style={styles.emptyText}>No hay notificaciones</Text>
+                          </View>
+                        )}
+                      </ScrollView>
+                    )}
+                  </View>
+                </Animated.View>
+              )}
+            </View>
+
+            <View style={styles.settingsWrapper}>
+              <Pressable onPress={toggleSettingsDropdown} style={styles.settingsButton}>
+                <Ionicons name="settings-outline" size={24} color="#666" />
+              </Pressable>
+
+              {showSettingsDropdown && (
+                <Animated.View
+                  style={[
+                    styles.dropdown,
+                    styles.settingsDropdown,
+                    { height: settingsDropdownHeight }
+                  ]}
+                >
+                  <SettingsDropdownItem
+                    iconName="person-circle-outline"
+                    text="Mi cuenta"
+                    onPress={() => {
+                      if (navigation) {
+                        navigation.navigate('MyAccountScreen');
+                      } else {
+                        console.warn('Objeto de navegación no disponible. Asegúrate de pasar la prop navigation al Header.');
+                      }
+                      toggleSettingsDropdown();
+                    }}
+                    itemKey="miCuenta"
+                  />
+                </Animated.View>
+              )}
             </View>
           </View>
-          <Ionicons name="settings-outline" size={24} color="#666" />
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     backgroundColor: '#fff',
+    zIndex: 1000,
   },
   headerContainer: {
     width: '100%',
@@ -80,21 +470,221 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: 20,
   },
+  notificationButton: {
+    padding: 4,
+  },
   notificationBadge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: '#6BB240',
-    borderRadius: 10,
-    width: 18,
-    height: 18,
+    top: -8,
+    right: -8,
+    backgroundColor: '#E74C3C',
+    borderRadius: 12,
+    minWidth: 20,
+    height: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 6,
+    borderWidth: 2,
+    borderColor: '#fff',
+    shadowColor: '#E74C3C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
   },
   notificationCount: {
     color: '#fff',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  settingsWrapper: {
+    position: 'relative',
+  },
+  settingsButton: {
+    padding: 4,
+  },
+
+  dropdown: {
+    position: 'absolute',
+    top: 35,
+    right: 0,
+    width: 320,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 1000,
+    overflow: 'hidden',
+  },
+  settingsDropdown: {
+    width: 200,
+    right: 0,
+    top: 35,
+    paddingVertical: 5,
+  },
+  dropdownHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    backgroundColor: '#fafafa',
+  },
+  dropdownTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  dropdownContent: {
+    flex: 1,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginLeft: 8,
+    color: '#666',
+    fontSize: 14,
+  },
+  errorContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  errorText: {
+    color: '#E74C3C',
+    textAlign: 'center',
+    marginBottom: 12,
+    fontSize: 14,
+  },
+  retryButton: {
+    backgroundColor: '#6BB240',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontWeight: '500',
+    fontSize: 14,
+  },
+  notificationsList: {
+    maxHeight: 350,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    padding: 30,
+  },
+  emptyText: {
+    marginTop: 8,
+    color: '#95A5A6',
+    fontSize: 14,
+  },
+  notificationItem: {
+    flexDirection: 'row',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f8f8',
+    backgroundColor: '#fff',
+  },
+  unreadNotification: {
+    backgroundColor: '#f8f9ff',
+  },
+  notificationIconContainer: {
+    marginRight: 10,
+    marginTop: 2,
+    position: 'relative',
+  },
+  newIndicator: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#E74C3C',
+  },
+  notificationContent: {
+    flex: 1,
+  },
+  notificationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  notificationTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    flex: 1,
+  },
+  notificationTime: {
+    fontSize: 12,
+    color: '#95A5A6',
+    marginLeft: 8,
+  },
+  notificationDescription: {
+    fontSize: 13,
+    color: '#666',
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  notificationFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  notificationType: {
+    fontSize: 11,
+    color: '#95A5A6',
+    fontWeight: '500',
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: '#333',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    zIndex: 2000,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 10,
+  },
+  toastText: {
+    color: '#fff',
+    fontSize: 15,
+  },
+  dropdownItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8f8f8',
+  },
+  dropdownItemHover: {
+    backgroundColor: '#f5f5f5',
+    borderLeftWidth: 3,
+    borderLeftColor: '#6BB240',
+    paddingLeft: 12,
+  },
+  dropdownItemIcon: {
+    marginRight: 10,
+  },
+  dropdownItemText: {
+    fontSize: 15,
+    color: '#333',
   },
 });
 

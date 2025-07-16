@@ -1,4 +1,3 @@
-// AETHERIS/navigation/AdminNavigator.js
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -7,7 +6,6 @@ import { Platform } from 'react-native';
 import Header from '../components/navigation/Header';
 import SideMenu from '../components/navigation/SideMenu';
 
-// Importa las pantallas
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen';
@@ -16,16 +14,14 @@ import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
 import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen';
 
-// Importa las pantallas específicas de Admin
 import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen';
 import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen';
 import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
-// Importa la nueva pantalla de edición
 import EmployeeEditScreen from '../screens/admin/EmployeeEditScreen';
 
-// Importa la nueva pantalla de Gestión de Dispositivos
-import DeviceManagementScreen from '../screens/admin/DeviceManagementScreen'; 
+import DeviceManagementScreen from '../screens/admin/DeviceManagementScreen';
 
+import MyAccountScreen from '../components/navigation/MyAccountScreen';
 
 const Drawer = createDrawerNavigator();
 const ResidentsStack = createStackNavigator();
@@ -64,15 +60,15 @@ function EmployeeManagementStackScreen() {
         options={{ title: 'Registrar Nuevo Empleado' }}
       />
       <EmployeeStack.Screen
-        name="EditEmployee" //
-        component={EmployeeEditScreen} //
-        options={{ title: 'Editar Empleado' }} //
+        name="EditEmployee"
+        component={EmployeeEditScreen}
+        options={{ title: 'Editar Empleado' }}
       />
     </EmployeeStack.Navigator>
   );
 }
 
-const AdminNavigator = ({ onLogout, userRole }) => {
+const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => { // Aceptar firebaseUid
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -89,20 +85,23 @@ const AdminNavigator = ({ onLogout, userRole }) => {
           elevation: 8,
         },
         headerShown: true,
-        header: ({ options }) => (
-          <Header
-            title={options.title || route.name}
-            onMenuPress={() => navigation.toggleDrawer()}
-          />
-        ),
+        header: ({ options }) => {
+          return (
+            <Header
+              title={options.title || route.name}
+              onMenuPress={() => navigation.toggleDrawer()}
+              navigation={navigation}
+            />
+          );
+        },
       })}
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
 
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
 
-      <Drawer.Screen 
-        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }} 
+      <Drawer.Screen
+        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }}
       />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
@@ -115,6 +114,13 @@ const AdminNavigator = ({ onLogout, userRole }) => {
       />
 
       <Drawer.Screen name="AsylumData" component={AsylumDataScreen} options={{ title: 'DATOS DEL ASILO' }} />
+
+      <Drawer.Screen
+        name="MyAccountScreen"
+        component={MyAccountScreen}
+        options={{ title: 'MI CUENTA' }}
+        initialParams={{ firebaseUid: firebaseUid }} // Pasar firebaseUid como parámetro inicial
+      />
     </Drawer.Navigator>
   );
 };

@@ -5,48 +5,40 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 
-console.log("--- App.js: Iniciando carga del archivo ---");
-
 import './config/firebaseConfig';
-
-console.log("--- App.js: firebaseConfig importado ---");
 
 import AuthNavigator from './navigation/AuthNavigator';
 import AdminNavigator from './navigation/AdminNavigator';
 import FamilyNavigator from './navigation/FamilyNavigator';
 
-// IMPORTE EL NOTIFICATIONPROVIDER AQUÍ
 import { NotificationProvider } from './src/context/NotificationContext';
-// Asegúrate de que la ruta 'src/context/NotificationContext' sea correcta según dónde creaste el archivo.
 
 export default function App() {
-  console.log("--- App.js: Componente App renderizando ---");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
+  const [firebaseUid, setFirebaseUid] = useState(null); // Nuevo estado para el UID
 
-  const handleLoginSuccess = (role) => {
+  const handleLoginSuccess = (role, uid) => { // Aceptar UID
     setIsAuthenticated(true);
     setUserRole(role);
-    console.log("App.js: Login successful, isAuthenticated:", true, "userRole:", role);
+    setFirebaseUid(uid); // Guardar el UID
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUserRole(null);
-    console.log("App.js: Logged out");
+    setFirebaseUid(null); // Limpiar el UID al cerrar sesión
   };
 
   const renderAppNavigator = () => {
-    console.log("--- App.js: renderAppNavigator ejecutándose ---");
     if (!isAuthenticated) {
       return <AuthNavigator onLoginSuccess={handleLoginSuccess} />;
     } else if (userRole === 'admin') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
     } else if (userRole === 'employee') {
-      // Ambos roles 'admin' y 'employee' usan AdminNavigator, lo cual es correcto.
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} />;
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
     } else if (userRole === 'family') {
-      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} />;
+      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
     }
     return null;
   };
@@ -55,7 +47,7 @@ export default function App() {
     <NotificationProvider>
       <SafeAreaProvider>
         <NavigationContainer>
-          <StatusBar style="dark" />
+          <StatusBar style="auto" />
           {renderAppNavigator()}
         </NavigationContainer>
       </SafeAreaProvider>
