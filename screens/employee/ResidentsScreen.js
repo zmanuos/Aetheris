@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   Platform,
   TextInput,
-  Alert,
+  // Alert, // Keep commented out as Notification is used
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -135,6 +135,7 @@ export default function ResidentsScreen({ navigation }) {
   };
 
   const handleViewProfile = (id) => {
+    navigation.navigate('ResidentProfile', { residentId: id }); // Navigate to the new screen and pass the ID
     showNotification(`Navegando a perfil del residente con ID: ${id}`, 'info');
   };
 
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   residentsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-between', 
+    justifyContent: 'space-between',
     paddingHorizontal: 0,
   },
 

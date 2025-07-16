@@ -1,3 +1,4 @@
+// AdminNavigator.js
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,6 +10,7 @@ import SideMenu from '../components/navigation/SideMenu';
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen';
+import ResidentProfileScreen from '../screens/employee/ResidentProfileScreen'; // Import the new screen
 
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
@@ -37,6 +39,7 @@ function ResidentsStackScreen() {
     >
       <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
       <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
+      <ResidentsStack.Screen name="ResidentProfile" component={ResidentProfileScreen} />
     </ResidentsStack.Navigator>
   );
 }
@@ -68,7 +71,7 @@ function EmployeeManagementStackScreen() {
   );
 }
 
-const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => { // Aceptar firebaseUid
+const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -119,7 +122,7 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => { // Aceptar fir
         name="MyAccountScreen"
         component={MyAccountScreen}
         options={{ title: 'MI CUENTA' }}
-        initialParams={{ firebaseUid: firebaseUid }} // Pasar firebaseUid como parámetro inicial
+        initialParams={{ firebaseUid: firebaseUid }}
       />
     </Drawer.Navigator>
   );
