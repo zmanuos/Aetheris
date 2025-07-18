@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic; // Asegúrate de tenerlo si no estaba
 
 [Route("api/[controller]")]
 [ApiController]
@@ -22,16 +23,17 @@ public class NotaController : ControllerBase
     {
         try
         {
-            Nota c = Nota.Get(id_familiar);
-            return Ok(NotaResponse.GetResponse(c));
-        }
-        catch (NotaNotFoundException e)
-        {
-            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+            // MODIFICADO: Llamar al nuevo método que devuelve una LISTA de notas
+            List<Nota> notas = Nota.GetNotesByFamiliarId(id_familiar);
+            // Si no se encuentran notas, simplemente se devuelve una lista vacía, lo cual es normal.
+            return Ok(NotaListResponse.GetResponse(notas));
         }
         catch (Exception e)
         {
-            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+            // Este catch es para errores inesperados del sistema o base de datos.
+            // Si no se encuentran notas, el método GetNotesByFamiliarId devolverá una lista vacía,
+            // por lo que no se lanzará una excepción de "no encontrada" aquí.
+            return StatusCode(500, MessageResponse.GetReponse(999, "Error interno al obtener notas: " + e.Message, MessageType.CriticalError));
         }
     }
 
@@ -40,6 +42,7 @@ public class NotaController : ControllerBase
     {
         try
         {
+            // El objeto 'nota' (de tipo NotaPost) ahora incluye id_personal y puede ser null
             bool result = Nota.Insert(nota);
 
             if (result)
@@ -67,9 +70,7 @@ public class NotaController : ControllerBase
         }
         catch (Exception ex)
         {
-            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.Error));
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno: " + ex.Message, MessageType.CriticalError));
         }
     }
-
-
 }

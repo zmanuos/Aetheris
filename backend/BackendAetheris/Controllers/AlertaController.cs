@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -9,6 +10,47 @@ public class AlertaController : ControllerBase
     public ActionResult Get()
     {
         return Ok(AlertaListResponse.GetResponse(Alerta.Get()));
+    }
+
+    [HttpGet("{id}")] // Este endpoint ya existe para obtener una alerta por su ID de alerta
+    public ActionResult Get(int id)
+    {
+        try
+        {
+            Alerta c = Alerta.Get(id);
+            return Ok(AlertaResponse.GetResponse(c));
+        }
+        catch (AlertaNotFoundException e)
+        {
+            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+        }
+        catch (Exception e)
+        {
+            return Ok(MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+        }
+    }
+
+    // Nuevo endpoint para obtener alertas por ID de residente
+    [HttpGet("residente/{id_residente}")]
+    public ActionResult GetAlertasByResidente(int id_residente)
+    {
+        try
+        {
+            List<Alerta> alertas = Alerta.GetByResidente(id_residente);
+            if (alertas.Count > 0)
+            {
+                return Ok(AlertaListResponse.GetResponse(alertas));
+            }
+            else
+            {
+                // Si no se encuentran alertas para el residente, devuelve una respuesta adecuada
+                return Ok(MessageResponse.GetReponse(1, $"No se encontraron alertas para el residente con ID {id_residente}", MessageType.Warning));
+            }
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, "Error interno al obtener alertas por residente: " + ex.Message, MessageType.CriticalError));
+        }
     }
 
     [HttpPost("residente")]

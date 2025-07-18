@@ -85,19 +85,15 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   const numberOfPointsToShow = 7;
   const heartRateDataPoints = resident.historial_frecuencia_cardiaca || [];
 
-  // **** MODIFICACIÓN CLAVE AQUÍ ****
-  // Asegura que recentHeartRateData siempre tenga los últimos 7 puntos.
   const recentHeartRateData = heartRateDataPoints.slice(-numberOfPointsToShow);
 
-  // Calcula el BPM mostrado a partir del último punto del historial
-  // Si no hay datos en el historial, muestra N/A
   const displayedBPM = recentHeartRateData.length > 0
     ? recentHeartRateData[recentHeartRateData.length - 1]
     : 'N/A';
 
   const average = recentHeartRateData.length ? (recentHeartRateData.reduce((a, b) => a + b, 0) / recentHeartRateData.length) : 0;
   const healthColor = getHealthStatusColor(resident.estado_salud_general);
-  const heartRateRange = getHeartRateRange(displayedBPM); // Usa el BPM derivado para el rango
+  const heartRateRange = getHeartRateRange(displayedBPM);
 
 
   const heartRateChartData = {
@@ -188,7 +184,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         <View style={styles.heartRateSection}>
           <Ionicons name="heart-outline" size={14} color="#EF4444" />
           <Text style={styles.heartRateText}>FC:</Text>
-          {resident.dispositivo && displayedBPM !== '' ? ( // Usa displayedBPM aquí
+          {resident.dispositivo && displayedBPM !== '' ? (
             <View style={styles.heartRateValueContainer}>
               <View style={[styles.heartRateRangeTag, { backgroundColor: heartRateRange.color }]}>
                 <Text style={styles.heartRateRangeText}>{heartRateRange.text}</Text>
@@ -199,7 +195,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
               </Text>
             </View>
           ) : (
-             <Text style={styles.heartRateValue}></Text> // Si no hay dispositivo o datos
+             <Text style={styles.heartRateValue}></Text>
           )}
         </View>
         <View style={styles.chartContainer}>
@@ -259,15 +255,11 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
 
       <View style={styles.cardActions}>
         <TouchableOpacity style={styles.actionButton} onPress={() => onViewProfile(resident.id_residente)}>
-          <Ionicons name="eye-outline" size={16} color={WHITE} style={styles.iconLeft} />
+          <Ionicons name="eye-outline" size={20} color={WHITE} style={styles.iconLeft} />
           <Text style={styles.actionButtonText}>Perfil</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => onHistory(resident.id_residente)}>
-          <Ionicons name="analytics-outline" size={16} color={WHITE} style={styles.iconLeft} />
-          <Text style={styles.actionButtonText}>Historial</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton} onPress={() => onEdit(resident.id_residente)}>
-          <Ionicons name="create-outline" size={16} color={WHITE} style={styles.iconLeft} />
+          <Ionicons name="create-outline" size={20} color={WHITE} style={styles.iconLeft} />
           <Text style={styles.actionButtonText}>Editar</Text>
         </TouchableOpacity>
       </View>
@@ -433,7 +425,7 @@ const styles = StyleSheet.create({
   },
   cardActions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     alignItems: 'center',
     borderTopWidth: 0.5,
     borderTopColor: VERY_LIGHT_GRAY,
@@ -446,17 +438,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: PRIMARY_GREEN,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 22,
     borderRadius: 6,
-    marginHorizontal: 2,
+    marginHorizontal: 8,
     flexShrink: 1,
     shadowColor: 'transparent',
     elevation: 0,
   },
   actionButtonText: {
     color: WHITE,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '500',
   },
   iconLeft: {

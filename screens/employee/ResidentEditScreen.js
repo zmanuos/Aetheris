@@ -12,7 +12,7 @@ import {
   Dimensions,
   Platform,
   Image,
-  Switch, // Import Switch for the 'activo' field
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Config from '../../config/config';
@@ -23,6 +23,9 @@ import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 
 const API_URL = Config.API_BASE_URL;
+// Definir baseStaticUrl de la misma manera que en ResidentsScreen
+const baseStaticUrl = API_URL.replace('/api', '');
+
 const { width } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
 
@@ -55,6 +58,9 @@ const COLORS = {
   borderLight: '#E0E0E0',
   darkText: '#2C3E50', // From ResidentProfileScreen, good for general text
   lightText: '#7F8C8D', // From ResidentProfileScreen, good for general text
+  inputBorder: '#E0E0E0', // Added for consistency with input styling
+  inputBackground: '#FFFFFF', // Added for consistency with input styling
+  accentBlue: '#2563EB', // Added for consistency with button styling
 };
 
 export default function ResidentEditScreen({ route, navigation }) {
@@ -65,20 +71,22 @@ export default function ResidentEditScreen({ route, navigation }) {
   const [residentName, setResidentName] = useState('');
   const [residentApellido, setResidentApellido] = useState('');
   const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date());
-  const [residentGenero, setResidentGenero] = useState('Masculino'); // Default or fetched
+  const [residentGenero, setResidentGenero] = useState('Masculino');
   const [residentTelefono, setResidentTelefono] = useState('');
-  const [residentFoto, setResidentFoto] = useState('');
-  const [residentDispositivoId, setResidentDispositivoId] = useState(0); // 0 for unassigned
-  const [residentActivo, setResidentActivo] = useState(true); // Default to true
+  // Cambiado: Ahora 'residentFotoFilename' almacenará el nombre del archivo de la foto del backend
+  const [residentFotoFilename, setResidentFotoFilename] = useState('');
+  // Nuevo estado: 'residentPhotoDisplayUrl' almacenará la URL completa para mostrar la imagen
+  const [residentPhotoDisplayUrl, setResidentPhotoDisplayUrl] = useState('');
+  const [residentDispositivoId, setResidentDispositivoId] = useState(0);
+  const [residentActivo, setResidentActivo] = useState(true);
   const [residentPromedioReposo, setResidentPromedioReposo] = useState('');
   const [residentPromedioActivo, setResidentPromedioActivo] = useState('');
   const [residentPromedioAgitado, setResidentPromedioAgitado] = useState('');
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState([]); // State for available devices
+  const [availableDevices, setAvailableDevices] = useState([]);
 
-  // Request permission for media library access
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
@@ -103,8 +111,16 @@ export default function ResidentEditScreen({ route, navigation }) {
         setResidentFechaNacimiento(new Date(residentData.fecha_nacimiento));
         setResidentGenero(residentData.genero || 'Masculino');
         setResidentTelefono(residentData.telefono || '');
-        setResidentFoto(residentData.foto || '');
-        setResidentDispositivoId(residentData.dispositivo?.id_dispositivo || 0); // Handle nested device object
+        // Almacena el nombre del archivo de la foto
+        setResidentFotoFilename(residentData.foto || '');
+        // Construye la URL de la foto para mostrarla
+        if (residentData.foto && residentData.foto !== 'nophoto.png') {
+          setResidentPhotoDisplayUrl(`${baseStaticUrl}/images/residents/${residentData.foto}`);
+        } else {
+          setResidentPhotoDisplayUrl(''); // O null, si prefieres
+        }
+
+        setResidentDispositivoId(residentData.dispositivo?.id_dispositivo || 0);
         setResidentActivo(residentData.activo);
         setResidentPromedioReposo(residentData.promedioReposo?.toString() || '');
         setResidentPromedioActivo(residentData.promedioActivo?.toString() || '');
@@ -124,10 +140,9 @@ export default function ResidentEditScreen({ route, navigation }) {
 
   const fetchAvailableDevices = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/Dispositivo`); // Assuming an endpoint to get all devices
+      const response = await fetch(`${API_URL}/Dispositivo`);
       const jsonResponse = await response.json();
       if (jsonResponse.status === 0 && jsonResponse.data) {
-        // Filter out devices that are already assigned to other residents, unless it's the current resident's device
         const devices = jsonResponse.data.filter(device =>
           device.asignadoA === null || device.asignadoA === residentId
         );
@@ -162,10 +177,13 @@ export default function ResidentEditScreen({ route, navigation }) {
     });
 
     if (!result.canceled) {
-      setResidentFoto(result.assets[0].uri);
-      // For a PUT request with a string 'foto', you might need to upload the image separately
-      // and get a URL/name back to set here, or rely on your backend to handle base64 encoding if applicable.
-      // For this example, we assume residentFoto will be a URL/filename string.
+      // Actualiza la URL de visualización con la URI local de la imagen seleccionada
+      setResidentPhotoDisplayUrl(result.assets[0].uri);
+      // OJO: Si necesitas subir esta imagen al backend y obtener un nuevo 'filename'
+      // para 'residentFotoFilename', esa lógica de subida y actualización del estado
+      // debería implementarse aquí o en handleSave. Para este cambio, solo se enfoca en la visualización.
+      // Actualmente, 'residentFotoFilename' no se actualiza aquí, por lo que handleSave enviará
+      // el nombre de archivo existente (o vacío si no había uno).
     }
   };
 
@@ -182,10 +200,12 @@ export default function ResidentEditScreen({ route, navigation }) {
       id_residente: residentId,
       nombre: residentName,
       apellido: residentApellido,
-      fechaNacimiento: residentFechaNacimiento.toISOString(), // Ensure ISO 8601 format
+      fechaNacimiento: residentFechaNacimiento.toISOString(),
       genero: residentGenero,
       telefono: residentTelefono,
-      foto: residentFoto, // Send the photo string (URL or filename)
+      // Se envía el nombre de archivo de la foto. Si se seleccionó una nueva,
+      // la lógica para subirla y obtener el nuevo nombre de archivo no está aquí.
+      foto: residentFotoFilename,
       dispositivo: residentDispositivoId,
       activo: residentActivo,
       promedio_reposo: parseInt(residentPromedioReposo || '0', 10),
@@ -198,7 +218,7 @@ export default function ResidentEditScreen({ route, navigation }) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': '*/*', // Important for some APIs
+          'Accept': '*/*',
         },
         body: JSON.stringify(payload),
       });
@@ -207,7 +227,7 @@ export default function ResidentEditScreen({ route, navigation }) {
 
       if (jsonResponse.status === 0) {
         showNotification(jsonResponse.message || 'Residente actualizado exitosamente.', 'success');
-        navigation.goBack(); // Go back to the previous screen (e.g., Residents list or profile)
+        navigation.goBack();
       } else {
         showNotification(jsonResponse.message || 'Error al actualizar el residente.', 'error');
       }
@@ -239,8 +259,9 @@ export default function ResidentEditScreen({ route, navigation }) {
         <View style={styles.formContainer}>
           <Text style={styles.sectionTitle}>Datos Personales</Text>
 
-          {residentFoto ? (
-            <Image source={{ uri: residentFoto }} style={styles.profileImage} />
+          {/* Se usa residentPhotoDisplayUrl para mostrar la imagen */}
+          {residentPhotoDisplayUrl ? (
+            <Image source={{ uri: residentPhotoDisplayUrl }} style={styles.profileImage} />
           ) : (
             <Ionicons name="person-circle-outline" size={100} color={COLORS.lightGray} style={styles.profileImagePlaceholder} />
           )}
@@ -550,7 +571,7 @@ const styles = StyleSheet.create({
   },
   imagePickerButton: {
     flexDirection: 'row',
-    backgroundColor: COLORS.accentBlue, // A distinct color for image picker
+    backgroundColor: COLORS.accentBlue,
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,

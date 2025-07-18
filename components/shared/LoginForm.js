@@ -1,5 +1,4 @@
 "use client"
-
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
@@ -14,11 +13,12 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebaseConfig';
+import Config from '../../config/config';
 
+const API_URL = Config.API_BASE_URL;
 
 export default function LoginForm({ onLoginSuccess }) {
   const [email, setEmail] = useState("");
@@ -26,6 +26,87 @@ export default function LoginForm({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const fetchUserDetails = async (role, firebaseUid) => {
+    try {
+      let endpoint = '';
+      let userKey = '';
+      
+      if (role === 'employee') {
+        endpoint = `${API_URL}/Personal`;
+        userKey = 'personal';
+      } else if (role === 'family') {
+        endpoint = `${API_URL}/Familiar`;
+        userKey = 'familiares';
+      } else {
+        console.log("Rol no reconocido para obtener detalles del usuario:", role);
+        return null;
+      }
+
+      console.log(`Obteniendo detalles del ${role}...`);
+      console.log("Endpoint:", endpoint);
+
+      const response = await fetch(endpoint);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(`Respuesta completa del endpoint ${userKey}:`, data);
+
+      const users = data[userKey];
+      
+      if (!Array.isArray(users)) {
+        console.error(`La respuesta no contiene un array en ${userKey}:`, data);
+        return null;
+      }
+
+      // Buscar el usuario por firebase_uid o firebaseUid
+      const currentUser = users.find(user => 
+        user.firebase_uid === firebaseUid || 
+        user.firebaseUid === firebaseUid
+      );
+
+      if (currentUser) {
+        console.log("=== DETALLES DEL USUARIO ENCONTRADO ===");
+        console.log("Datos completos:", currentUser);
+        
+        if (role === 'employee') {
+          console.log("ID Personal:", currentUser.id);
+          console.log("Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
+          console.log("Teléfono:", currentUser.telefono);
+          console.log("Activo:", currentUser.activo);
+        } else if (role === 'family') {
+          console.log("ID Familiar:", currentUser.id);
+          console.log("Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
+          console.log("Teléfono:", currentUser.telefono);
+          if (currentUser.residente) {
+            console.log("Residente asociado:", `${currentUser.residente.nombre} ${currentUser.residente.apellido}`);
+            console.log("ID Residente:", currentUser.residente.id_residente);
+          }
+          if (currentUser.parentesco) {
+            console.log("Parentesco:", currentUser.parentesco.nombre);
+          }
+        }
+        
+        console.log("======================================");
+        
+        return {
+          userDetails: currentUser,
+          userId: currentUser.id,
+          role: role
+        };
+      } else {
+        console.log("Usuario no encontrado en la base de datos con firebase_uid:", firebaseUid);
+        return null;
+      }
+
+    } catch (error) {
+      console.error(`Error al obtener detalles del ${role}:`, error);
+      return null;
+    }
+  };
 
   const handleSubmit = async () => {
     setError("");
@@ -41,6 +122,23 @@ export default function LoginForm({ onLoginSuccess }) {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+      // Mostrar información del usuario en consola
+      console.log("=== USUARIO LOGUEADO ===");
+      console.log("UID:", user.uid);
+      console.log("Email:", user.email);
+      console.log("Fecha de login:", new Date().toLocaleString());
+      console.log("========================");
+
+      // También crear un objeto con la información del usuario
+      const userLoginInfo = {
+        uid: user.uid,
+        email: user.email,
+        loginTime: new Date().toISOString(),
+        timestamp: Date.now()
+      };
+      
+      console.log("Objeto de información del usuario:", userLoginInfo);
+
       const userDocRef = doc(db, "users", user.uid);
       const userDocSnap = await getDoc(userDocRef);
 
@@ -48,9 +146,31 @@ export default function LoginForm({ onLoginSuccess }) {
         const userData = userDocSnap.data();
         const assignedRole = userData.role;
 
+        // Mostrar información adicional del rol
+        console.log("Rol asignado:", assignedRole);
+        console.log("Datos completos del usuario:", userData);
+
         if (assignedRole) {
+          // Obtener detalles específicos del usuario según su rol
+          const userDetails = await fetchUserDetails(assignedRole, user.uid);
+          
+          if (userDetails) {
+            console.log("=== RESUMEN FINAL DEL LOGIN ===");
+            console.log("Firebase UID:", user.uid);
+            console.log("Email:", user.email);
+            console.log("Rol:", assignedRole);
+            
+            if (assignedRole === 'employee') {
+              console.log("ID Personal:", userDetails.userId);
+            } else if (assignedRole === 'family') {
+              console.log("ID Familiar:", userDetails.userId);
+            }
+            
+            console.log("===============================");
+          }
+
           if (onLoginSuccess) {
-            onLoginSuccess(assignedRole, user.uid); // Pass user.uid here
+            onLoginSuccess(assignedRole, user.uid, userDetails);
           }
         } else {
           setError("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
@@ -58,10 +178,14 @@ export default function LoginForm({ onLoginSuccess }) {
       } else {
         setError("Tu cuenta no está completamente configurada. Contacta al administrador.");
       }
-
     } catch (firebaseError) {
-      let errorMessage = "Error de autenticación. Inténtalo de nuevo.";
+      console.log("=== ERROR DE LOGIN ===");
+      console.log("Email intentado:", email);
+      console.log("Código de error:", firebaseError.code);
+      console.log("Mensaje de error:", firebaseError.message);
+      console.log("======================");
 
+      let errorMessage = "Error de autenticación. Inténtalo de nuevo.";
       switch (firebaseError.code) {
         case 'auth/invalid-email':
           errorMessage = 'Formato de ID/correo electrónico inválido.';
@@ -86,7 +210,10 @@ export default function LoginForm({ onLoginSuccess }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardView}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+        style={styles.keyboardView}
+      >
         <View style={styles.formContainer}>
           <LinearGradient
             colors={["#3B82F6", "#10B981", "#2563EB"]}
@@ -128,8 +255,15 @@ export default function LoginForm({ onLoginSuccess }) {
                       autoCorrect={false}
                       placeholder=""
                     />
-                    <TouchableOpacity style={styles.eyeButton} onPress={() => setShowPassword(!showPassword)}>
-                      <Ionicons name={showPassword ? "eye-off" : "eye"} size={20} color="#9CA3AF" />
+                    <TouchableOpacity 
+                      style={styles.eyeButton} 
+                      onPress={() => setShowPassword(!showPassword)}
+                    >
+                      <Ionicons 
+                        name={showPassword ? "eye-off" : "eye"} 
+                        size={20} 
+                        color="#9CA3AF" 
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>

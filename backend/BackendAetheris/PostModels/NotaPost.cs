@@ -8,7 +8,6 @@ using System.ComponentModel.DataAnnotations;
 public class NotaPost
 {
     public int id_familiar { get; set; }
-
+    public int? id_personal { get; set; } // MODIFICADO: Ahora es nullable (int?)
     public string notaTexto { get; set; }
 }
-

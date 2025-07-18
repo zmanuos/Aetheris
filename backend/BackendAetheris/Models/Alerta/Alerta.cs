@@ -10,6 +10,7 @@ public class Alerta
 
     private static string selectAll = "SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA";
     private static string select = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_alerta = @ID";
+    private static string selectByResidente = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_residente = @id_residente ORDER BY fecha DESC";
     private static string insertAlertaResidente= @"INSERT INTO ALERTA (id_residente, id_alerta_tipo, mensaje) VALUES (@id_residente, @id_alerta_tipo, @mensaje)";
     private static string insertAlertaArea = @"INSERT INTO ALERTA (id_residente, id_area, id_alerta_tipo, mensaje) VALUES (NULL, @id_area, @id_alerta_tipo, @mensaje)";
     private static string insertAlertaGeneral = @"INSERT INTO ALERTA (id_alerta_tipo, mensaje) VALUES (NULL, NULL, @id_alerta_tipo, @mensaje)";
@@ -42,22 +43,22 @@ public class Alerta
 
     public Alerta()
     {
-        id = 0;
-        residente = new Residente();
-        alerta_tipo = new AlertaTipo();
-        area = new Area();
-        fecha = DateTime.Now;
-        mensaje = "";
+        _id = 0;
+        _residente = null;
+        _alerta_tipo = null;
+        _area = null;
+        _fecha = DateTime.Now;
+        _mensaje = string.Empty;
     }
 
     public Alerta(int id, Residente residente, AlertaTipo alerta_tipo, Area area, DateTime fecha, string mensaje)
     {
-        this.id = id;
-        this.residente = residente;
-        this.alerta_tipo = alerta_tipo;
-        this.area = area;
-        this.fecha = fecha;
-        this.mensaje = mensaje;
+        _id = id;
+        _residente = residente;
+        _alerta_tipo = alerta_tipo;
+        _area = area;
+        _fecha = fecha;
+        _mensaje = mensaje;
     }
 
     #endregion
@@ -84,6 +85,15 @@ public class Alerta
         {
             throw new AlertaNotFoundException(id);
         }
+    }
+
+    public static List<Alerta> GetByResidente(int idResidente)
+    {
+        MySqlCommand command = new MySqlCommand(selectByResidente);
+        command.Parameters.AddWithValue("@id_residente", idResidente);
+        DataTable table = SqlServerConnection.ExecuteQuery(command);
+
+        return AlertaMapper.ToList(table);
     }
 
     public static bool AlertaResidente(int idResidente, int idAlertaTipo, string mensaje)
@@ -118,8 +128,6 @@ public class Alerta
         int rowsAffected = SqlServerConnection.ExecuteCommand(command);
         return rowsAffected > 0;
     }
-
-
 
 
     #endregion
