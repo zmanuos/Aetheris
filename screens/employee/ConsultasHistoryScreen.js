@@ -153,7 +153,6 @@ const ConsultasHistory = () => {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
                 <View style={styles.mainContentArea}>
-                    <Text style={styles.screenTitle}>Historial de Consultas</Text>
 
                     <View style={styles.filtersContainer}>
                         <View style={styles.searchInputContainer}>

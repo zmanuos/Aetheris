@@ -1,6 +1,10 @@
-﻿public class ChequeoSemanalPost
+﻿// ChequeoSemanalPost.cs
+using System;
+
+public class ChequeoSemanalPost
 {
     public string ResidenteId { get; set; }
+    public string PersonalId { get; set; } 
     public DateTime FechaChequeo { get; set; }
     public int Spo2 { get; set; }
     public int Pulso { get; set; }
@@ -12,4 +16,5 @@
     public string DispositivoTempCorp { get; set; }
     public string DispositivoPeso { get; set; }
     public string DispositivoAltura { get; set; }
+    public string Observaciones { get; set; } // Nuevo campo
 }

@@ -13,9 +13,12 @@ public class Familiar
 
     // ¡NUEVO INSERT! Para registrar Familiar con firebase_uid, sin lógica de usuario SQL
     private static string insertFamiliar = "INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @id_residente, @id_parentesco, @firebase_uid); SELECT LAST_INSERT_ID();";
-    
+
     private static string updateTelefono = "UPDATE FAMILIAR SET telefono = @telefono WHERE id_familiar = @id";
-    
+
+    // STATEMENT PARA ACTUALIZAR TODOS LOS CAMPOS DE FAMILIAR
+    private static string updateFamiliar = "UPDATE FAMILIAR SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, id_residente = @id_residente, id_parentesco = @id_parentesco, firebase_uid = @firebase_uid WHERE id_familiar = @id_familiar";
+
     #endregion
 
     #region Attributes
@@ -27,8 +30,8 @@ public class Familiar
     private string _genero;
     private string _telefono;
     private Residente _residente;
-    private Parentesco _parentesco; 
-    private string _firebase_uid; 
+    private Parentesco _parentesco;
+    private string _firebase_uid;
 
     #endregion
 
@@ -42,7 +45,7 @@ public class Familiar
     public string telefono { get => _telefono; set => _telefono = value; }
     public Residente residente { get => _residente; set => _residente = value; }
     public Parentesco parentesco { get => _parentesco; set => _parentesco = value; }
-    public string firebase_uid { get => _firebase_uid; set => _firebase_uid = value; } // ¡NUEVA PROPIEDAD!
+    public string firebase_uid { get => _firebase_uid; set => _firebase_uid = value; }
 
     #endregion
 
@@ -58,7 +61,7 @@ public class Familiar
         telefono = "";
         residente = new Residente();
         parentesco = new Parentesco();
-        firebase_uid = ""; // Inicializa
+        firebase_uid = "";
     }
 
     public Familiar(int id, string nombre, string apellido, DateTime fecha_nacimiento, string genero, string telefono, Residente residente, Parentesco parentesco, string firebase_uid)
@@ -92,7 +95,6 @@ public class Familiar
 
         if (table.Rows.Count > 0)
         {
-            // Asegúrate de que FamiliarMapper.ToObject pueda manejar la nueva columna firebase_uid
             return FamiliarMapper.ToObject(table.Rows[0]);
         }
         else
@@ -109,9 +111,6 @@ public class Familiar
         return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 
-    // ¡NUEVO MÉTODO POST para registrar Familiar!
-    // Ahora recibe FamiliarPost que incluye firebase_uid
-    // En Familiar.cs, dentro del método Post
     public static int Post(FamiliarPost familiar)
     {
         MySqlCommand cmd = new MySqlCommand(insertFamiliar);
@@ -121,14 +120,31 @@ public class Familiar
         cmd.Parameters.AddWithValue("@fecha_nacimiento", familiar.fechaNacimiento);
         cmd.Parameters.AddWithValue("@genero", familiar.genero);
         cmd.Parameters.AddWithValue("@telefono", familiar.telefono);
-        
-        // --- CAMBIOS AQUÍ: Usar los nuevos nombres de propiedades del DTO ---
-        cmd.Parameters.AddWithValue("@id_residente", familiar.id_residente); // Era familiar.residente
-        cmd.Parameters.AddWithValue("@id_parentesco", familiar.id_parentesco); // Era familiar.parentesco
-        
+        cmd.Parameters.AddWithValue("@id_residente", familiar.id_residente);
+        cmd.Parameters.AddWithValue("@id_parentesco", familiar.id_parentesco);
         cmd.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid);
 
-        return SqlServerConnection.ExecuteInsertCommandAndGetLastId(cmd); // Asumo que usas este método ahora
+        return SqlServerConnection.ExecuteInsertCommandAndGetLastId(cmd);
+    }
+
+    public static bool Update(Familiar familiar)
+    {
+        MySqlCommand command = new MySqlCommand(updateFamiliar);
+        command.Parameters.AddWithValue("@id_familiar", familiar.id);
+        command.Parameters.AddWithValue("@nombre", familiar.nombre);
+        command.Parameters.AddWithValue("@apellido", familiar.apellido);
+        command.Parameters.AddWithValue("@fecha_nacimiento", familiar.fecha_nacimiento);
+        command.Parameters.AddWithValue("@genero", familiar.genero);
+        command.Parameters.AddWithValue("@telefono", familiar.telefono);
+
+        // Ahora se accede a 'Id_residente' (PascalCase con guion bajo) de Residente
+        command.Parameters.AddWithValue("@id_residente", familiar.residente?.Id_residente ?? 0);
+        // Y a 'id' (minúsculas) de Parentesco
+        command.Parameters.AddWithValue("@id_parentesco", familiar.parentesco?.id ?? 0);
+
+        command.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid);
+
+        return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 
     #endregion

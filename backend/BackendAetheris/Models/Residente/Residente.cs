@@ -32,6 +32,8 @@ public class Residente
 
     private static string updatePromedioRitmos =  "UPDATE RESIDENTE SET promedio_reposo = @promedio_reposo, promedio_activo = @promedio_activo, promedio_agitado = @promedio_agitado  WHERE id_residente = @id";
 
+    private static string updateResidente = "UPDATE RESIDENTE SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, foto = @foto, dispositivo = @dispositivo, activo = @activo, promedio_reposo = @promedio_reposo, promedio_activo = @promedio_activo, promedio_agitado = @promedio_agitado WHERE id_residente = @id_residente";
+
 
     #endregion
 
@@ -167,7 +169,6 @@ public class Residente
         int result = 0;
 
         MySqlCommand command = new MySqlCommand(AsignarDispositivo);
-        // CAMBIO AQUÍ: Usar Add para especificar MySqlDbType y asignar el valor explícitamente.
         command.Parameters.Add("@dispositivo", MySqlDbType.Int32).Value = (dispositivo == 0 ? (object)DBNull.Value : dispositivo);
         command.Parameters.AddWithValue("@id_residente", residente);
 
@@ -220,6 +221,32 @@ public class Residente
         command.Parameters.AddWithValue("@promedio_reposo", promedioReposo);
         command.Parameters.AddWithValue("@promedio_activo", promedioActivo);
         command.Parameters.AddWithValue("@promedio_agitado", promedioAgitado);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
+    }
+
+    public static bool Update(Residente residente)
+    {
+        MySqlCommand command = new MySqlCommand(updateResidente);
+        command.Parameters.AddWithValue("@id_residente", residente.Id_residente);
+        command.Parameters.AddWithValue("@nombre", residente.Nombre);
+        command.Parameters.AddWithValue("@apellido", residente.Apellido);
+        command.Parameters.AddWithValue("@fecha_nacimiento", residente.Fecha_nacimiento);
+        command.Parameters.AddWithValue("@genero", residente.Genero);
+        command.Parameters.AddWithValue("@telefono", residente.Telefono);
+        if (residente.Dispositivo != null && residente.Dispositivo.id != 0)
+        {
+            command.Parameters.AddWithValue("@dispositivo", residente.Dispositivo.id);
+        }
+        else
+        {
+            command.Parameters.AddWithValue("@dispositivo", DBNull.Value);
+        }
+        command.Parameters.AddWithValue("@foto", residente.Foto ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("@activo", residente.Activo);
+        command.Parameters.AddWithValue("@promedio_reposo", residente.PromedioReposo);
+        command.Parameters.AddWithValue("@promedio_activo", residente.PromedioActivo);
+        command.Parameters.AddWithValue("@promedio_agitado", residente.PromedioAgitado);
+
         return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 

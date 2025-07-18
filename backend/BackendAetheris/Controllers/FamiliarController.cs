@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -30,7 +31,7 @@ public class FamiliarController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult Post([FromForm] FamiliarPost familiar) 
+    public ActionResult Post([FromForm] FamiliarPost familiar)
     {
         if (!ModelState.IsValid)
             return BadRequest(MessageResponse.GetReponse(1, "Datos inválidos", MessageType.Error));
@@ -57,5 +58,53 @@ public class FamiliarController : ControllerBase
             return Ok(MessageResponse.GetReponse(0, "Telefono actualizado correctamente", MessageType.Success));
         else
             return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el telefono", MessageType.Warning));
+    }
+
+    [HttpPut]
+    public ActionResult UpdateFamiliar([FromBody] FamiliarPutDto familiarDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(MessageResponse.GetReponse(1, "Datos inválidos para la actualización", MessageType.Error));
+
+        try
+        {
+            Familiar existingFamiliar = Familiar.Get(familiarDto.id);
+
+            Residente residente = Residente.Get(familiarDto.id_residente);
+            if (residente == null)
+            {
+                return NotFound(MessageResponse.GetReponse(4, $"Residente con ID {familiarDto.id_residente} no encontrado.", MessageType.Error));
+            }
+
+            Parentesco parentesco = Parentesco.Get(familiarDto.id_parentesco);
+            if (parentesco == null)
+            {
+                return NotFound(MessageResponse.GetReponse(5, $"Parentesco con ID {familiarDto.id_parentesco} no encontrado.", MessageType.Error));
+            }
+
+            existingFamiliar.nombre = familiarDto.nombre;
+            existingFamiliar.apellido = familiarDto.apellido;
+            existingFamiliar.fecha_nacimiento = familiarDto.fechaNacimiento;
+            existingFamiliar.genero = familiarDto.genero;
+            existingFamiliar.telefono = familiarDto.telefono;
+            existingFamiliar.firebase_uid = familiarDto.firebase_uid;
+            existingFamiliar.residente = residente;
+            existingFamiliar.parentesco = parentesco;
+
+            bool updated = Familiar.Update(existingFamiliar);
+
+            if (updated)
+                return Ok(MessageResponse.GetReponse(0, "Familiar actualizado correctamente", MessageType.Success));
+            else
+                return Ok(MessageResponse.GetReponse(2, "No se pudo actualizar el familiar", MessageType.Warning));
+        }
+        catch (FamiliarNotFoundException e)
+        {
+            return NotFound(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(3, "Error interno al actualizar el familiar: " + ex.Message, MessageType.Error));
+        }
     }
 }

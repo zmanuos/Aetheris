@@ -5,10 +5,14 @@ using System;
 public class ChequeoSemanal
 {
     [BsonId]
-    public ObjectId Id { get; set; }
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
 
     [BsonElement("residenteId")]
     public string ResidenteId { get; set; }
+
+    [BsonElement("personalId")]
+    public string PersonalId { get; set; }
 
     [BsonElement("fechaChequeo")]
     public DateTime FechaChequeo { get; set; }
@@ -42,4 +46,7 @@ public class ChequeoSemanal
 
     [BsonElement("dispositivoAltura")]
     public string DispositivoAltura { get; set; }
+
+    [BsonElement("observaciones")]
+    public string Observaciones { get; set; }
 }

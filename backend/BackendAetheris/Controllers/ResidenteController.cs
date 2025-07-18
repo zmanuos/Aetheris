@@ -6,6 +6,7 @@ using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -163,13 +164,12 @@ public class ResidenteController : ControllerBase
         }
     }
 
-    [HttpPut("{residenteId}/dispositivo/{dispositivoId?}")] // '?' makes dispositivoId optional
-    public ActionResult AsignarDispositivo(int residenteId, int? dispositivoId) // 'int?' allows null
+    [HttpPut("{residenteId}/dispositivo/{dispositivoId?}")]
+    public ActionResult AsignarDispositivo(int residenteId, int? dispositivoId)
     {
         _logger.LogInformation($"PUT AsignarDispositivo: Residente {residenteId}, Dispositivo {dispositivoId}");
         try
         {
-            // If dispositivoId is null, treat it as 0 for de-assignment
             int deviceToAssign = dispositivoId.GetValueOrDefault(0);
 
             if (Residente.Update(residenteId, deviceToAssign) > 0)
@@ -297,6 +297,76 @@ public class ResidenteController : ControllerBase
         {
             _logger.LogWarning($"PUT UpdatePromedioAgitado: No se pudo actualizar el ritmo promedio agitado del residente {id}.");
             return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el ritmo promedio agitado ", MessageType.Warning));
+        }
+    }
+
+    [HttpPut]
+    public ActionResult UpdateResidente([FromBody] ResidentePutDto residenteDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("PUT UpdateResidente: Datos inválidos para la actualización.");
+            return BadRequest(CommonApiResponse.GetResponse(1, "Datos inválidos para la actualización", MessageType.Error, ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage).ToList()));
+        }
+
+        try
+        {
+            Residente existingResidente = Residente.Get(residenteDto.id_residente);
+
+            if (existingResidente == null)
+            {
+                _logger.LogWarning($"PUT UpdateResidente: Residente con ID {residenteDto.id_residente} no encontrado.");
+                return NotFound(CommonApiResponse.GetResponse(1, $"Residente con ID {residenteDto.id_residente} no encontrado.", MessageType.Error));
+            }
+
+            existingResidente.Nombre = residenteDto.nombre;
+            existingResidente.Apellido = residenteDto.apellido;
+            existingResidente.Fecha_nacimiento = residenteDto.fechaNacimiento;
+            existingResidente.Genero = residenteDto.genero;
+            existingResidente.Telefono = residenteDto.telefono;
+            existingResidente.Foto = residenteDto.foto;
+
+            // CAMBIO IMPORTANTE AQUÍ: Ahora 'dispositivo' es un int
+            if (residenteDto.dispositivo != 0) // Compara con 0 (int) para desasignar
+            {
+                Dispositivo device = Dispositivo.Get(residenteDto.dispositivo); // Usa el int directamente
+                if (device == null)
+                {
+                    _logger.LogWarning($"PUT UpdateResidente: Dispositivo con ID {residenteDto.dispositivo} no encontrado para residente {residenteDto.id_residente}. Se desasignará el dispositivo.");
+                    existingResidente.Dispositivo = null; // Establece a null si el dispositivo no existe
+                }
+                else
+                {
+                    existingResidente.Dispositivo = device;
+                }
+            }
+            else
+            {
+                existingResidente.Dispositivo = null; // Si el DTO envía 0, desasigna el dispositivo
+            }
+
+            existingResidente.Activo = residenteDto.activo;
+            existingResidente.PromedioReposo = residenteDto.promedio_reposo;
+            existingResidente.PromedioActivo = residenteDto.promedio_activo;
+            existingResidente.PromedioAgitado = residenteDto.promedio_agitado;
+
+            bool updated = Residente.Update(existingResidente);
+
+            if (updated)
+            {
+                _logger.LogInformation($"PUT UpdateResidente: Residente con ID {residenteDto.id_residente} actualizado correctamente.");
+                return Ok(CommonApiResponse.GetResponse(0, "Residente actualizado correctamente", MessageType.Success));
+            }
+            else
+            {
+                _logger.LogWarning($"PUT UpdateResidente: No se pudo actualizar el residente con ID {residenteDto.id_residente}.");
+                return Ok(CommonApiResponse.GetResponse(2, "No se pudo actualizar el residente", MessageType.Warning));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"PUT UpdateResidente: Error interno al actualizar el residente con ID {residenteDto.id_residente}.");
+            return StatusCode(500, CommonApiResponse.GetResponse(3, "Error interno al actualizar el residente: " + ex.Message, MessageType.CriticalError));
         }
     }
 }

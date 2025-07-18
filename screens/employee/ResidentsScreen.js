@@ -128,7 +128,13 @@ export default function ResidentsScreen({ navigation }) {
       showNotification('Residente registrado exitosamente!', 'success');
       navigation.setParams({ registrationSuccess: undefined });
     }
-  }, [route.params?.registrationSuccess, showNotification, navigation]);
+    // Añadir manejo para la actualización exitosa
+    if (route.params?.updateSuccess) {
+      showNotification('Residente actualizado exitosamente!', 'success');
+      navigation.setParams({ updateSuccess: undefined });
+      fetchResidentsData(true); // Recargar datos después de la actualización
+    }
+  }, [route.params?.registrationSuccess, route.params?.updateSuccess, showNotification, navigation, fetchResidentsData]);
 
   const handleAddNewResident = () => {
     navigation.navigate('RegisterResidentAndFamiliar');
@@ -144,6 +150,7 @@ export default function ResidentsScreen({ navigation }) {
   };
 
   const handleEditResident = (id) => {
+    navigation.navigate('ResidentEdit', { residentId: id }); // ¡Navega a la nueva pantalla de edición!
     showNotification(`Navegando a edición del residente con ID: ${id}`, 'info');
   };
 
