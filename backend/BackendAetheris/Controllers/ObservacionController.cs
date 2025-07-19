@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -17,12 +18,16 @@ public class ObservacionController : ControllerBase
     {
         try
         {
-            Observacion obs = Observacion.Get(id_residente);
-            return Ok(ObservacionResponse.GetResponse(obs));
-        }
-        catch (ObservacionNotFoundException e)
-        {
-            return Ok(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+            List<Observacion> obsList = Observacion.GetByResidentId(id_residente);
+            
+            if (obsList.Count > 0)
+            {
+                return Ok(ObservacionListResponse.GetResponse(obsList));
+            }
+            else
+            {
+                return Ok(MessageResponse.GetReponse(1, $"No se encontraron observaciones para el residente con ID {id_residente}", MessageType.Warning));
+            }
         }
         catch (Exception e)
         {

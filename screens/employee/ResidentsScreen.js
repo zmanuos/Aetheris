@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Platform,
   TextInput,
-  // Alert, // Keep commented out as Notification is used
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -128,11 +127,10 @@ export default function ResidentsScreen({ navigation }) {
       showNotification('Residente registrado exitosamente!', 'success');
       navigation.setParams({ registrationSuccess: undefined });
     }
-    // Añadir manejo para la actualización exitosa
     if (route.params?.updateSuccess) {
       showNotification('Residente actualizado exitosamente!', 'success');
       navigation.setParams({ updateSuccess: undefined });
-      fetchResidentsData(true); // Recargar datos después de la actualización
+      fetchResidentsData(true);
     }
   }, [route.params?.registrationSuccess, route.params?.updateSuccess, showNotification, navigation, fetchResidentsData]);
 
@@ -141,21 +139,19 @@ export default function ResidentsScreen({ navigation }) {
   };
 
   const handleViewProfile = (id) => {
-    navigation.navigate('ResidentProfile', { residentId: id }); // Navigate to the new screen and pass the ID
-    showNotification(`Navegando a perfil del residente con ID: ${id}`, 'info');
+    navigation.navigate('ResidentProfile', { residentId: id });
   };
 
   const handleHistory = (id) => {
-    showNotification(`Navegando a historial médico del residente con ID: ${id}`, 'info');
+
   };
 
   const handleEditResident = (id) => {
-    navigation.navigate('ResidentEdit', { residentId: id }); // ¡Navega a la nueva pantalla de edición!
-    showNotification(`Navegando a edición del residente con ID: ${id}`, 'info');
+    navigation.navigate('ResidentEdit', { residentId: id });
   };
 
   const handleAssignDevice = (residentId) => {
-    showNotification(`Navegando a la asignación de dispositivo para el residente con ID: ${residentId}`, 'info');
+
   };
 
   const filteredResidents = residents.filter(resident =>
@@ -206,7 +202,7 @@ export default function ResidentsScreen({ navigation }) {
               <View
                 key={resident.id_residente}
                 style={{
-                  width: IS_LARGE_SCREEN ? '48%' : '100%', // Casi 50% para 2 cards por fila en web
+                  width: IS_LARGE_SCREEN ? '48%' : '100%',
                   paddingHorizontal: 5,
                   marginBottom: 15,
                 }}
@@ -250,7 +246,7 @@ const styles = StyleSheet.create({
     justifyContent: IS_LARGE_SCREEN ? 'space-between' : 'flex-start',
     alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
     width: '100%',
-    gap: 0, // por compatibilidad
+    gap: 0,
   },
   createButton: {
     marginTop: IS_LARGE_SCREEN ? 0 : 10,
@@ -276,7 +272,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     marginBottom: IS_LARGE_SCREEN ? 0 : 10,
-    gap: 0, // React Native no soporta gap, usamos margenes
+    gap: 0,
   },
   searchInputContainer: {
     flex: 1,

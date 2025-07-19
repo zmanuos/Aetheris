@@ -6,11 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 // --- COLORES ---
 const PRIMARY_GREEN = '#6BB240';
 const WHITE = '#fff';
-const BUTTON_HOVER_COLOR = '#5aa130';
 
-export default function BackButton({ onPress, title = 'Regresar' }) {
+export default function BackButton({ onPress, title = 'Regresar', style }) { 
     return (
-        <TouchableOpacity onPress={onPress} style={styles.backButton}>
+        <TouchableOpacity onPress={onPress} style={[styles.backButton, style]}> 
             <Ionicons name="arrow-back-outline" size={20} color={WHITE} />
             <Text style={styles.backButtonText}>{title}</Text>
         </TouchableOpacity>
@@ -27,31 +26,17 @@ const styles = StyleSheet.create({
         backgroundColor: PRIMARY_GREEN,
         paddingVertical: 8,
         paddingHorizontal: 12,
-        borderRadius: 10,
-        borderWidth: 1.5,
-        borderColor: PRIMARY_GREEN,
-        zIndex: 10,
-        shadowColor: PRIMARY_GREEN,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
-        elevation: 6,
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.2s',
-                transitionProperty: 'background-color, border-color, color',
-                ':hover': {
-                    backgroundColor: BUTTON_HOVER_COLOR,
-                    borderColor: BUTTON_HOVER_COLOR,
-                },
-            },
-        }),
+        borderRadius: 25, 
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3, 
     },
     backButtonText: {
         color: WHITE,
-        fontSize: 15,
-        fontWeight: '700',
         marginLeft: 8,
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

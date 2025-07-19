@@ -8,7 +8,7 @@ public class Observacion
     #region Statements
 
     private static string selectAll = "SELECT id_observaciones, id_residente, observacion FROM OBSERVACIONES";
-    private static string select = "SELECT id_observaciones, id_residente, observacion FROM OBSERVACIONES WHERE id_residente = @ID";
+    private static string selectByResidentId = "SELECT id_observaciones, id_residente, observacion FROM OBSERVACIONES WHERE id_residente = @IDResidente";
     private static string insert = "INSERT INTO OBSERVACIONES (id_residente, observacion) VALUES (@IdResidente, @Observacion)";
     private static string update = "UPDATE OBSERVACIONES SET observacion = @Texto WHERE id_observaciones = @Id";
 
@@ -56,20 +56,12 @@ public class Observacion
         return ObservacionMapper.ToList(SqlServerConnection.ExecuteQuery(command));
     }
 
-    public static Observacion Get(int id)
+    public static List<Observacion> GetByResidentId(int id_residente)
     {
-        MySqlCommand command = new MySqlCommand(select);
-        command.Parameters.AddWithValue("@ID", id);
+        MySqlCommand command = new MySqlCommand(selectByResidentId);
+        command.Parameters.AddWithValue("@IDResidente", id_residente);
         DataTable table = SqlServerConnection.ExecuteQuery(command);
-
-        if (table.Rows.Count > 0)
-        {
-            return ObservacionMapper.ToObject(table.Rows[0]);
-        }
-        else
-        {
-            throw new Exception($"Observación con ID {id} no encontrada.");
-        }
+        return ObservacionMapper.ToList(table);
     }
 
     public static bool Insert(ObservacionPost observacion)
