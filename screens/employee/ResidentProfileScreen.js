@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import BackButton from "../../components/shared/BackButton"
+import { Audio } from 'expo-av'; // Import Audio from expo-av
 
 // Import components
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
@@ -35,7 +36,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
   const [resident, setResident] = useState(null)
   const [familiar, setFamiliar] = useState(null)
   const [familiarEmail, setFamiliarEmail] = useState(null)
-  const [observations, setObservations] = useState([]) // Changed to observations (plural)
+  const [observations, setObservations] = useState([])
   const [notes, setNotes] = useState([])
   const [weeklyCheckups, setWeeklyCheckups] = useState([])
   const [alerts, setAlerts] = useState([])
@@ -47,6 +48,42 @@ export default function ResidentProfileScreen({ route, navigation }) {
   const [isSendingMessage, setIsSendingMessage] = useState(false)
   const { showNotification } = useNotification()
   const messageInputRef = useRef(null)
+
+  // State to hold the sound object
+  const [messageSentSound, setMessageSentSound] = useState(null);
+
+  // Load the sound when the component mounts
+  useEffect(() => {
+    const loadSound = async () => {
+      try {
+        const { sound } = await Audio.Sound.createAsync(
+          require('../../assets/sounds/sent_message.mp3') // Adjust this path to your sound file
+        );
+        setMessageSentSound(sound);
+      } catch (error) {
+        console.error("Error loading sound:", error);
+      }
+    };
+
+    loadSound();
+
+    // Unload the sound when the component unmounts
+    return () => {
+      if (messageSentSound) {
+        messageSentSound.unloadAsync();
+      }
+    };
+  }, []); // Empty dependency array means this runs once on mount and unmount
+
+  const playMessageSentSound = async () => {
+    if (messageSentSound) {
+      try {
+        await messageSentSound.replayAsync(); // Replay the sound if it's already loaded
+      } catch (error) {
+        console.error("Error playing sound:", error);
+      }
+    }
+  };
 
   const calculateAge = (birthDate) => {
     const today = new Date()
@@ -118,7 +155,6 @@ export default function ResidentProfileScreen({ route, navigation }) {
             : null,
       })
 
-      // Fetch familiar data
       try {
         const familiarResponse = await fetch(`${API_URL}/Familiar/${residentData.id_residente}`)
         if (familiarResponse.ok) {
@@ -152,7 +188,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
                   const apiNoteData = await noteResponse.json()
                   if (apiNoteData.notas && Array.isArray(apiNoteData.notas) && apiNoteData.notas.length > 0) {
                     const activeNotes = apiNoteData.notas.filter((note) => note.activo)
-                    const sortedNotes = activeNotes.sort((a, b) => new Date(b.fecha) - new Date(a.fecha))
+                    const sortedNotes = activeNotes.sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
                     setNotes(sortedNotes)
                   } else {
                     setNotes([])
@@ -172,12 +208,11 @@ export default function ResidentProfileScreen({ route, navigation }) {
         setNotes([])
       }
 
-      // Fetch observations (plural)
       try {
         const observationResponse = await fetch(`${API_URL}/Observacion/${residentData.id_residente}`)
         if (observationResponse.ok) {
           const apiObservationData = await observationResponse.json()
-          const fetchedObservationsData = apiObservationData.observaciones // Expecting an array
+          const fetchedObservationsData = apiObservationData.observaciones
           if (Array.isArray(fetchedObservationsData) && fetchedObservationsData.length > 0) {
             setObservations(fetchedObservationsData)
           } else {
@@ -189,7 +224,6 @@ export default function ResidentProfileScreen({ route, navigation }) {
         setObservations([])
       }
 
-      // Fetch weekly checkups
       try {
         const checkupsResponse = await fetch(`${API_URL}/ChequeoSemanal/residente/${residentId}`)
         if (checkupsResponse.ok) {
@@ -209,7 +243,6 @@ export default function ResidentProfileScreen({ route, navigation }) {
         setSelectedCheckupId(null)
       }
 
-      // Fetch alerts
       try {
         const alertsResponse = await fetch(`${API_URL}/Alerta/residente/${residentId}`)
         if (alertsResponse.ok) {
@@ -251,11 +284,8 @@ export default function ResidentProfileScreen({ route, navigation }) {
       const formData = new FormData()
       formData.append("id_familiar", familiar.id.toString())
 
-      if (currentUserRole === "employee" && currentUserId) {
-        formData.append("id_personal", currentUserId.toString())
-      } else {
-        formData.append("id_personal", "")
-      }
+      const senderId = currentUserRole === "employee" && currentUserId ? currentUserId.toString() : ""
+      formData.append("id_personal", senderId)
 
       formData.append("notaTexto", newMessage.trim())
 
@@ -274,12 +304,19 @@ export default function ResidentProfileScreen({ route, navigation }) {
       const result = await response.json()
 
       if (result.type === "Success") {
+        // showNotification("Mensaje enviado exitosamente", "success") // REMOVED THIS LINE
+        // Optimistically add the new message to the notes state
+        const newNote = {
+          id: Date.now(), // Temporary ID for immediate display
+          id_familiar: familiar.id,
+          id_personal: senderId === "" ? null : parseInt(senderId), // Store as null if no employee ID
+          nota: newMessage.trim(),
+          fecha: new Date().toISOString(),
+          activo: true,
+        }
+        setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha))) // Ensure sorted
         setNewMessage("")
-        showNotification("Mensaje enviado exitosamente", "success")
-
-        setTimeout(() => {
-          fetchResidentDetails()
-        }, 500)
+        playMessageSentSound(); // Play the sound after successful send
       } else {
         throw new Error(result.message || "Error al enviar el mensaje")
       }
@@ -322,7 +359,6 @@ export default function ResidentProfileScreen({ route, navigation }) {
     )
   }
 
-  // Preparar datos para gráficas
   const spo2TrendData = weeklyCheckups
     .filter((checkup) => checkup.spo2 != null)
     .map((checkup) => ({
@@ -357,10 +393,9 @@ export default function ResidentProfileScreen({ route, navigation }) {
     <View style={styles.modernContainer}>
       <BackButton onPress={() => navigation.goBack()} title="Volver" style={styles.modernBackButton} />
 
-      <ScrollView style={styles.modernScrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.modernScrollView} showsVerticalScrollIndicator={true}>
         <View style={styles.modernMainContainer}>
           <View style={styles.modernMainGrid}>
-            {/* Sidebar */}
             <View style={styles.modernSidebar}>
               <ResidentCard resident={resident} observations={observations} calculateAge={calculateAge} />
 
@@ -384,7 +419,6 @@ export default function ResidentProfileScreen({ route, navigation }) {
               />
             </View>
 
-            {/* Main Content */}
             <View style={styles.modernMainContent}>
               <HealthStatsSection
                 latestCheckup={latestCheckup}

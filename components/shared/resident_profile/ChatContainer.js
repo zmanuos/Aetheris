@@ -9,6 +9,7 @@ import {
   Platform,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { useRef, useEffect } from "react"
 
 const COLORS = {
   darkText: "#111827",
@@ -25,6 +26,30 @@ const COLORS = {
 const IS_WEB = Platform.OS === "web"
 
 const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sendMessage, messageInputRef }) => {
+  const scrollViewRef = useRef(null)
+
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true })
+    }
+  }, [notes])
+
+  const formatMessageDate = (dateString) => {
+    const messageDate = new Date(dateString)
+    const today = new Date()
+
+    const isToday =
+      messageDate.getDate() === today.getDate() &&
+      messageDate.getMonth() === today.getMonth() &&
+      messageDate.getFullYear() === today.getFullYear()
+
+    if (isToday) {
+      return messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true }) // Added hour12: true
+    } else {
+      return messageDate.toLocaleDateString("es-ES", { month: "short", day: "numeric" }) + " " + messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true }) // Added hour12: true and combined
+    }
+  }
+
   return (
     <View style={styles.modernChatCard}>
       <View style={styles.modernCardHeader}>
@@ -32,14 +57,14 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
           <View style={styles.cardIconContainer}>
             <Ionicons name="chatbubbles" size={18} color={COLORS.accentBlue} />
           </View>
-          <Text style={styles.modernCardTitle}>Comunicación</Text>
+          <Text style={styles.modernCardTitle}>Chat con familiar</Text>
         </View>
       </View>
 
       <View style={styles.chatMessagesContainer}>
         {notes.length > 0 ? (
-          <ScrollView style={styles.chatScrollView} showsVerticalScrollIndicator={false}>
-            {notes.slice(0, 4).map((note, index) => {
+          <ScrollView ref={scrollViewRef} style={styles.chatScrollView} showsVerticalScrollIndicator={true}>
+            {notes.map((note, index) => {
               const isFromEmployee = note.id_personal !== null && note.id_personal !== undefined
 
               return (
@@ -50,8 +75,7 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
                     <View style={styles.messageHeader}>
                       <Text style={styles.messageSender}>{isFromEmployee ? "Personal" : "Familiar"}</Text>
                       <Text style={styles.messageDate}>
-                        {note.fecha &&
-                          new Date(note.fecha).toLocaleDateString("es-ES", { month: "short", day: "numeric" })}
+                        {note.fecha && formatMessageDate(note.fecha)}
                       </Text>
                     </View>
                     <Text style={styles.modernMessageText}>{note.nota}</Text>
@@ -146,12 +170,12 @@ const styles = StyleSheet.create({
     maxHeight: 180,
   },
   modernMessageContainer: {
-    marginBottom: 8,
+    marginBottom: 2, // Reduced from 4 to 2
   },
   modernMessageBubble: {
-    padding: 12,
+    padding: 8, // Reduced from 10 to 8
     borderRadius: 12,
-    maxWidth: "90%",
+    maxWidth: "100%",
   },
   employeeMessage: {
     backgroundColor: COLORS.employeeNoteBackground,
@@ -165,21 +189,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 4,
+    marginBottom: 1, // Reduced from 2 to 1
   },
   messageSender: {
-    fontSize: 11,
+    fontSize: 10, // Reduced from 11 to 10
     fontWeight: "600",
     color: COLORS.lightText,
   },
   messageDate: {
-    fontSize: 10,
+    fontSize: 9, // Reduced from 10 to 9
     color: COLORS.lightText,
   },
   modernMessageText: {
-    fontSize: 13,
+    fontSize: 12, // Reduced from 13 to 12
     color: COLORS.darkText,
-    lineHeight: 18,
+    lineHeight: 16, // Reduced from 18 to 16
   },
   modernMessageInputContainer: {
     borderTopWidth: 1,
@@ -232,4 +256,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ChatContainer
+export default ChatContainer  
