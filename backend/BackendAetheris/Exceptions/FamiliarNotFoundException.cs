@@ -9,4 +9,9 @@ public class FamiliarNotFoundException : Exception
     {
         _message = $"No se encontro el familiar con ID {id}.";
     }
+
+    public FamiliarNotFoundException(string message)
+    {
+        _message = message;
+    }
 }

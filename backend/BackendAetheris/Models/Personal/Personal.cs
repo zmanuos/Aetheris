@@ -9,6 +9,9 @@ public class Personal
 
     private static string selectAll = "SELECT id_personal, nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid FROM PERSONAL";
     private static string select = "SELECT id_personal, nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid FROM PERSONAL WHERE id_personal = @ID";
+    // NUEVO SELECT por firebase_uid
+    private static string selectByFirebaseUid = "SELECT id_personal, nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid FROM PERSONAL WHERE firebase_uid = @FirebaseUid";
+
     private static string insert = "INSERT INTO PERSONAL (nombre, apellido, fecha_nacimiento, genero, telefono, activo, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @activo, @firebase_uid)";
     private static string update = "UPDATE PERSONAL SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, activo = @activo WHERE id_personal = @id_personal";
 
@@ -91,6 +94,23 @@ public class Personal
             throw new PersonalNotFoundException(id);
         }
     }
+
+    public static Personal GetByFirebaseUid(string firebaseUid)
+    {
+        MySqlCommand command = new MySqlCommand(selectByFirebaseUid);
+        command.Parameters.AddWithValue("@FirebaseUid", firebaseUid);
+        DataTable table = SqlServerConnection.ExecuteQuery(command);
+
+        if (table.Rows.Count > 0)
+        {
+            return PersonalMapper.ToObject(table.Rows[0]);
+        }
+        else
+        {
+            throw new PersonalNotFoundException($"con Firebase UID: {firebaseUid}");
+        }
+    }
+
 
     public int Add()
     {

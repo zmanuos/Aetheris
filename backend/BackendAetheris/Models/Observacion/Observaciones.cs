@@ -11,6 +11,7 @@ public class Observacion
     private static string selectByResidentId = "SELECT id_observaciones, id_residente, observacion FROM OBSERVACIONES WHERE id_residente = @IDResidente";
     private static string insert = "INSERT INTO OBSERVACIONES (id_residente, observacion) VALUES (@IdResidente, @Observacion)";
     private static string update = "UPDATE OBSERVACIONES SET observacion = @Texto WHERE id_observaciones = @Id";
+    private static string delete = "DELETE FROM OBSERVACIONES WHERE id_observaciones = @Id"; // Nuevo statement para eliminar
 
     #endregion
 
@@ -86,6 +87,15 @@ public class Observacion
         return rowsAffected > 0;
     }
 
+    // Nuevo método para eliminar una observación
+    public static bool Delete(int id)
+    {
+        MySqlCommand command = new MySqlCommand(delete);
+        command.Parameters.AddWithValue("@Id", id);
+
+        int rowsAffected = SqlServerConnection.ExecuteCommand(command);
+        return rowsAffected > 0;
+    }
 
     #endregion
 }

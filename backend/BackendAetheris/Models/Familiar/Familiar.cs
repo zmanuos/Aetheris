@@ -10,6 +10,9 @@ public class Familiar
     // Actualiza los SELECT para incluir firebase_uid
     private static string selectAll = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR";
     private static string select = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE id_familiar = @ID";
+    // NUEVO SELECT por firebase_uid
+    private static string selectByFirebaseUid = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE firebase_uid = @FirebaseUid";
+
 
     // ¡NUEVO INSERT! Para registrar Familiar con firebase_uid, sin lógica de usuario SQL
     private static string insertFamiliar = "INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @id_residente, @id_parentesco, @firebase_uid); SELECT LAST_INSERT_ID();";
@@ -100,6 +103,22 @@ public class Familiar
         else
         {
             throw new FamiliarNotFoundException(id);
+        }
+    }
+
+    public static Familiar GetByFirebaseUid(string firebaseUid)
+    {
+        MySqlCommand command = new MySqlCommand(selectByFirebaseUid);
+        command.Parameters.AddWithValue("@FirebaseUid", firebaseUid);
+        DataTable table = SqlServerConnection.ExecuteQuery(command);
+
+        if (table.Rows.Count > 0)
+        {
+            return FamiliarMapper.ToObject(table.Rows[0]);
+        }
+        else
+        {
+            throw new FamiliarNotFoundException($"con Firebase UID: {firebaseUid}");
         }
     }
 

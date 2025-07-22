@@ -46,6 +46,25 @@ public class PersonalController : ControllerBase
         }
     }
 
+    // NUEVO ENDPOINT: Obtener Personal por Firebase UID
+    [HttpGet("firebase/{firebaseUid}")]
+    public ActionResult GetByFirebaseUid(string firebaseUid)
+    {
+        try
+        {
+            Personal p = Personal.GetByFirebaseUid(firebaseUid);
+            return Ok(PersonalResponse.GetResponse(p));
+        }
+        catch (PersonalNotFoundException e)
+        {
+            return NotFound(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+        }
+    }
+
     [HttpPost]
     public ActionResult CreatePersonal([FromBody] PersonalCreateDto personalDto)
     {

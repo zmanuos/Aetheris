@@ -18,15 +18,14 @@ import ResidentCard from '../../components/shared/ResidentCard';
 import Config from '../../config/config';
 import { useNotification } from '../../src/context/NotificationContext';
 
-
 const API_URL = Config.API_BASE_URL;
 const GRID_CONTAINER_PADDING = 10;
 const POLLING_INTERVAL_MS = 3000;
 const { width } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
 
-
-export default function ResidentsScreen({ navigation }) {
+// MODIFICACIÓN: Acepta currentUserRole y currentUserId como props
+export default function ResidentsScreen({ navigation, currentUserRole, currentUserId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [residents, setResidents] = useState([]);
@@ -139,7 +138,12 @@ export default function ResidentsScreen({ navigation }) {
   };
 
   const handleViewProfile = (id) => {
-    navigation.navigate('ResidentProfile', { residentId: id });
+    // MODIFICACIÓN: Pasa currentUserRole y currentUserId
+    navigation.navigate('ResidentProfile', { 
+      residentId: id,
+      currentUserRole: currentUserRole, // Asegúrate de que esta variable tenga el valor correcto
+      currentUserId: currentUserId,     // Asegúrate de que esta variable tenga el valor correcto
+    });
   };
 
   const handleHistory = (id) => {
@@ -218,8 +222,6 @@ export default function ResidentsScreen({ navigation }) {
               </View>
             ))}
           </View>
-
-
         </ScrollView>
       )}
     </SafeAreaView>

@@ -5,9 +5,9 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Dimensions, Platform, Alert } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
-import { useNotification } from "../../src/context/NotificationContext"
+import { useNotification } from "../../src/context/NotificationContext" // Import useNotification
 import BackButton from "../../components/shared/BackButton"
-import { Audio } from 'expo-av'; // Import Audio from expo-av
+import { Audio } from 'expo-av';
 
 // Import components
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
@@ -46,7 +46,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
   const [fetchError, setFetchError] = useState("")
   const [newMessage, setNewMessage] = useState("")
   const [isSendingMessage, setIsSendingMessage] = useState(false)
-  const { showNotification } = useNotification()
+  const { showNotification } = useNotification() // Destructure showNotification
   const messageInputRef = useRef(null)
 
   // State to hold the sound object
@@ -57,7 +57,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
     const loadSound = async () => {
       try {
         const { sound } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/sent_message.mp3') // Adjust this path to your sound file
+          require('../../assets/sounds/sent_message.mp3')
         );
         setMessageSentSound(sound);
       } catch (error) {
@@ -73,12 +73,12 @@ export default function ResidentProfileScreen({ route, navigation }) {
         messageSentSound.unloadAsync();
       }
     };
-  }, []); // Empty dependency array means this runs once on mount and unmount
+  }, []);
 
   const playMessageSentSound = async () => {
     if (messageSentSound) {
       try {
-        await messageSentSound.replayAsync(); // Replay the sound if it's already loaded
+        await messageSentSound.replayAsync();
       } catch (error) {
         console.error("Error playing sound:", error);
       }
@@ -208,21 +208,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
         setNotes([])
       }
 
-      try {
-        const observationResponse = await fetch(`${API_URL}/Observacion/${residentData.id_residente}`)
-        if (observationResponse.ok) {
-          const apiObservationData = await observationResponse.json()
-          const fetchedObservationsData = apiObservationData.observaciones
-          if (Array.isArray(fetchedObservationsData) && fetchedObservationsData.length > 0) {
-            setObservations(fetchedObservationsData)
-          } else {
-            setObservations([])
-          }
-        }
-      } catch (observationError) {
-        console.error(`Error al obtener las observaciones:`, observationError)
-        setObservations([])
-      }
+      await fetchObservations()
 
       try {
         const checkupsResponse = await fetch(`${API_URL}/ChequeoSemanal/residente/${residentId}`)
@@ -267,6 +253,27 @@ export default function ResidentProfileScreen({ route, navigation }) {
     }
   }, [residentId, showNotification])
 
+  const fetchObservations = useCallback(async () => {
+    try {
+      const observationResponse = await fetch(`${API_URL}/Observacion/${residentId}`)
+      if (observationResponse.ok) {
+        const apiObservationData = await observationResponse.json()
+        const fetchedObservationsData = apiObservationData.observaciones
+        if (Array.isArray(fetchedObservationsData) && fetchedObservationsData.length > 0) {
+          setObservations(fetchedObservationsData)
+        } else {
+          setObservations([])
+        }
+      } else {
+         setObservations([])
+      }
+    } catch (observationError) {
+      console.error(`Error al obtener las observaciones:`, observationError)
+      setObservations([])
+    }
+  }, [residentId])
+
+
   const sendMessage = async () => {
     if (!newMessage.trim()) {
       Alert.alert("Error", "Por favor escribe un mensaje")
@@ -304,19 +311,17 @@ export default function ResidentProfileScreen({ route, navigation }) {
       const result = await response.json()
 
       if (result.type === "Success") {
-        // showNotification("Mensaje enviado exitosamente", "success") // REMOVED THIS LINE
-        // Optimistically add the new message to the notes state
         const newNote = {
-          id: Date.now(), // Temporary ID for immediate display
+          id: Date.now(),
           id_familiar: familiar.id,
-          id_personal: senderId === "" ? null : parseInt(senderId), // Store as null if no employee ID
+          id_personal: senderId === "" ? null : parseInt(senderId),
           nota: newMessage.trim(),
           fecha: new Date().toISOString(),
           activo: true,
         }
-        setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha))) // Ensure sorted
+        setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
         setNewMessage("")
-        playMessageSentSound(); // Play the sound after successful send
+        playMessageSentSound();
       } else {
         throw new Error(result.message || "Error al enviar el mensaje")
       }
@@ -397,7 +402,13 @@ export default function ResidentProfileScreen({ route, navigation }) {
         <View style={styles.modernMainContainer}>
           <View style={styles.modernMainGrid}>
             <View style={styles.modernSidebar}>
-              <ResidentCard resident={resident} observations={observations} calculateAge={calculateAge} />
+              <ResidentCard
+                resident={resident}
+                observations={observations}
+                calculateAge={calculateAge}
+                onObservationsUpdated={fetchObservations}
+                showNotification={showNotification} // Pass showNotification to ResidentCard
+              />
 
               <FamilyContactCard familiar={familiar} familiarEmail={familiarEmail} />
 

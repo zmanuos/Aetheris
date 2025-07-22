@@ -30,6 +30,26 @@ public class FamiliarController : ControllerBase
         }
     }
 
+    // NUEVO ENDPOINT: Obtener Familiar por Firebase UID
+    [HttpGet("firebase/{firebaseUid}")]
+    public ActionResult GetByFirebaseUid(string firebaseUid)
+    {
+        try
+        {
+            Familiar f = Familiar.GetByFirebaseUid(firebaseUid);
+            return Ok(FamiliarResponse.GetResponse(f));
+        }
+        catch (FamiliarNotFoundException e)
+        {
+            return NotFound(MessageResponse.GetReponse(1, e.Message, MessageType.Error));
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+        }
+    }
+
+
     [HttpPost]
     public ActionResult Post([FromForm] FamiliarPost familiar)
     {
