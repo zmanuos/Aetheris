@@ -20,19 +20,19 @@ const HOVER_EFFECT_COLOR = '#e6e6e6';
 // ***** MENÚ ÍTEMS PARA ADMIN *****
 const adminMenuItems = [
   { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
-  { id: 'EmployeeManagement', title: 'Empleados', icon: 'person-add-outline', type: 'item' }, // <-- Admin
+  { id: 'EmployeeManagement', title: 'Empleados', icon: 'person-add-outline', type: 'item' },
   { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
   { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
     { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
     { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
   ]},
   { id: 'DeviceManagement', title: 'Gestión de Dispositivos', icon: 'hardware-chip-outline', type: 'item' },
-  { id: 'AsylumData', title: 'Datos del Asilo', icon: 'business-outline', type: 'item' }, // <-- Admin
+  { id: 'AsylumData', title: 'Datos del Asilo', icon: 'business-outline', type: 'item' },
   { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
   { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
 ];
 
-// ***** MENÚ ÍTEMS PARA EMPLOYEE (son los mismos que tenías para Admin antes, pero sin los nuevos de Admin) *****
+// ***** MENÚ ÍTEMS PARA EMPLOYEE *****
 const employeeMenuItems = [
   { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
   { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
@@ -46,7 +46,8 @@ const employeeMenuItems = [
 
 // ***** MENÚ ÍTEMS PARA FAMILY *****
 const familyMenuItems = [
-  { id: 'FamilyDashboard', title: 'Home', icon: 'home-outline', type: 'item' },
+  { id: 'FamilyResidentProfile', title: 'Home', icon: 'home-outline', type: 'item' }, // CAMBIADO: 'id' ahora es 'FamilyResidentProfile'
+  { id: 'FamilyChat', title: 'Chat Familiar', icon: 'chatbubble-outline', type: 'item' },
   { id: 'AsylumInfo', title: 'Info del Asilo', icon: 'information-circle-outline', type: 'item' },
 ];
 
@@ -60,9 +61,11 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
   let currentMenuItems = [];
   if (userRole === 'admin') {
     currentMenuItems = adminMenuItems;
-  } else if (userRole === 'employee') {
+  }
+  else if (userRole === 'employee') {
     currentMenuItems = employeeMenuItems;
-  } else if (userRole === 'family') {
+  }
+  else if (userRole === 'family') {
     currentMenuItems = familyMenuItems;
   }
 
@@ -87,7 +90,7 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
         setExpandedCategory(null);
       }
     }
-  }, [currentRouteName, userRole]);
+  }, [currentRouteName, userRole, currentMenuItems, expandedCategory]); // Agregado expandedCategory a dependencias
 
   const toggleCategory = (categoryId) => {
     setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
@@ -411,4 +414,4 @@ const styles = StyleSheet.create({
 });
 
 
-export default SideMenu; // Exporta el SideMenu unificado
+export default SideMenu;

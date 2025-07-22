@@ -32,90 +32,105 @@ export default function LoginForm({ onLoginSuccess }) {
       let endpoint = '';
       let userKey = '';
       
-      // MODIFICADO: Si el rol es 'admin', no se busca en el backend.
-      // Se asume que el admin no necesita un id_personal numérico en la API de notas.
+      console.log(`[LoginForm] fetchUserDetails: Intentando obtener detalles para rol: ${role}, UID: ${firebaseUid}`);
+
       if (role === 'admin') {
-        console.log("Rol 'admin' detectado. No se buscarán detalles en el backend (id_personal será null).");
-        return { userDetails: { nombre: "Administrador", apellido: "" }, userId: null, role: role };
+        console.log("[LoginForm] Rol 'admin' detectado. No se buscarán detalles en el backend (id_personal será null).");
+        return { userDetails: { nombre: "Administrador", apellido: "" }, userId: null, role: role, residentId: null };
       } 
-      // Para 'employee', se busca en el endpoint /Personal
       else if (role === 'employee') {
         endpoint = `${API_URL}/Personal`;
         userKey = 'personal';
+        console.log(`[LoginForm] Rol 'employee'. Endpoint: ${endpoint}`);
       } 
-      // Para 'family', se busca en el endpoint /Familiar
       else if (role === 'family') {
-        endpoint = `${API_URL}/Familiar`;
-        userKey = 'familiares';
+        // MODIFICADO: Usar el endpoint específico para familiares por firebase_uid
+        endpoint = `${API_URL}/Familiar/firebase/${firebaseUid}`; 
+        userKey = 'familiar'; // El endpoint devuelve directamente un objeto familiar
+        console.log(`[LoginForm] Rol 'family'. Endpoint: ${endpoint}`);
       } else {
-        console.log("Rol no reconocido para obtener detalles del usuario:", role);
+        console.warn("[LoginForm] Rol no reconocido para obtener detalles del usuario:", role);
         return null;
       }
 
-      console.log(`Obteniendo detalles del ${role}...`);
-      console.log("Endpoint:", endpoint);
-
+      console.log(`[LoginForm] Realizando fetch a: ${endpoint}`);
       const response = await fetch(endpoint);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`[LoginForm] HTTP error! status: ${response.status}, response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log(`Respuesta completa del endpoint ${userKey}:`, data);
+      console.log(`[LoginForm] Respuesta completa del endpoint para ${role}:`, data);
 
-      const users = data[userKey];
-      
-      if (!Array.isArray(users)) {
-        console.error(`La respuesta no contiene un array en ${userKey}:`, data);
-        return null;
+      let currentUser = null;
+
+      if (role === 'employee') {
+        const users = data[userKey]; // 'personal'
+        if (!Array.isArray(users)) {
+          console.error(`[LoginForm] La respuesta no contiene un array en ${userKey}:`, data);
+          return null;
+        }
+        currentUser = users.find(user => 
+          user.firebase_uid === firebaseUid || 
+          user.firebaseUid === firebaseUid
+        );
+      } else if (role === 'family') {
+        // Para el nuevo endpoint, 'data' ya contiene directamente el objeto familiar
+        currentUser = data[userKey]; // 'familiar'
+        if (!currentUser) {
+            console.warn(`[LoginForm] Familiar con firebase_uid ${firebaseUid} no encontrado en el endpoint. Datos recibidos:`, data);
+            return null;
+        }
       }
 
-      const currentUser = users.find(user => 
-        user.firebase_uid === firebaseUid || 
-        user.firebaseUid === firebaseUid
-      );
 
       if (currentUser) {
-        console.log("=== DETALLES DEL USUARIO ENCONTRADO ===");
-        console.log("Datos completos:", currentUser);
+        console.log("=== [LoginForm] DETALLES DEL USUARIO ENCONTRADO ===");
+        console.log("[LoginForm] Datos completos del usuario de la API:", currentUser);
         
         const apiUserId = currentUser.id; // Asumimos que 'id' es el ID numérico en tu API
+        let associatedResidentId = null;
 
-        if (role === 'employee') { 
-          console.log("ID Personal:", apiUserId);
-          console.log("Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
-          console.log("Teléfono:", currentUser.telefono);
-          console.log("Activo:", currentUser.activo);
-        } else if (role === 'family') {
-          console.log("ID Familiar:", apiUserId);
-          console.log("Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
-          console.log("Teléfono:", currentUser.telefono);
+        if (role === 'family') {
+          console.log("[LoginForm] ID Familiar (desde API):", apiUserId);
+          console.log("[LoginForm] Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
+          console.log("[LoginForm] Teléfono:", currentUser.telefono);
           if (currentUser.residente) {
-            console.log("Residente asociado:", `${currentUser.residente.nombre} ${currentUser.residente.apellido}`);
-            console.log("ID Residente:", currentUser.residente.id_residente);
+            console.log("[LoginForm] Residente asociado (objeto):", `${currentUser.residente.nombre} ${currentUser.residente.apellido}`);
+            console.log("[LoginForm] ID Residente asociado (desde objeto residente):", currentUser.residente.id_residente);
+            associatedResidentId = currentUser.residente.id_residente; // Capturar el ID del residente
+          } else if (currentUser.id_residente) { // Fallback si el ID del residente está directamente en familiar
+              console.log("[LoginForm] ID Residente asociado (directo en familiar):", currentUser.id_residente);
+              associatedResidentId = currentUser.id_residente;
           }
           if (currentUser.parentesco) {
-            console.log("Parentesco:", currentUser.parentesco.nombre);
+            console.log("[LoginForm] Parentesco:", currentUser.parentesco.nombre);
           }
+        } else if (role === 'employee') { 
+          console.log("[LoginForm] ID Personal (desde API):", apiUserId);
+          console.log("[LoginForm] Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
+          console.log("[LoginForm] Teléfono:", currentUser.telefono);
+          console.log("[LoginForm] Activo:", currentUser.activo);
         }
         
         console.log("======================================");
         
         return {
           userDetails: currentUser,
-          userId: apiUserId, // Este será el id_personal numérico para empleado, o id_familiar para familiar
-          role: role
+          userId: apiUserId, 
+          role: role,
+          residentId: associatedResidentId // Retornar el residentId aquí
         };
       } else {
-        console.warn(`Usuario con firebase_uid ${firebaseUid} no encontrado en el endpoint ${userKey}.`);
-        // Si el usuario (empleado o familiar) no se encuentra en su tabla correspondiente,
-        // retornamos null para que el login falle.
+        console.warn(`[LoginForm] Usuario con firebase_uid ${firebaseUid} no encontrado en el endpoint ${userKey}.`);
         return null;
       }
 
     } catch (error) {
-      console.error(`Error al obtener detalles del ${role}:`, error);
+      console.error(`[LoginForm] Error al obtener detalles del ${role}:`, error);
       return null;
     }
   };
@@ -131,13 +146,14 @@ export default function LoginForm({ onLoginSuccess }) {
     }
 
     try {
+      console.log(`[LoginForm] Intentando iniciar sesión con: ${email}`);
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      console.log("=== USUARIO LOGUEADO ===");
-      console.log("UID:", user.uid);
-      console.log("Email:", user.email);
-      console.log("Fecha de login:", new Date().toLocaleString());
+      console.log("=== [LoginForm] USUARIO LOGUEADO EN FIREBASE ===");
+      console.log("[LoginForm] UID:", user.uid);
+      console.log("[LoginForm] Email:", user.email);
+      console.log("[LoginForm] Fecha de login:", new Date().toLocaleString());
       console.log("========================");
 
       const userLoginInfo = {
@@ -147,61 +163,61 @@ export default function LoginForm({ onLoginSuccess }) {
         timestamp: Date.now()
       };
       
-      console.log("Objeto de información del usuario:", userLoginInfo);
+      console.log("[LoginForm] Objeto de información del usuario:", userLoginInfo);
 
       const userDocRef = doc(db, "users", user.uid);
+      console.log(`[LoginForm] Buscando rol en Firestore para UID: ${user.uid}`);
       const userDocSnap = await getDoc(userDocRef);
 
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         const assignedRole = userData.role;
 
-        console.log("Rol asignado:", assignedRole);
-        console.log("Datos completos del usuario:", userData);
+        console.log("[LoginForm] Rol asignado desde Firestore:", assignedRole);
+        console.log("[LoginForm] Datos completos del usuario desde Firestore:", userData);
 
         if (assignedRole) {
+          console.log("[LoginForm] Llamando a fetchUserDetails para obtener datos específicos del rol...");
           const userDetails = await fetchUserDetails(assignedRole, user.uid);
           
           if (userDetails) {
-            console.log("=== RESUMEN FINAL DEL LOGIN ===");
-            console.log("Firebase UID:", user.uid);
-            console.log("Email:", user.email);
-            console.log("Rol:", assignedRole);
-            
-            if (assignedRole === 'employee') {
-              console.log("ID Personal (para API):", userDetails.userId);
-            } else if (assignedRole === 'family') {
-              console.log("ID Familiar (para API):", userDetails.userId);
-            } else if (assignedRole === 'admin') { // El admin userId ahora será null
-              console.log("ID Personal (para API - Admin):", userDetails.userId); 
+            console.log("=== [LoginForm] RESUMEN FINAL DEL LOGIN ===");
+            console.log("[LoginForm] Firebase UID:", user.uid);
+            console.log("[LoginForm] Email:", user.email);
+            console.log("[LoginForm] Rol:", assignedRole);
+            console.log("[LoginForm] ID de usuario (API, personal/familiar):", userDetails.userId); 
+            if (assignedRole === 'family') {
+              console.log("[LoginForm] ID Residente Asociado:", userDetails.residentId); // Log el residentId para familiar
+            } else if (assignedRole === 'admin') {
+              console.log("[LoginForm] ID Personal (para API - Admin):", userDetails.userId); 
             }
-            
             console.log("===============================");
             
             if (onLoginSuccess) {
               // userDetails.userId ahora contendrá el ID numérico del backend para 'employee'/'family',
               // o 'null' para 'admin'.
-              onLoginSuccess(assignedRole, user.uid, userDetails);
+              // userDetails.residentId contendrá el ID del residente para 'family', o 'null' para otros.
+              onLoginSuccess(assignedRole, user.uid, userDetails.userId, userDetails.residentId);
             }
           } else {
-            // Este es el caso cuando userDetails es null porque no se encontró en la API
-            // (Solo aplica para 'employee' y 'family' con esta nueva lógica de admin)
             let customErrorMessage = `Tu cuenta de ${assignedRole} no tiene un perfil asociado en la base de datos de la aplicación. `;
             customErrorMessage += "Por favor, contacta al administrador.";
             setError(customErrorMessage);
-            console.error("Mensaje de error: userDetails es null después de fetchUserDetails. Rol:", assignedRole);
+            console.error("[LoginForm] Mensaje de error: userDetails es null después de fetchUserDetails. Rol:", assignedRole);
           }
         } else {
           setError("Tu cuenta no tiene un rol asignado. Contacta al administrador.");
+          console.warn("[LoginForm] La cuenta no tiene un rol asignado en Firestore.");
         }
       } else {
         setError("Tu cuenta no está completamente configurada. Contacta al administrador.");
+        console.warn("[LoginForm] Documento de usuario no encontrado en Firestore.");
       }
     } catch (firebaseError) {
-      console.log("=== ERROR DE LOGIN ===");
-      console.log("Email intentado:", email);
-      console.log("Código de error:", firebaseError.code);
-      console.log("Mensaje de error:", firebaseError.message);
+      console.log("=== [LoginForm] ERROR DE LOGIN ===");
+      console.log("[LoginForm] Email intentado:", email);
+      console.log("[LoginForm] Código de error Firebase:", firebaseError.code);
+      console.log("[LoginForm] Mensaje de error Firebase:", firebaseError.message);
       console.log("======================");
 
       let errorMessage = "Error de autenticación. Inténtalo de nuevo.";
@@ -230,6 +246,7 @@ export default function LoginForm({ onLoginSuccess }) {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      console.log("[LoginForm] Finalizando proceso de login.");
     }
   };
 

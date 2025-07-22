@@ -1,4 +1,4 @@
-// AETHERIS/screens/employee/ResidentProfileScreen.js
+// AETHERIS/screens/family/FamilyResidentProfileScreen.js
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -10,7 +10,7 @@ import BackButton from "../../components/shared/BackButton"
 import { Audio } from 'expo-av';
 
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
-import FamilyContactCard from "../../components/shared/resident_profile/FamilyContactCard"
+// import FamilyContactCard from "../../components/shared/resident_profile/FamilyContactCard" // ELIMINADO: Ya no es necesario
 import ChatContainer from "../../components/shared/resident_profile/ChatContainer"
 import CheckupsHistoryContainer from "../../components/shared/resident_profile/CheckupsHistoryContainer"
 import HealthStatsSection from "../../components/shared/resident_profile/HealthStatsSection"
@@ -30,9 +30,8 @@ const COLORS = {
   lightText: "#6B7280",
 }
 
-export default function ResidentProfileScreen({ route, navigation }) {
-  // Aquí currentUserRole y currentUserId siempre serán de un admin/employee
-  const { residentId, currentUserRole, currentUserId } = route.params;
+// MODIFICACIÓN IMPORTANTE AQUÍ: Recibe residentId, currentUserRole, currentUserId directamente como props
+export default function FamilyResidentProfileScreen({ route, navigation, residentId, currentUserRole, currentUserId }) {
   const [resident, setResident] = useState(null)
   const [familiar, setFamiliar] = useState(null)
   const [familiarEmail, setFamiliarEmail] = useState(null)
@@ -288,19 +287,19 @@ export default function ResidentProfileScreen({ route, navigation }) {
       const formData = new FormData()
       formData.append("notaTexto", newMessage.trim())
 
-      let senderIdForBackend = null;
-      let senderIdInNote = null;
-
-      // Para Admin y Employee, el senderIdForBackend siempre será currentUserId
+      // Para el Familiar, el senderIdForBackend siempre será currentUserId (del familiar)
       if (currentUserId) {
-          senderIdForBackend = currentUserId.toString();
-          formData.append("id_personal", senderIdForBackend);
-          senderIdInNote = currentUserId;
+          formData.append("id_familiar", currentUserId.toString());
       }
+      // No se agrega id_personal para familiares
       
       if (familiar && familiar.id) {
+          // Si el residente tiene un familiar asociado, el mensaje también se asocia a ese id_familiar
+          // Esto puede ser redundante si currentUserId es el mismo que familiar.id
+          // Pero se mantiene por si hubiera un caso en que el familiar que envía no es el familiar "principal" del residente
           formData.append("id_familiar", familiar.id.toString());
       }
+
 
       const response = await fetch(`${API_URL}/Nota`, {
         method: "POST",
@@ -324,8 +323,9 @@ export default function ResidentProfileScreen({ route, navigation }) {
           nota: newMessage.trim(),
           fecha: new Date().toISOString(),
           activo: true,
-          id_personal: senderIdInNote,
-          id_familiar: familiar ? familiar.id : null,
+          // Para el familiar, id_personal es null
+          id_personal: null,
+          id_familiar: currentUserId, // El id del familiar que envía la nota
         };
 
         setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
@@ -403,9 +403,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
 
   const latestCheckup = weeklyCheckups[weeklyCheckups.length - 1]
 
-  // Para Admin y Employee, el botón de retroceso siempre debe aparecer.
-  // La condición IS_WEB se mantiene en los estilos para el posicionamiento.
-  const shouldShowBackButton = true; // Siempre true para admin/employee
+  const shouldShowBackButton = false; // Siempre false para familiar
 
   return (
     <View style={styles.modernContainer}>
@@ -423,10 +421,10 @@ export default function ResidentProfileScreen({ route, navigation }) {
                 calculateAge={calculateAge}
                 onObservationsUpdated={fetchObservations}
                 showNotification={showNotification}
-                canEditObservations={true} // Admin/Employee siempre pueden editar
+                canEditObservations={false} // Familiar nunca puede editar observaciones
               />
 
-              <FamilyContactCard familiar={familiar} familiarEmail={familiarEmail} />
+              {/* <FamilyContactCard familiar={familiar} familiarEmail={familiarEmail} /> ELIMINADO */}
 
               <ChatContainer
                 notes={notes}
@@ -483,13 +481,13 @@ const styles = StyleSheet.create({
   },
   modernBackButton: {
     position: "absolute",
-    top: IS_WEB ? 7 : Platform.OS === "ios" ? 50 : 30,
+    top: IS_WEB ? 2 : Platform.OS === "ios" ? 50 : 30,
     left: 20,
     zIndex: 10,
   },
   modernScrollView: {
     flex: 1,
-    paddingTop: IS_WEB ? 60 : 80,
+    paddingTop: IS_WEB ? 20 : 30,
   },
   modernMainContainer: {
     maxWidth: IS_WEB ? 1600 : "100%",

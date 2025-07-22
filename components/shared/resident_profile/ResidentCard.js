@@ -1,7 +1,7 @@
-// ResidentCard.js
+// AETHERIS/components/shared/resident_profile/ResidentCard.js
 import { View, Text, StyleSheet, ScrollView, Image, TextInput, TouchableOpacity, Alert, ActivityIndicator, Modal, Platform } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
+import { useState, useEffect } from "react" // Importar useEffect
 import Config from "../../../config/config"
 
 const API_URL = Config.API_BASE_URL
@@ -58,14 +58,33 @@ const ConfirmationModal = ({ visible, message, onConfirm, onCancel, title }) => 
   );
 };
 
-const ResidentCard = ({ resident, observations: initialObservations, calculateAge, onObservationsUpdated, showNotification }) => {
+// **IMPORTANTE: Añadir 'canEditObservations' a las props**
+const ResidentCard = ({ resident, observations: initialObservations, calculateAge, onObservationsUpdated, showNotification, canEditObservations }) => {
   const [isManagingObservations, setIsManagingObservations] = useState(false)
   const [newObservationText, setNewObservationText] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [observationToDeleteId, setObservationToDeleteId] = useState(null);
 
+  // Efecto para salir del modo de gestión si canEditObservations cambia a false
+  useEffect(() => {
+    if (!canEditObservations && isManagingObservations) {
+      setIsManagingObservations(false);
+    }
+  }, [canEditObservations, isManagingObservations]);
+
+
   const handleAddObservation = async () => {
+    // Asegurarse de que solo se pueda añadir si hay permisos
+    if (!canEditObservations) {
+      if (showNotification) {
+        showNotification("No tienes permisos para añadir observaciones.", "error");
+      } else {
+        Alert.alert("Error", "No tienes permisos para añadir observaciones.");
+      }
+      return;
+    }
+
     if (!newObservationText.trim()) {
       if (showNotification) {
         showNotification("La observación no puede estar vacía.", "warning");
@@ -121,6 +140,15 @@ const ResidentCard = ({ resident, observations: initialObservations, calculateAg
   }
 
   const confirmDeleteObservation = (observationId) => {
+    // Asegurarse de que solo se pueda confirmar la eliminación si hay permisos
+    if (!canEditObservations) {
+      if (showNotification) {
+        showNotification("No tienes permisos para eliminar observaciones.", "error");
+      } else {
+        Alert.alert("Error", "No tienes permisos para eliminar observaciones.");
+      }
+      return;
+    }
     setObservationToDeleteId(observationId);
     setShowDeleteConfirmModal(true);
   };
@@ -128,6 +156,17 @@ const ResidentCard = ({ resident, observations: initialObservations, calculateAg
   const executeDeleteObservation = async () => {
     setShowDeleteConfirmModal(false);
     if (observationToDeleteId === null) return;
+
+    // Asegurarse de que solo se pueda ejecutar la eliminación si hay permisos
+    if (!canEditObservations) {
+      if (showNotification) {
+        showNotification("No tienes permisos para eliminar observaciones.", "error");
+      } else {
+        Alert.alert("Error", "No tienes permisos para eliminar observaciones.");
+      }
+      setObservationToDeleteId(null); // Reset anyway
+      return;
+    }
 
     setIsLoading(true)
     try {
@@ -206,9 +245,12 @@ const ResidentCard = ({ resident, observations: initialObservations, calculateAg
         <View style={styles.observationHeader}>
           <Ionicons name="document-text-outline" size={16} color={COLORS.warningOrange} />
           <Text style={styles.modernObservationTitle}>Observaciones</Text>
-          <TouchableOpacity onPress={() => setIsManagingObservations(!isManagingObservations)} style={styles.editButton}>
-            <Ionicons name={isManagingObservations ? "close-circle-outline" : "add-circle-outline"} size={20} color={COLORS.accentBlue} />
-          </TouchableOpacity>
+          {/* Condicionar la visibilidad del botón de gestión de observaciones */}
+          {canEditObservations && (
+            <TouchableOpacity onPress={() => setIsManagingObservations(!isManagingObservations)} style={styles.editButton}>
+              <Ionicons name={isManagingObservations ? "close-circle-outline" : "add-circle-outline"} size={20} color={COLORS.accentBlue} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {isLoading && (
@@ -218,18 +260,21 @@ const ResidentCard = ({ resident, observations: initialObservations, calculateAg
         )}
 
         {/* Conditional rendering for observations list (scrollable) */}
-        {isManagingObservations ? (
+        {isManagingObservations && canEditObservations ? ( // Solo si se está gestionando Y se tiene permiso
           <ScrollView style={styles.observationScrollView} showsVerticalScrollIndicator={true}>
             {initialObservations && initialObservations.length > 0 ? (
               initialObservations.map((obs) => (
                 <View key={obs.id} style={styles.observationManageItem}>
                   <Text style={styles.observationItemText}>{obs.observacion}</Text>
-                  <TouchableOpacity
-                    onPress={() => confirmDeleteObservation(obs.id)}
-                    style={styles.deleteObservationButton}
-                  >
-                    <Ionicons name="trash-outline" size={20} color={COLORS.cardBackground} />
-                  </TouchableOpacity>
+                  {/* Condicionar la visibilidad del botón de eliminar */}
+                  {canEditObservations && (
+                    <TouchableOpacity
+                      onPress={() => confirmDeleteObservation(obs.id)}
+                      style={styles.deleteObservationButton}
+                    >
+                      <Ionicons name="trash-outline" size={20} color={COLORS.cardBackground} />
+                    </TouchableOpacity>
+                  )}
                 </View>
               ))
             ) : (
@@ -250,8 +295,8 @@ const ResidentCard = ({ resident, observations: initialObservations, calculateAg
           </ScrollView>
         )}
 
-        {/* New Observation Input and Send Button (STATIC - always visible) */}
-        {isManagingObservations && ( // Only show input when managing observations
+        {/* New Observation Input and Send Button (visible SOLO si canEditObservations es true y isManagingObservations es true) */}
+        {isManagingObservations && canEditObservations && (
           <View style={styles.newObservationContainer}>
             <TextInput
               style={styles.newObservationInput}

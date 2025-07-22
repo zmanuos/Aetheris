@@ -39,52 +39,47 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
   }, [notes])
 
   useEffect(() => {
-    // console.log("--- ChatContainer useEffect: fetching sender names ---"); // REMOVED LOG
-    // console.log("Current notes for sender name fetch:", notes); // REMOVED LOG
-    // console.log("Familiar object for sender name fetch:", familiar); // REMOVED LOG
-
     const fetchSenderNames = async () => {
       const newSenderNames = { ...senderNames };
-      const uniqueSenderIds = new Set();
+      const uniqueSenderKeys = new Set();
 
       notes.forEach(note => {
-        if (note.id_personal !== null && note.id_personal !== undefined) {
-          uniqueSenderIds.add(`employee-${note.id_personal}`);
-        } else if (note.id_familiar !== null && note.id_familiar !== undefined) {
-          uniqueSenderIds.add(`family-${note.id_familiar}`);
+        // Si id_personal es null, asumimos que es un administrador
+        if (note.id_personal === null || note.id_personal === undefined) {
+          uniqueSenderKeys.add('admin-null'); // Clave única para administradores con id_personal null
+        } else {
+          uniqueSenderKeys.add(`employee-${note.id_personal}`); // Para empleados con id_personal numérico
+        }
+        if (note.id_familiar !== null && note.id_familiar !== undefined) {
+          uniqueSenderKeys.add(`family-${note.id_familiar}`);
         }
       });
 
-      // console.log("Unique sender IDs to fetch:", Array.from(uniqueSenderIds)); // REMOVED LOG
-
-      for (const senderKey of Array.from(uniqueSenderIds)) {
-        const [senderType, senderId] = senderKey.split('-');
+      for (const senderKey of Array.from(uniqueSenderKeys)) {
+        const [senderType, senderId] = senderKey.split('-'); // senderId podría ser 'null' o un número
 
         if (!newSenderNames[senderKey]) {
           try {
             let name = '';
-            if (senderType === 'employee') {
-              // console.log(`Fetching employee name for ID: ${senderId}`); // REMOVED LOG
+            if (senderType === 'admin' && senderId === 'null') {
+              name = 'Administrador'; // Asumimos que id_personal null es de un administrador
+            } else if (senderType === 'employee') {
+              // Si es un empleado con id_personal numérico
               const response = await fetch(`${API_URL}/Personal/${senderId}`);
               if (response.ok) {
                 const data = await response.json();
                 name = data.personal ? `${data.personal.nombre} ${data.personal.apellido}` : 'Personal Desconocido';
-                // console.log(`Fetched employee name for ID ${senderId}: ${name}`); // REMOVED LOG
               } else {
-                // console.warn(`Failed to fetch employee name for ID ${senderId}. Status: ${response.status}`); // REMOVED LOG
                 name = 'Personal Desconocido';
               }
             } else if (senderType === 'family') {
-                // console.log(`Fetching family name for ID: ${senderId}`); // REMOVED LOG
                 const allFamiliaresResponse = await fetch(`${API_URL}/Familiar`);
                 if (allFamiliaresResponse.ok) {
                     const allFamiliaresData = await allFamiliaresResponse.json();
                     const familiaresArray = allFamiliaresData.familiares || allFamiliaresData;
                     const foundFamiliar = familiaresArray?.find(f => f.id === parseInt(senderId));
                     name = foundFamiliar ? `${foundFamiliar.nombre} ${foundFamiliar.apellido}` : 'Familiar Desconocido';
-                    // console.log(`Fetched family name for ID ${senderId}: ${name}`); // REMOVED LOG
                 } else {
-                    // console.warn(`Failed to fetch all familiar data. Status: ${allFamiliaresResponse.status}`); // REMOVED LOG
                     name = 'Familiar Desconocido';
                 }
             }
@@ -96,7 +91,6 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
         }
       }
       setSenderNames(newSenderNames);
-      // console.log("Updated senderNames state:", newSenderNames); // REMOVED LOG
     };
 
     fetchSenderNames();
@@ -120,55 +114,41 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
   }
 
   const getSenderDisplayName = (note) => {
-    // console.log("--- getSenderDisplayName for note:", note.nota); // REMOVED LOG
-    // console.log("  note.id_personal:", note.id_personal); // REMOVED LOG
-    // console.log("  note.id_familiar:", note.id_familiar); // REMOVED LOG
-    // console.log("  currentUserRole:", currentUserRole); // REMOVED LOG
-    // console.log("  currentUserId:", currentUserId); // REMOVED LOG
-    // console.log("  familiar object (in ChatContainer):", familiar); // REMOVED LOG
-
-
     const isFromEmployee = note.id_personal !== null && note.id_personal !== undefined;
-    // console.log("  isFromEmployee (calculated):", isFromEmployee); // REMOVED LOG
+    const isFromAdmin = note.id_personal === null || note.id_personal === undefined; // Nueva condición para administradores
 
-
-    if (isFromEmployee) {
-      // console.log("  -> Message is from an Employee path."); // REMOVED LOG
-      // Check if the message was sent by the currently logged-in user (employee/admin)
-      if ((currentUserRole === 'employee' || currentUserRole === 'admin') && currentUserId === note.id_personal) {
-        // console.log("  -> Current user is Employee/Admin and matches note.id_personal."); // REMOVED LOG
-        // If the current user is an admin, display "Encargado del asilo"
+    if (isFromAdmin) {
+        // Si el mensaje es de un administrador (id_personal es null)
+        // Y si el usuario actual es un administrador, mostrar "Tú (Administrador)"
         if (currentUserRole === 'admin') {
-          // console.log("    -> Current user role is Admin. Displaying 'Encargado del asilo'."); // REMOVED LOG
-          return "Encargado del asilo";
+            return "Tú (Administrador)";
         }
-        // Otherwise, display "Tú (Personal Name)"
-        const personalName = senderNames[`employee-${note.id_personal}`] || "Personal";
-        // console.log(`    -> Current user role is Employee. Displaying 'Tú (${personalName})'.`); // REMOVED LOG
+        // Si el mensaje es de un administrador histórico, mostrar "Administrador"
+        return "Administrador";
+    } else if (isFromEmployee) {
+      // Un mensaje es de un empleado (id_personal no es null)
+      const senderKey = `employee-${note.id_personal}`;
+
+      // Verifica si el mensaje fue enviado por el usuario actualmente logueado (empleado)
+      if (currentUserRole === 'employee' && currentUserId === note.id_personal) {
+        const personalName = senderNames[senderKey] || "Personal";
         return `Tú (${personalName})`;
       }
-      // If it's an employee message but not from the current logged-in employee
-      const otherPersonalName = senderNames[`employee-${note.id_personal}`] || "Personal";
-      // console.log(`  -> Message from another Employee. Displaying '${otherPersonalName}'.`); // REMOVED LOG
-      return otherPersonalName;
-    } else {
-      // console.log("  -> Message is from a Family path."); // REMOVED LOG
-      // Message is from a family member
-      // Check if the message was sent by the currently logged-in user (family)
-      // Ensure familiar is not null before checking its properties
-      const isFromCurrentUserFamily = currentUserRole === 'family' && familiar && currentUserId === familiar.id && familiar.id === note.id_familiar;
-      // console.log("  -> isFromCurrentUserFamily (calculated):", isFromCurrentUserFamily); // REMOVED LOG
 
+      // Si el mensaje es de otro empleado
+      return senderNames[senderKey] || "Personal Desconocido";
+
+    } else {
+      // El mensaje es de un miembro de la familia
+      const senderKey = `family-${note.id_familiar}`;
+      const isFromCurrentUserFamily = currentUserRole === 'family' && familiar && currentUserId === familiar.id && familiar.id === note.id_familiar;
 
       if (isFromCurrentUserFamily) {
-        const familiarName = senderNames[`family-${note.id_familiar}`] || "Familiar";
-        // console.log(`    -> Current user is Family and matches note.id_familiar. Displaying 'Tú (${familiarName})'.`); // REMOVED LOG
+        const familiarName = senderNames[senderKey] || "Familiar";
         return `Tú (${familiarName})`;
       }
-      // If it's a family message but not from the current logged-in family member
-      const otherFamiliarName = senderNames[`family-${note.id_familiar}`] || "Familiar";
-      // console.log(`  -> Message from another Family member. Displaying '${otherFamiliarName}'.`); // REMOVED LOG
-      return otherFamiliarName;
+      // Si es un mensaje de un familiar pero no del familiar logueado actual
+      return senderNames[senderKey] || "Familiar Desconocido";
     }
   };
 
@@ -179,7 +159,7 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
           <View style={styles.cardIconContainer}>
             <Ionicons name="chatbubbles" size={18} color={COLORS.accentBlue} />
           </View>
-          <Text style={styles.modernCardTitle}>Chat con familiar</Text>
+          <Text style={styles.modernCardTitle}>Chat con el personal del asilo</Text>
         </View>
       </View>
 
@@ -187,12 +167,18 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
         {notes.length > 0 ? (
           <ScrollView ref={scrollViewRef} style={styles.chatScrollView} showsVerticalScrollIndicator={true}>
             {notes.map((note, index) => {
-              const isFromEmployee = note.id_personal !== null && note.id_personal !== undefined
+              // Determina si el mensaje es de un empleado, familiar o, ahora, un administrador
+              const isFromEmployee = note.id_personal !== null && note.id_personal !== undefined;
+              const isFromAdminMessage = note.id_personal === null || note.id_personal === undefined; // Nueva lógica para identificar mensajes de admin
 
               return (
                 <View key={note.id || index} style={styles.modernMessageContainer}>
                   <View
-                    style={[styles.modernMessageBubble, isFromEmployee ? styles.employeeMessage : styles.familyMessage]}
+                    style={[
+                      styles.modernMessageBubble,
+                      isFromAdminMessage ? styles.employeeMessage : // Los mensajes de admin se alinean como los de empleado (derecha)
+                      isFromEmployee ? styles.employeeMessage : styles.familyMessage
+                    ]}
                   >
                     <View style={styles.messageHeader}>
                       <Text style={styles.messageSender}>{getSenderDisplayName(note)}</Text>
