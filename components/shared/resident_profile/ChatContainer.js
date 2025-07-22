@@ -9,7 +9,10 @@ import {
   Platform,
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
+import Config from "../../../config/config"
+
+const API_URL = Config.API_BASE_URL
 
 const COLORS = {
   darkText: "#111827",
@@ -25,14 +28,80 @@ const COLORS = {
 
 const IS_WEB = Platform.OS === "web"
 
-const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sendMessage, messageInputRef }) => {
+const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sendMessage, messageInputRef, currentUserRole, currentUserId, familiar }) => {
   const scrollViewRef = useRef(null)
+  const [senderNames, setSenderNames] = useState({});
 
   useEffect(() => {
     if (scrollViewRef.current) {
       scrollViewRef.current.scrollToEnd({ animated: true })
     }
   }, [notes])
+
+  useEffect(() => {
+    // console.log("--- ChatContainer useEffect: fetching sender names ---"); // REMOVED LOG
+    // console.log("Current notes for sender name fetch:", notes); // REMOVED LOG
+    // console.log("Familiar object for sender name fetch:", familiar); // REMOVED LOG
+
+    const fetchSenderNames = async () => {
+      const newSenderNames = { ...senderNames };
+      const uniqueSenderIds = new Set();
+
+      notes.forEach(note => {
+        if (note.id_personal !== null && note.id_personal !== undefined) {
+          uniqueSenderIds.add(`employee-${note.id_personal}`);
+        } else if (note.id_familiar !== null && note.id_familiar !== undefined) {
+          uniqueSenderIds.add(`family-${note.id_familiar}`);
+        }
+      });
+
+      // console.log("Unique sender IDs to fetch:", Array.from(uniqueSenderIds)); // REMOVED LOG
+
+      for (const senderKey of Array.from(uniqueSenderIds)) {
+        const [senderType, senderId] = senderKey.split('-');
+
+        if (!newSenderNames[senderKey]) {
+          try {
+            let name = '';
+            if (senderType === 'employee') {
+              // console.log(`Fetching employee name for ID: ${senderId}`); // REMOVED LOG
+              const response = await fetch(`${API_URL}/Personal/${senderId}`);
+              if (response.ok) {
+                const data = await response.json();
+                name = data.personal ? `${data.personal.nombre} ${data.personal.apellido}` : 'Personal Desconocido';
+                // console.log(`Fetched employee name for ID ${senderId}: ${name}`); // REMOVED LOG
+              } else {
+                // console.warn(`Failed to fetch employee name for ID ${senderId}. Status: ${response.status}`); // REMOVED LOG
+                name = 'Personal Desconocido';
+              }
+            } else if (senderType === 'family') {
+                // console.log(`Fetching family name for ID: ${senderId}`); // REMOVED LOG
+                const allFamiliaresResponse = await fetch(`${API_URL}/Familiar`);
+                if (allFamiliaresResponse.ok) {
+                    const allFamiliaresData = await allFamiliaresResponse.json();
+                    const familiaresArray = allFamiliaresData.familiares || allFamiliaresData;
+                    const foundFamiliar = familiaresArray?.find(f => f.id === parseInt(senderId));
+                    name = foundFamiliar ? `${foundFamiliar.nombre} ${foundFamiliar.apellido}` : 'Familiar Desconocido';
+                    // console.log(`Fetched family name for ID ${senderId}: ${name}`); // REMOVED LOG
+                } else {
+                    // console.warn(`Failed to fetch all familiar data. Status: ${allFamiliaresResponse.status}`); // REMOVED LOG
+                    name = 'Familiar Desconocido';
+                }
+            }
+            newSenderNames[senderKey] = name;
+          } catch (error) {
+            console.error(`Error fetching name for ${senderType} ID ${senderId}:`, error);
+            newSenderNames[senderKey] = senderType === 'employee' ? 'Personal Desconocido' : 'Familiar Desconocido';
+          }
+        }
+      }
+      setSenderNames(newSenderNames);
+      // console.log("Updated senderNames state:", newSenderNames); // REMOVED LOG
+    };
+
+    fetchSenderNames();
+  }, [notes, familiar]);
+
 
   const formatMessageDate = (dateString) => {
     const messageDate = new Date(dateString)
@@ -44,11 +113,64 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
       messageDate.getFullYear() === today.getFullYear()
 
     if (isToday) {
-      return messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true }) // Added hour12: true
+      return messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })
     } else {
-      return messageDate.toLocaleDateString("es-ES", { month: "short", day: "numeric" }) + " " + messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true }) // Added hour12: true and combined
+      return messageDate.toLocaleDateString("es-ES", { month: "short", day: "numeric" }) + " " + messageDate.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })
     }
   }
+
+  const getSenderDisplayName = (note) => {
+    // console.log("--- getSenderDisplayName for note:", note.nota); // REMOVED LOG
+    // console.log("  note.id_personal:", note.id_personal); // REMOVED LOG
+    // console.log("  note.id_familiar:", note.id_familiar); // REMOVED LOG
+    // console.log("  currentUserRole:", currentUserRole); // REMOVED LOG
+    // console.log("  currentUserId:", currentUserId); // REMOVED LOG
+    // console.log("  familiar object (in ChatContainer):", familiar); // REMOVED LOG
+
+
+    const isFromEmployee = note.id_personal !== null && note.id_personal !== undefined;
+    // console.log("  isFromEmployee (calculated):", isFromEmployee); // REMOVED LOG
+
+
+    if (isFromEmployee) {
+      // console.log("  -> Message is from an Employee path."); // REMOVED LOG
+      // Check if the message was sent by the currently logged-in user (employee/admin)
+      if ((currentUserRole === 'employee' || currentUserRole === 'admin') && currentUserId === note.id_personal) {
+        // console.log("  -> Current user is Employee/Admin and matches note.id_personal."); // REMOVED LOG
+        // If the current user is an admin, display "Encargado del asilo"
+        if (currentUserRole === 'admin') {
+          // console.log("    -> Current user role is Admin. Displaying 'Encargado del asilo'."); // REMOVED LOG
+          return "Encargado del asilo";
+        }
+        // Otherwise, display "Tú (Personal Name)"
+        const personalName = senderNames[`employee-${note.id_personal}`] || "Personal";
+        // console.log(`    -> Current user role is Employee. Displaying 'Tú (${personalName})'.`); // REMOVED LOG
+        return `Tú (${personalName})`;
+      }
+      // If it's an employee message but not from the current logged-in employee
+      const otherPersonalName = senderNames[`employee-${note.id_personal}`] || "Personal";
+      // console.log(`  -> Message from another Employee. Displaying '${otherPersonalName}'.`); // REMOVED LOG
+      return otherPersonalName;
+    } else {
+      // console.log("  -> Message is from a Family path."); // REMOVED LOG
+      // Message is from a family member
+      // Check if the message was sent by the currently logged-in user (family)
+      // Ensure familiar is not null before checking its properties
+      const isFromCurrentUserFamily = currentUserRole === 'family' && familiar && currentUserId === familiar.id && familiar.id === note.id_familiar;
+      // console.log("  -> isFromCurrentUserFamily (calculated):", isFromCurrentUserFamily); // REMOVED LOG
+
+
+      if (isFromCurrentUserFamily) {
+        const familiarName = senderNames[`family-${note.id_familiar}`] || "Familiar";
+        // console.log(`    -> Current user is Family and matches note.id_familiar. Displaying 'Tú (${familiarName})'.`); // REMOVED LOG
+        return `Tú (${familiarName})`;
+      }
+      // If it's a family message but not from the current logged-in family member
+      const otherFamiliarName = senderNames[`family-${note.id_familiar}`] || "Familiar";
+      // console.log(`  -> Message from another Family member. Displaying '${otherFamiliarName}'.`); // REMOVED LOG
+      return otherFamiliarName;
+    }
+  };
 
   return (
     <View style={styles.modernChatCard}>
@@ -73,7 +195,7 @@ const ChatContainer = ({ notes, newMessage, setNewMessage, isSendingMessage, sen
                     style={[styles.modernMessageBubble, isFromEmployee ? styles.employeeMessage : styles.familyMessage]}
                   >
                     <View style={styles.messageHeader}>
-                      <Text style={styles.messageSender}>{isFromEmployee ? "Personal" : "Familiar"}</Text>
+                      <Text style={styles.messageSender}>{getSenderDisplayName(note)}</Text>
                       <Text style={styles.messageDate}>
                         {note.fecha && formatMessageDate(note.fecha)}
                       </Text>
@@ -170,10 +292,10 @@ const styles = StyleSheet.create({
     maxHeight: 180,
   },
   modernMessageContainer: {
-    marginBottom: 2, // Reduced from 4 to 2
+    marginBottom: 2,
   },
   modernMessageBubble: {
-    padding: 8, // Reduced from 10 to 8
+    padding: 8,
     borderRadius: 12,
     maxWidth: "100%",
   },
@@ -189,21 +311,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 1, // Reduced from 2 to 1
+    marginBottom: 1,
   },
   messageSender: {
-    fontSize: 10, // Reduced from 11 to 10
+    fontSize: 10,
     fontWeight: "600",
     color: COLORS.lightText,
   },
   messageDate: {
-    fontSize: 9, // Reduced from 10 to 9
+    fontSize: 9,
     color: COLORS.lightText,
   },
   modernMessageText: {
-    fontSize: 12, // Reduced from 13 to 12
+    fontSize: 12,
     color: COLORS.darkText,
-    lineHeight: 16, // Reduced from 18 to 16
+    lineHeight: 16,
   },
   modernMessageInputContainer: {
     borderTopWidth: 1,
@@ -256,4 +378,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default ChatContainer  
+export default ChatContainer

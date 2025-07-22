@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Dimensions, Platform, Alert } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
-import { useNotification } from "../../src/context/NotificationContext" // Import useNotification
+import { useNotification } from "../../src/context/NotificationContext"
 import BackButton from "../../components/shared/BackButton"
 import { Audio } from 'expo-av';
 
@@ -32,6 +32,7 @@ const COLORS = {
 }
 
 export default function ResidentProfileScreen({ route, navigation }) {
+  // Asegúrate de que estos valores se pasen correctamente desde la pantalla anterior
   const { residentId, currentUserRole, currentUserId } = route.params
   const [resident, setResident] = useState(null)
   const [familiar, setFamiliar] = useState(null)
@@ -46,7 +47,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
   const [fetchError, setFetchError] = useState("")
   const [newMessage, setNewMessage] = useState("")
   const [isSendingMessage, setIsSendingMessage] = useState(false)
-  const { showNotification } = useNotification() // Destructure showNotification
+  const { showNotification } = useNotification()
   const messageInputRef = useRef(null)
 
   // State to hold the sound object
@@ -275,6 +276,13 @@ export default function ResidentProfileScreen({ route, navigation }) {
 
 
   const sendMessage = async () => {
+    // console.log("--- INICIANDO sendMessage ---"); // REMOVED LOG
+    // console.log("currentUserRole:", currentUserRole); // REMOVED LOG
+    // console.log("currentUserId:", currentUserId); // REMOVED LOG
+    // console.log("familiar object:", familiar); // REMOVED LOG
+    // console.log("newMessage:", newMessage); // REMOVED LOG
+
+
     if (!newMessage.trim()) {
       Alert.alert("Error", "Por favor escribe un mensaje")
       return
@@ -289,12 +297,49 @@ export default function ResidentProfileScreen({ route, navigation }) {
 
     try {
       const formData = new FormData()
-      formData.append("id_familiar", familiar.id.toString())
-
-      const senderId = currentUserRole === "employee" && currentUserId ? currentUserId.toString() : ""
-      formData.append("id_personal", senderId)
-
       formData.append("notaTexto", newMessage.trim())
+
+      let senderIdForBackend = null;
+      let senderIdInNote = null; // This will hold the ID that identifies the sender in the note object for local state
+
+      if (currentUserRole === "employee" || currentUserRole === "admin") {
+        if (currentUserId) {
+          senderIdForBackend = currentUserId.toString();
+          formData.append("id_personal", senderIdForBackend);
+          senderIdInNote = currentUserId;
+          // console.log("Sending as Employee/Admin. id_personal for backend:", senderIdForBackend); // REMOVED LOG
+        } else {
+            // console.warn("currentUserId is missing for employee/admin role during message send."); // REMOVED LOG
+        }
+      } else if (currentUserRole === "family") {
+        if (familiar && familiar.id) {
+          senderIdForBackend = familiar.id.toString();
+          formData.append("id_familiar", senderIdForBackend);
+          senderIdInNote = familiar.id;
+          // console.log("Sending as Family. id_familiar for backend:", senderIdForBackend); // REMOVED LOG
+        } else {
+            // console.warn("familiar or familiar.id is missing for family role during message send."); // REMOVED LOG
+        }
+      } else {
+        // console.warn("Unhandled currentUserRole for sendMessage:", currentUserRole); // REMOVED LOG
+      }
+
+      // The recipient is always the familiar associated with the resident.
+      // Make sure id_familiar is always part of the FormData if the backend requires it
+      // for associating the note with the familiar, even if the sender is not the familiar.
+      if (familiar && familiar.id) {
+          formData.append("id_familiar", familiar.id.toString());
+          // console.log("id_familiar (recipient/conversation context) for backend:", familiar.id.toString()); // REMOVED LOG
+      } else {
+          // console.warn("Familiar object or familiar.id is missing, cannot append id_familiar for conversation context."); // REMOVED LOG
+      }
+
+      // Log the FormData content before sending
+      // console.log("FormData content (raw):"); // REMOVED LOG
+      // for (let pair of formData.entries()) { // REMOVED LOG
+      //     console.log(pair[0]+ ': ' + pair[1]); // REMOVED LOG
+      // } // REMOVED LOG
+
 
       const response = await fetch(`${API_URL}/Nota`, {
         method: "POST",
@@ -305,37 +350,58 @@ export default function ResidentProfileScreen({ route, navigation }) {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorBody = await response.text();
+        console.error("API response not OK:", response.status, errorBody);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
       }
 
       const result = await response.json()
+      // console.log("API response result:", result); // REMOVED LOG
 
       if (result.type === "Success") {
         const newNote = {
           id: Date.now(),
-          id_familiar: familiar.id,
-          id_personal: senderId === "" ? null : parseInt(senderId),
           nota: newMessage.trim(),
           fecha: new Date().toISOString(),
           activo: true,
+        };
+
+        if (currentUserRole === "employee" || currentUserRole === "admin") {
+          newNote.id_personal = senderIdInNote;
+          newNote.id_familiar = familiar ? familiar.id : null;
+          // console.log("newNote (local state) as Employee/Admin:", newNote); // REMOVED LOG
+        } else if (currentUserRole === "family") {
+          newNote.id_familiar = senderIdInNote;
+          newNote.id_personal = null;
+          // console.log("newNote (local state) as Family:", newNote); // REMOVED LOG
+        } else {
+            // console.warn("newNote created with unhandled role logic."); // REMOVED LOG
         }
+
+
         setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
         setNewMessage("")
         playMessageSentSound();
+        // console.log("--- sendMessage COMPLETO (Éxito) ---"); // REMOVED LOG
       } else {
         throw new Error(result.message || "Error al enviar el mensaje")
       }
     } catch (error) {
       console.error("Error al enviar mensaje:", error)
       showNotification(`Error al enviar mensaje: ${error.message}`, "error")
+      // console.log("--- sendMessage COMPLETO (ERROR) ---"); // REMOVED LOG
     } finally {
       setIsSendingMessage(false)
     }
   }
 
   useEffect(() => {
-    fetchResidentDetails()
-  }, [fetchResidentDetails])
+    // console.log("--- ResidentProfileScreen mounted/updated. Params: ---"); // REMOVED LOG
+    // console.log("Route Params - residentId:", residentId); // REMOVED LOG
+    // console.log("Route Params - currentUserRole:", currentUserRole); // REMOVED LOG
+    // console.log("Route Params - currentUserId:", currentUserId); // REMOVED LOG
+    fetchResidentDetails();
+  }, [fetchResidentDetails]);
 
   if (isLoading) {
     return (
@@ -407,7 +473,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
                 observations={observations}
                 calculateAge={calculateAge}
                 onObservationsUpdated={fetchObservations}
-                showNotification={showNotification} // Pass showNotification to ResidentCard
+                showNotification={showNotification}
               />
 
               <FamilyContactCard familiar={familiar} familiarEmail={familiarEmail} />
@@ -419,6 +485,9 @@ export default function ResidentProfileScreen({ route, navigation }) {
                 isSendingMessage={isSendingMessage}
                 sendMessage={sendMessage}
                 messageInputRef={messageInputRef}
+                currentUserRole={currentUserRole} // Pasa currentUserRole
+                currentUserId={currentUserId}   // Pasa currentUserId
+                familiar={familiar}
               />
 
               <CheckupsHistoryContainer

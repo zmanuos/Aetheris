@@ -24,7 +24,7 @@ const Drawer = createDrawerNavigator();
 const ResidentsStack = createStackNavigator();
 const EmployeeStack = createStackNavigator();
 
-function ResidentsStackScreen() {
+function ResidentsStackScreen({ currentUserRole, currentUserId }) {
   return (
     <ResidentsStack.Navigator
       initialRouteName="ResidentsList"
@@ -32,7 +32,15 @@ function ResidentsStackScreen() {
         headerShown: false,
       }}
     >
-      <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
+      <ResidentsStack.Screen name="ResidentsList">
+        {(props) => (
+          <ResidentsScreen
+            {...props}
+            currentUserRole={currentUserRole}
+            currentUserId={currentUserId}
+          />
+        )}
+      </ResidentsStack.Screen>
       <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
       <ResidentsStack.Screen name="ResidentProfile" component={ResidentProfileScreen} />
       <ResidentsStack.Screen name="WeeklyCheckupDetail" component={WeeklyCheckupDetailScreen} />
@@ -68,7 +76,7 @@ function EmployeeManagementStackScreen() {
   );
 }
 
-const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
+const AdminNavigator = ({ onLogout, userRole, firebaseUid, apiUserId }) => { // Aceptar apiUserId
   return (
     <Drawer.Navigator
       initialRouteName="Home"
@@ -97,7 +105,15 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
       })}
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
-      <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
+      <Drawer.Screen name="Residents" options={{ title: 'GESTIÓN RESIDENTES' }}>
+        {(props) => (
+          <ResidentsStackScreen
+            {...props}
+            currentUserRole={userRole}
+            currentUserId={apiUserId} // ¡Aquí pasamos el ID numérico de la API!
+          />
+        )}
+      </Drawer.Screen>
       <Drawer.Screen
         name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }}
       />

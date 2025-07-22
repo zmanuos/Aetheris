@@ -16,29 +16,32 @@ import { NotificationProvider } from './src/context/NotificationContext';
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
-  const [firebaseUid, setFirebaseUid] = useState(null); // Nuevo estado para el UID
+  const [firebaseUid, setFirebaseUid] = useState(null);
+  const [apiUserId, setApiUserId] = useState(null); // Nuevo estado para el ID numérico de la API
 
-  const handleLoginSuccess = (role, uid) => { // Aceptar UID
+  const handleLoginSuccess = (role, uid, userDetails) => { // Aceptar userDetails
     setIsAuthenticated(true);
     setUserRole(role);
-    setFirebaseUid(uid); // Guardar el UID
+    setFirebaseUid(uid);
+    setApiUserId(userDetails.userId); // Guardar el ID numérico de la API
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
     setUserRole(null);
-    setFirebaseUid(null); // Limpiar el UID al cerrar sesión
+    setFirebaseUid(null);
+    setApiUserId(null); // Limpiar el ID numérico al cerrar sesión
   };
 
   const renderAppNavigator = () => {
     if (!isAuthenticated) {
       return <AuthNavigator onLoginSuccess={handleLoginSuccess} />;
     } else if (userRole === 'admin') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} apiUserId={apiUserId} />; // Pasar apiUserId
     } else if (userRole === 'employee') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
+      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} apiUserId={apiUserId} />; // Pasar apiUserId
     } else if (userRole === 'family') {
-      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} />; // Pasar UID
+      return <FamilyNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} apiUserId={apiUserId} />; // Pasar apiUserId
     }
     return null;
   };
