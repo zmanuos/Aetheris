@@ -1,5 +1,3 @@
-// AETHERIS/navigation/AdminNavigator.js
-
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -9,7 +7,8 @@ import SideMenu from '../components/navigation/SideMenu';
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen';
-import ResidentProfileScreen from '../screens/employee/ResidentProfileScreen'; // Asegúrate de que esta sea la importación correcta
+import CombinedEditScreen from '../screens/employee/CombinedEditScreen';
+import ResidentProfileScreen from '../screens/employee/ResidentProfileScreen';
 import WeeklyCheckupDetailScreen from '../screens/employee/WeeklyCheckupDetailScreen';
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
@@ -23,102 +22,84 @@ import MyAccountScreen from '../components/navigation/MyAccountScreen';
 import ResidentEditScreen from '../screens/employee/ResidentEditScreen';
 
 const Drawer = createDrawerNavigator();
-const ResidentStack = createStackNavigator();
-const EmployeeManagementStack = createStackNavigator();
+const ResidentsStack = createStackNavigator();
+const EmployeeStack = createStackNavigator();
 
-const ResidentsStackScreen = ({ currentUserRole, currentUserId }) => { // Recibe props de App.js
+function ResidentsStackScreen() {
   return (
-    <ResidentStack.Navigator screenOptions={{ headerShown: false }}>
-      <ResidentStack.Screen
-        name="ResidentsList"
-        options={{ title: 'Residentes' }}
-      >
-        {(props) => (
-          <ResidentsScreen
-            {...props}
-            currentUserRole={currentUserRole}
-            currentUserId={currentUserId}
-          />
-        )}
-      </ResidentStack.Screen>
-      <ResidentStack.Screen
-        name="CombinedRegistration"
-        options={{ title: 'Registro' }}
-        component={CombinedRegistrationScreen}
-      />
-      <ResidentStack.Screen
-        name="ResidentProfile"
-        options={{ title: 'Perfil del Residente' }}
-      >
-        {(props) => (
-          <ResidentProfileScreen // ESTA ES LA PANTALLA PARA ADMIN/EMPLOYEE
-            {...props}
-            currentUserRole={currentUserRole}
-            currentUserId={currentUserId}
-          />
-        )}
-      </ResidentStack.Screen>
-      <ResidentStack.Screen
-        name="WeeklyCheckupDetail"
-        options={{ title: 'Detalle de Chequeo Semanal' }}
-        component={WeeklyCheckupDetailScreen}
-      />
-      <ResidentStack.Screen
-        name="ResidentEdit"
-        options={{ title: 'Editar Residente' }}
-        component={ResidentEditScreen}
-      />
-    </ResidentStack.Navigator>
+    <ResidentsStack.Navigator
+      initialRouteName="ResidentsList"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
+      <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
+      <ResidentsStack.Screen name="EditResidentAndFamiliar" component={CombinedEditScreen} />
+      <ResidentsStack.Screen name="ResidentProfile" component={ResidentProfileScreen} />
+      <ResidentsStack.Screen name="WeeklyCheckupDetail" component={WeeklyCheckupDetailScreen} />
+      <ResidentsStack.Screen name="ResidentEdit" component={ResidentEditScreen} />
+    </ResidentsStack.Navigator>
   );
-};
+}
 
-const EmployeeManagementStackScreen = () => {
+function EmployeeManagementStackScreen() {
   return (
-    <EmployeeManagementStack.Navigator screenOptions={{ headerShown: false }}>
-      <EmployeeManagementStack.Screen
+    <EmployeeStack.Navigator
+      initialRouteName="EmployeeList"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <EmployeeStack.Screen
         name="EmployeeList"
-        options={{ title: 'Gestión de Empleados' }}
         component={EmployeeManagementScreen}
+        options={{ title: 'Gestión de Empleados' }}
       />
-      <EmployeeManagementStack.Screen
-        name="EmployeeCreation"
-        options={{ title: 'Crear Empleado' }}
+      <EmployeeStack.Screen
+        name="CreateEmployee"
         component={EmployeeCreationScreen}
+        options={{ title: 'Registrar Nuevo Empleado' }}
       />
-      <EmployeeManagementStack.Screen
-        name="EmployeeEdit"
-        options={{ title: 'Editar Empleado' }}
+      <EmployeeStack.Screen
+        name="EditEmployee"
         component={EmployeeEditScreen}
+        options={{ title: 'Editar Empleado' }}
       />
-    </EmployeeManagementStack.Navigator>
+    </EmployeeStack.Navigator>
   );
-};
+}
 
-const AdminNavigator = ({ onLogout, userRole, firebaseUid, apiUserId }) => {
+const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
   return (
     <Drawer.Navigator
       initialRouteName="Home"
       drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} userRole={userRole} />}
       screenOptions={({ navigation, route }) => ({
+        drawerType: Platform.OS === 'web' ? 'permanent' : 'front',
+        drawerStyle: {
+          width: 260,
+          backgroundColor: '#fcfcfc',
+          shadowColor: '#000',
+          shadowOffset: { width: 6, height: 0 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          elevation: 8,
+        },
         headerShown: true,
-        header: ({ options }) => (
-          <Header
-            title={options.title || route.name}
-            onMenuPress={() => navigation.toggleDrawer()}
-          />
-        ),
+        header: ({ options }) => {
+          return (
+            <Header
+              title={options.title || route.name}
+              onMenuPress={() => navigation.toggleDrawer()}
+              navigation={navigation}
+            />
+          );
+        },
       })}
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
-      <Drawer.Screen name="Residents" options={{ title: 'GESTIÓN RESIDENTES' }}>
-        {(props) => (
-          <ResidentsStackScreen
-            {...props}
-            currentUserRole={userRole}
-            currentUserId={apiUserId} // ¡Aquí pasamos el ID numérico de la API!
-          />
-        )}
-      </Drawer.Screen>
+      <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
       <Drawer.Screen
         name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }}
       />
@@ -141,4 +122,4 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid, apiUserId }) => {
   );
 };
 
-export default AdminNavigator;
+export default AdminNavigator;  

@@ -30,7 +30,6 @@ public class FamiliarController : ControllerBase
         }
     }
 
-    // NUEVO ENDPOINT: Obtener Familiar por Firebase UID
     [HttpGet("firebase/{firebaseUid}")]
     public ActionResult GetByFirebaseUid(string firebaseUid)
     {
@@ -49,6 +48,26 @@ public class FamiliarController : ControllerBase
         }
     }
 
+    [HttpGet("byresidente/{idResidente}")]
+    public ActionResult GetByResidenteId(int idResidente)
+    {
+        try
+        {
+            List<Familiar> familiares = Familiar.GetByResidenteId(idResidente);
+            if (familiares.Count > 0)
+            {
+                return Ok(FamiliarListResponse.GetResponse(familiares));
+            }
+            else
+            {
+                return NotFound(MessageResponse.GetReponse(1, $"No se encontraron familiares para el Residente con ID: {idResidente}", MessageType.Error));
+            }
+        }
+        catch (Exception e)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, e.Message, MessageType.CriticalError));
+        }
+    }
 
     [HttpPost]
     public ActionResult Post([FromForm] FamiliarPost familiar)

@@ -7,19 +7,12 @@ public class Familiar
 {
     #region Statements
 
-    // Actualiza los SELECT para incluir firebase_uid
     private static string selectAll = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR";
     private static string select = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE id_familiar = @ID";
-    // NUEVO SELECT por firebase_uid
     private static string selectByFirebaseUid = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE firebase_uid = @FirebaseUid";
-
-
-    // ¡NUEVO INSERT! Para registrar Familiar con firebase_uid, sin lógica de usuario SQL
+    private static string selectByResidenteId = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE id_residente = @IdResidente";
     private static string insertFamiliar = "INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @id_residente, @id_parentesco, @firebase_uid); SELECT LAST_INSERT_ID();";
-
     private static string updateTelefono = "UPDATE FAMILIAR SET telefono = @telefono WHERE id_familiar = @id";
-
-    // STATEMENT PARA ACTUALIZAR TODOS LOS CAMPOS DE FAMILIAR
     private static string updateFamiliar = "UPDATE FAMILIAR SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, id_residente = @id_residente, id_parentesco = @id_parentesco, firebase_uid = @firebase_uid WHERE id_familiar = @id_familiar";
 
     #endregion
@@ -122,6 +115,13 @@ public class Familiar
         }
     }
 
+    public static List<Familiar> GetByResidenteId(int idResidente)
+    {
+        MySqlCommand command = new MySqlCommand(selectByResidenteId);
+        command.Parameters.AddWithValue("@IdResidente", idResidente);
+        return FamiliarMapper.ToList(SqlServerConnection.ExecuteQuery(command));
+    }
+
     public static bool UpdateTelefono(int id, string nuevoTelefono)
     {
         MySqlCommand command = new MySqlCommand(updateTelefono);
@@ -155,12 +155,8 @@ public class Familiar
         command.Parameters.AddWithValue("@fecha_nacimiento", familiar.fecha_nacimiento);
         command.Parameters.AddWithValue("@genero", familiar.genero);
         command.Parameters.AddWithValue("@telefono", familiar.telefono);
-
-        // Ahora se accede a 'Id_residente' (PascalCase con guion bajo) de Residente
         command.Parameters.AddWithValue("@id_residente", familiar.residente?.Id_residente ?? 0);
-        // Y a 'id' (minúsculas) de Parentesco
         command.Parameters.AddWithValue("@id_parentesco", familiar.parentesco?.id ?? 0);
-
         command.Parameters.AddWithValue("@firebase_uid", familiar.firebase_uid);
 
         return SqlServerConnection.ExecuteCommand(command) > 0;

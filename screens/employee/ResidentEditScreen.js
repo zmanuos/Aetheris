@@ -1,35 +1,40 @@
+// ResidentEditScreen.js
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
-  SafeAreaView,
-  ActivityIndicator,
-  ScrollView,
   TextInput,
   TouchableOpacity,
-  Alert,
-  Dimensions,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  ActivityIndicator,
   Platform,
   Image,
+  Dimensions,
+  ActionSheetIOS,
+  Alert,
   Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Config from '../../config/config';
-import { useNotification } from '../../src/context/NotificationContext';
-import BackButton from '../../components/shared/BackButton';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import { useNotification } from '../../src/context/NotificationContext';
+import BackButton from '../../components/shared/BackButton'; // Asumiendo que aún se usa
 
+import {
+  formatName,
+  isValidName,
+  isAdult,
+  formatPhoneNumber,
+  isValidPhoneNumber,
+} from '../../components/shared/Validations';
+
+import Config from '../../config/config';
 const API_URL = Config.API_BASE_URL;
-// Definir baseStaticUrl de la misma manera que en ResidentsScreen
-const baseStaticUrl = API_URL.replace('/api', '');
 
-const { width } = Dimensions.get('window');
-const IS_LARGE_SCREEN = width > 900;
-
-// --- COLORES BASADOS EN SIDEMENU.JS Y ResidentRegistrationScreen.js para consistencia ---
+// --- COLORES (Consistencia con los demás archivos) ---
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
@@ -40,7 +45,6 @@ const VERY_LIGHT_GRAY = '#eee';
 const BACKGROUND_LIGHT = '#fcfcfc';
 const WHITE = '#fff';
 
-// Defined COLORS object for consistent usage in styles
 const COLORS = {
   primaryGreen: PRIMARY_GREEN,
   lightGreen: LIGHT_GREEN,
@@ -51,195 +55,265 @@ const COLORS = {
   veryLightGray: VERY_LIGHT_GRAY,
   backgroundLight: BACKGROUND_LIGHT,
   white: WHITE,
-  // Add other colors from ResidentRegistrationScreen for consistency if needed
   errorRed: '#DC3545',
-  cardBackground: '#FFFFFF',
-  pageBackground: '#F5F7FA',
-  borderLight: '#E0E0E0',
-  darkText: '#2C3E50', // From ResidentProfileScreen, good for general text
-  lightText: '#7F8C8D', // From ResidentProfileScreen, good for general text
-  inputBorder: '#E0E0E0', // Added for consistency with input styling
-  inputBackground: '#FFFFFF', // Added for consistency with input styling
-  accentBlue: '#2563EB', // Added for consistency with button styling
+  inputBorder: '#D1D5DB',
+  inputBackground: '#F9FAFB',
+  darkText: '#1F2937',
+  accentBlue: '#3B82F6',
 };
 
-export default function ResidentEditScreen({ route, navigation }) {
-  const { residentId } = route.params;
+const { width } = Dimensions.get('window');
+const IS_LARGE_SCREEN = width > 900;
+const baseStaticUrl = API_URL.replace('/api', '');
+
+// `residentId` y `navigation` son ahora props
+export default function ResidentEditScreen({ residentId, navigation }) {
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
   const { showNotification } = useNotification();
 
-  const [isLoading, setIsLoading] = useState(true);
+  // Estados para datos del Residente
   const [residentName, setResidentName] = useState('');
   const [residentApellido, setResidentApellido] = useState('');
-  const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date());
-  const [residentGenero, setResidentGenero] = useState('Masculino');
+  const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date(2000, 0, 1));
+  const [showResidentDatePicker, setShowResidentDatePicker] = useState(false);
+  const [residentGenero, setResidentGenero] = useState('');
   const [residentTelefono, setResidentTelefono] = useState('');
-  // Cambiado: Ahora 'residentFotoFilename' almacenará el nombre del archivo de la foto del backend
   const [residentFotoFilename, setResidentFotoFilename] = useState('');
-  // Nuevo estado: 'residentPhotoDisplayUrl' almacenará la URL completa para mostrar la imagen
-  const [residentPhotoDisplayUrl, setResidentPhotoDisplayUrl] = useState('');
-  const [residentDispositivoId, setResidentDispositivoId] = useState(0);
+  const [residentFotoPreview, setResidentFotoPreview] = useState(null);
   const [residentActivo, setResidentActivo] = useState(true);
+  const [residentDispositivoId, setResidentDispositivoId] = useState(null);
   const [residentPromedioReposo, setResidentPromedioReposo] = useState('');
   const [residentPromedioActivo, setResidentPromedioActivo] = useState('');
   const [residentPromedioAgitado, setResidentPromedioAgitado] = useState('');
 
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [availableDevices, setAvailableDevices] = useState([]);
+  // Estados para validaciones
+  const [nameError, setNameError] = useState('');
+  const [apellidoError, setApellidoError] = useState('');
+  const [fechaNacimientoError, setFechaNacimientoError] = useState('');
+  const [generoError, setGeneroError] = useState('');
+  const [telefonoError, setTelefonoError] = useState('');
 
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== 'web') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permiso requerido', 'Necesitamos acceso a la galería para seleccionar una foto.');
-        }
-      }
-    })();
-  }, []);
+  const scrollViewRef = useRef(null);
 
+  // --- Funciones de Validación ---
+  const validateResident = () => {
+    let valid = true;
+    if (!isValidName(residentName)) { setNameError('Nombre inválido.'); valid = false; } else { setNameError(''); }
+    if (!isValidName(residentApellido)) { setApellidoError('Apellido inválido.'); valid = false; } else { setApellidoError(''); }
+    if (!isAdult(residentFechaNacimiento)) { setFechaNacimientoError('El residente debe ser mayor de 18 años.'); valid = false; } else { setFechaNacimientoError(''); }
+    if (!residentGenero) { setGeneroError('Selecciona un género.'); valid = false; } else { setGeneroError(''); }
+    if (!isValidPhoneNumber(residentTelefono)) { setTelefonoError('Número de teléfono inválido (10 dígitos).'); valid = false; } else { setTelefonoError(''); }
+    return valid;
+  };
+
+  // --- Precarga de datos del Residente ---
   const fetchResidentData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/Residente/${residentId}`);
-      const jsonResponse = await response.json();
-
-      if (jsonResponse.status === 0 && jsonResponse.residente) {
-        const residentData = jsonResponse.residente;
-        setResidentName(residentData.nombre || '');
-        setResidentApellido(residentData.apellido || '');
-        setResidentFechaNacimiento(new Date(residentData.fecha_nacimiento));
-        setResidentGenero(residentData.genero || 'Masculino');
-        setResidentTelefono(residentData.telefono || '');
-        // Almacena el nombre del archivo de la foto
-        setResidentFotoFilename(residentData.foto || '');
-        // Construye la URL de la foto para mostrarla
-        if (residentData.foto && residentData.foto !== 'nophoto.png') {
-          setResidentPhotoDisplayUrl(`${baseStaticUrl}/images/residents/${residentData.foto}`);
-        } else {
-          setResidentPhotoDisplayUrl(''); // O null, si prefieres
-        }
-
-        setResidentDispositivoId(residentData.dispositivo?.id_dispositivo || 0);
-        setResidentActivo(residentData.activo);
-        setResidentPromedioReposo(residentData.promedioReposo?.toString() || '');
-        setResidentPromedioActivo(residentData.promedioActivo?.toString() || '');
-        setResidentPromedioAgitado(residentData.promedioAgitado?.toString() || '');
-      } else {
-        showNotification(jsonResponse.message || 'Error al cargar los datos del residente.', 'error');
-        navigation.goBack();
-      }
-    } catch (error) {
-      console.error('Error fetching resident data:', error);
-      showNotification('Error de conexión al cargar el residente.', 'error');
-      navigation.goBack();
-    } finally {
+    if (!residentId) {
       setIsLoading(false);
-    }
-  }, [residentId, showNotification, navigation]);
-
-  const fetchAvailableDevices = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_URL}/Dispositivo`);
-      const jsonResponse = await response.json();
-      if (jsonResponse.status === 0 && jsonResponse.data) {
-        const devices = jsonResponse.data.filter(device =>
-          device.asignadoA === null || device.asignadoA === residentId
-        );
-        setAvailableDevices(devices);
-      } else {
-        showNotification('No se pudieron cargar los dispositivos disponibles.', 'warning');
-      }
-    } catch (error) {
-      console.error('Error fetching available devices:', error);
-      showNotification('Error de conexión al cargar dispositivos.', 'error');
-    }
-  }, [showNotification, residentId]);
-
-
-  useEffect(() => {
-    fetchResidentData();
-    fetchAvailableDevices();
-  }, [fetchResidentData, fetchAvailableDevices]);
-
-  const onChangeDate = (event, selectedDate) => {
-    const currentDate = selectedDate || residentFechaNacimiento;
-    setShowDatePicker(Platform.OS === 'ios');
-    setResidentFechaNacimiento(currentDate);
-  };
-
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      // Actualiza la URL de visualización con la URI local de la imagen seleccionada
-      setResidentPhotoDisplayUrl(result.assets[0].uri);
-      // OJO: Si necesitas subir esta imagen al backend y obtener un nuevo 'filename'
-      // para 'residentFotoFilename', esa lógica de subida y actualización del estado
-      // debería implementarse aquí o en handleSave. Para este cambio, solo se enfoca en la visualización.
-      // Actualmente, 'residentFotoFilename' no se actualiza aquí, por lo que handleSave enviará
-      // el nombre de archivo existente (o vacío si no había uno).
-    }
-  };
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    // Basic validation
-    if (!residentName || !residentApellido || !residentFechaNacimiento || !residentGenero || !residentTelefono) {
-      showNotification('Todos los campos obligatorios deben ser completados.', 'error');
-      setIsSaving(false);
       return;
     }
 
-    const payload = {
-      id_residente: residentId,
-      nombre: residentName,
-      apellido: residentApellido,
-      fechaNacimiento: residentFechaNacimiento.toISOString(),
-      genero: residentGenero,
-      telefono: residentTelefono,
-      // Se envía el nombre de archivo de la foto. Si se seleccionó una nueva,
-      // la lógica para subirla y obtener el nuevo nombre de archivo no está aquí.
-      foto: residentFotoFilename,
-      dispositivo: residentDispositivoId,
-      activo: residentActivo,
-      promedio_reposo: parseInt(residentPromedioReposo || '0', 10),
-      promedio_activo: parseInt(residentPromedioActivo || '0', 10),
-      promedio_agitado: parseInt(residentPromedioAgitado || '0', 10),
-    };
-
+    setIsLoading(true);
+    setFetchError('');
     try {
-      const response = await fetch(`${API_URL}/Residente`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': '*/*',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const jsonResponse = await response.json();
-
-      if (jsonResponse.status === 0) {
-        showNotification(jsonResponse.message || 'Residente actualizado exitosamente.', 'success');
-        navigation.goBack();
-      } else {
-        showNotification(jsonResponse.message || 'Error al actualizar el residente.', 'error');
+      const residentResponse = await fetch(`${API_URL}/Residente/${residentId}`);
+      if (!residentResponse.ok) {
+        throw new Error('No se pudo cargar el residente.');
       }
+      const residentData = await residentResponse.json();
+
+      setResidentName(residentData.nombre || '');
+      setResidentApellido(residentData.apellido || '');
+      if (residentData.fecha_nacimiento) {
+        setResidentFechaNacimiento(new Date(residentData.fecha_nacimiento));
+      }
+      setResidentGenero(residentData.genero || '');
+      setResidentTelefono(formatPhoneNumber(residentData.telefono || ''));
+      setResidentActivo(residentData.activo);
+      setResidentDispositivoId(residentData.id_dispositivo || null);
+      setResidentPromedioReposo(residentData.promedio_frecuencia_reposo?.toString() || '');
+      setResidentPromedioActivo(residentData.promedio_frecuencia_activa?.toString() || '');
+      setResidentPromedioAgitado(residentData.promedio_frecuencia_agitado?.toString() || '');
+
+      if (residentData.foto && residentData.foto !== 'nophoto.png') {
+        setResidentFotoFilename(residentData.foto);
+        setResidentFotoPreview(`${baseStaticUrl}/images/residents/${residentData.foto}`);
+      } else {
+        setResidentFotoFilename('nophoto.png');
+        setResidentFotoPreview(null);
+      }
+
     } catch (error) {
-      console.error('Error updating resident:', error);
-      showNotification('Error de conexión al intentar actualizar el residente.', 'error');
+      console.error('Error al cargar datos del residente:', error);
+      setFetchError('Error al cargar los datos del residente. Intenta de nuevo.');
+      showNotification('Error al cargar los datos del residente.', 'error');
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
+    }
+  }, [residentId, showNotification]);
+
+  useEffect(() => {
+    fetchResidentData();
+  }, [fetchResidentData]);
+
+  // --- Manejadores de fechas ---
+  const onChangeResidentDate = (event, selectedDate) => {
+    const currentDate = selectedDate || residentFechaNacimiento;
+    setShowResidentDatePicker(Platform.OS === 'ios');
+    setResidentFechaNacimiento(currentDate);
+  };
+
+  const showResidentDatepicker = () => {
+    setShowResidentDatePicker(true);
+  };
+
+  // --- Manejo de la selección de imagen ---
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso Requerido", "Necesitamos acceso a tu galería para poder seleccionar una imagen.");
+      return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!pickerResult.canceled) {
+      const selectedAsset = pickerResult.assets[0];
+      setResidentFotoPreview(selectedAsset.uri);
+      const fileName = selectedAsset.uri.split('/').pop();
+      setResidentFotoFilename(fileName);
     }
   };
 
-  if (isLoading) {
+  const openImagePicker = () => {
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancelar', 'Seleccionar de Galería', 'Tomar Foto'],
+          cancelButtonIndex: 0,
+        },
+        async (buttonIndex) => {
+          if (buttonIndex === 1) {
+            pickImage();
+          } else if (buttonIndex === 2) {
+            Alert.alert("Función no disponible", "La opción de tomar foto no está implementada aún.");
+            // Implementar lógica para tomar foto si es necesario
+          }
+        }
+      );
+    } else {
+      // Para Android y Web, usar el pickImage directamente
+      pickImage();
+    }
+  };
+
+  // --- Función para subir la foto ---
+  const uploadPhoto = async (uri, fileName) => {
+    if (!uri) return 'nophoto.png'; // Si no hay URI, no hay foto para subir
+
+    const fileExtension = fileName.split('.').pop();
+    const newFileName = `resident_${residentId}_${Date.now()}.${fileExtension}`;
+
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const formData = new FormData();
+      formData.append('file', blob, newFileName);
+
+      const uploadResponse = await fetch(`${API_URL}/upload/resident_photo`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          // No Content-Type header when using FormData, browser sets it
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        const errorText = await uploadResponse.text();
+        throw new Error(`Error al subir la foto: ${errorText}`);
+      }
+
+      const uploadResult = await uploadResponse.json();
+      return uploadResult.fileName; // Retorna el nombre de archivo guardado en el servidor
+
+    } catch (error) {
+      console.error('Error en uploadPhoto:', error);
+      showNotification(`Error al subir la foto: ${error.message}`, 'error');
+      return 'nophoto.png'; // Retornar un valor predeterminado en caso de error
+    }
+  };
+
+  // --- Guardar Cambios del Residente ---
+  const handleSaveResident = async () => {
+    if (!validateResident()) {
+      showNotification('Por favor, corrige los errores en el formulario del residente.', 'error');
+      return;
+    }
+
+    setIsLoading(true);
+    setFetchError(''); // Limpiar errores previos
+    try {
+      let finalPhotoFilename = residentFotoFilename;
+
+      // Solo subir la foto si ha cambiado o es nueva
+      if (residentFotoPreview && residentFotoPreview.startsWith('file://')) { // Es una nueva imagen local
+        finalPhotoFilename = await uploadPhoto(residentFotoPreview, residentFotoFilename);
+      } else if (!residentFotoPreview && residentFotoFilename !== 'nophoto.png') {
+        // Si se eliminó la foto y no es nophoto.png
+        finalPhotoFilename = 'nophoto.png';
+      }
+
+      const residentDataToUpdate = {
+        nombre: residentName,
+        apellido: residentApellido,
+        fecha_nacimiento: residentFechaNacimiento.toISOString().split('T')[0],
+        genero: residentGenero,
+        telefono: residentTelefono.replace(/\D/g, ''), // Guardar solo dígitos
+        foto: finalPhotoFilename,
+        activo: residentActivo,
+        id_dispositivo: residentDispositivoId || null,
+        promedio_frecuencia_reposo: parseFloat(residentPromedioReposo) || null,
+        promedio_frecuencia_activa: parseFloat(residentPromedioActivo) || null,
+        promedio_frecuencia_agitado: parseFloat(residentPromedioAgitado) || null,
+      };
+
+      const method = residentId ? 'PUT' : 'POST';
+      const url = residentId ? `${API_URL}/Residente/${residentId}` : `${API_URL}/Residente`;
+
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(residentDataToUpdate),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al guardar el residente.');
+      }
+
+      showNotification('Datos del residente guardados exitosamente.', 'success');
+      // No navegar aquí para permitir la edición conjunta
+
+    } catch (error) {
+      console.error('Error al guardar residente:', error);
+      setFetchError(error.message);
+      showNotification(`Error al guardar residente: ${error.message}`, 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  if (isLoading && !fetchError) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primaryGreen} />
@@ -248,360 +322,393 @@ export default function ResidentEditScreen({ route, navigation }) {
     );
   }
 
+  if (fetchError) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{fetchError}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchResidentData}>
+          <Text style={styles.retryButtonText}>Reintentar</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.header}>
-          <BackButton onPress={() => navigation.goBack()} />
-          <Text style={styles.headerTitle}>Editar Residente</Text>
-        </View>
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionTitle}>Datos del Residente</Text>
 
-        <View style={styles.formContainer}>
-          <Text style={styles.sectionTitle}>Datos Personales</Text>
-
-          {/* Se usa residentPhotoDisplayUrl para mostrar la imagen */}
-          {residentPhotoDisplayUrl ? (
-            <Image source={{ uri: residentPhotoDisplayUrl }} style={styles.profileImage} />
+      {/* Campo: Foto del Residente (Moved to top) */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Foto</Text>
+        <TouchableOpacity style={styles.imagePickerButton} onPress={openImagePicker}>
+          {residentFotoPreview ? (
+            <Image source={{ uri: residentFotoPreview }} style={styles.profileImage} />
           ) : (
-            <Ionicons name="person-circle-outline" size={100} color={COLORS.lightGray} style={styles.profileImagePlaceholder} />
-          )}
-          <TouchableOpacity style={styles.imagePickerButton} onPress={pickImage}>
-            <Text style={styles.imagePickerButtonText}>Cambiar Foto</Text>
-            <Ionicons name="camera" size={20} color={COLORS.white} />
-          </TouchableOpacity>
-
-          <Text style={styles.inputLabel}>Nombre</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            value={residentName}
-            onChangeText={setResidentName}
-          />
-
-          <Text style={styles.inputLabel}>Apellido</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Apellido"
-            value={residentApellido}
-            onChangeText={setResidentApellido}
-          />
-
-          <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateInputContainer}>
-            <Text style={styles.dateInputText}>
-              {residentFechaNacimiento.toLocaleDateString('es-ES')}
-            </Text>
-            <Ionicons name="calendar-outline" size={24} color={COLORS.mediumGray} />
-          </TouchableOpacity>
-          {showDatePicker && (
-            <DateTimePicker
-              testID="datePicker"
-              value={residentFechaNacimiento}
-              mode="date"
-              display="default"
-              onChange={onChangeDate}
-            />
-          )}
-          {Platform.OS === 'web' && showDatePicker && (
-            <View style={styles.webDatePickerBackdrop}>
-              <View style={styles.webDatePickerContainer}>
-                <DateTimePicker
-                  testID="datePicker"
-                  value={residentFechaNacimiento}
-                  mode="date"
-                  display="inline"
-                  onChange={onChangeDate}
-                />
-                <TouchableOpacity onPress={() => setShowDatePicker(false)} style={styles.closeDatePickerButton}>
-                  <Text style={styles.closeDatePickerButtonText}>Cerrar</Text>
-                </TouchableOpacity>
-              </View>
+            <View style={styles.profileImagePlaceholder}>
+              <Ionicons name="image" size={50} color={COLORS.lightGray} />
             </View>
           )}
-
-          <Text style={styles.inputLabel}>Género</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={residentGenero}
-              onValueChange={(itemValue) => setResidentGenero(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-            >
-              <Picker.Item label="Masculino" value="Masculino" />
-              <Picker.Item label="Femenino" value="Femenino" />
-              <Picker.Item label="Otro" value="Otro" />
-            </Picker>
-          </View>
-
-          <Text style={styles.inputLabel}>Teléfono</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Teléfono"
-            value={residentTelefono}
-            onChangeText={setResidentTelefono}
-            keyboardType="phone-pad"
-          />
-
-          <Text style={styles.sectionTitle}>Asignación y Estado</Text>
-
-          <Text style={styles.inputLabel}>Dispositivo Asignado</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={residentDispositivoId}
-              onValueChange={(itemValue) => setResidentDispositivoId(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-            >
-              <Picker.Item label="Sin Dispositivo" value={0} />
-              {availableDevices.map((device) => (
-                <Picker.Item key={device.id_dispositivo} label={`ID: ${device.id_dispositivo} (${device.tipo})`} value={device.id_dispositivo} />
-              ))}
-            </Picker>
-          </View>
-
-          <View style={styles.switchContainer}>
-            <Text style={styles.inputLabel}>Estado Activo</Text>
-            <Switch
-              trackColor={{ false: COLORS.lightGray, true: COLORS.lightGreen }}
-              thumbColor={residentActivo ? COLORS.primaryGreen : COLORS.mediumGray}
-              onValueChange={setResidentActivo}
-              value={residentActivo}
-            />
-          </View>
-
-          <Text style={styles.sectionTitle}>Promedios de Ritmo Cardíaco</Text>
-
-          <Text style={styles.inputLabel}>Promedio Reposo</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ej: 60"
-            value={residentPromedioReposo}
-            onChangeText={setResidentPromedioReposo}
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.inputLabel}>Promedio Activo</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ej: 120"
-            value={residentPromedioActivo}
-            onChangeText={setResidentPromedioActivo}
-            keyboardType="numeric"
-          />
-
-          <Text style={styles.inputLabel}>Promedio Agitado</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Ej: 150"
-            value={residentPromedioAgitado}
-            onChangeText={setResidentPromedioAgitado}
-            keyboardType="numeric"
-          />
-
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={handleSave}
-            disabled={isSaving}
-          >
-            {isSaving ? (
-              <ActivityIndicator color={COLORS.white} />
-            ) : (
-              <Text style={styles.saveButtonText}>Guardar Cambios</Text>
-            )}
+          <Text style={styles.imagePickerButtonText}>
+            {residentFotoPreview ? 'Cambiar Foto' : 'Seleccionar Foto'}
+          </Text>
+        </TouchableOpacity>
+        {residentFotoPreview && (
+          <TouchableOpacity onPress={() => { setResidentFotoPreview(null); setResidentFotoFilename('nophoto.png'); }} style={styles.removeImageButton}>
+            <Ionicons name="close-circle" size={24} color={COLORS.errorRed} />
+            <Text style={styles.removeImageButtonText}>Quitar Foto</Text>
           </TouchableOpacity>
+        )}
+      </View>
+
+      {/* Campo: Nombre */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Nombre</Text>
+        <TextInput
+          style={[styles.input, nameError ? styles.inputError : {}]}
+          value={residentName}
+          onChangeText={setResidentName}
+          placeholder="Nombre del residente"
+          placeholderTextColor={COLORS.lightGray}
+          onBlur={() => validateResident()}
+        />
+        {nameError ? <Text style={styles.errorTextSmall}>{nameError}</Text> : null}
+      </View>
+
+      {/* Campo: Apellido */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Apellido</Text>
+        <TextInput
+          style={[styles.input, apellidoError ? styles.inputError : {}]}
+          value={residentApellido}
+          onChangeText={setResidentApellido}
+          placeholder="Apellido del residente"
+          placeholderTextColor={COLORS.lightGray}
+          onBlur={() => validateResident()}
+        />
+        {apellidoError ? <Text style={styles.errorTextSmall}>{apellidoError}</Text> : null}
+      </View>
+
+      {/* Campo: Fecha de Nacimiento */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
+        <TouchableOpacity onPress={showResidentDatepicker} style={styles.dateDisplay}>
+          <TextInput
+            style={[styles.input, fechaNacimientoError ? styles.inputError : {}, styles.dateTextInput]}
+            value={residentFechaNacimiento.toLocaleDateString('es-ES')}
+            editable={false}
+            placeholder="DD/MM/AAAA"
+            placeholderTextColor={COLORS.lightGray}
+          />
+          <Ionicons name="calendar" size={20} color={COLORS.mediumGray} style={styles.calendarIcon} />
+        </TouchableOpacity>
+        {showResidentDatePicker && (
+          <DateTimePicker
+            testID="residentDatePicker"
+            value={residentFechaNacimiento}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onChangeResidentDate}
+            maximumDate={new Date()}
+            locale="es-ES"
+            style={Platform.OS === 'web' ? styles.datePickerWeb : undefined}
+          />
+        )}
+        {fechaNacimientoError ? <Text style={styles.errorTextSmall}>{fechaNacimientoError}</Text> : null}
+      </View>
+
+      {/* Campo: Género */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Género</Text>
+        <View style={[styles.pickerContainer, generoError ? styles.inputError : {}]}>
+          <Picker
+            selectedValue={residentGenero}
+            onValueChange={(itemValue) => setResidentGenero(itemValue)}
+            style={styles.picker}
+            itemStyle={styles.pickerItem}
+          >
+            <Picker.Item label="Selecciona" value="" enabled={false} style={{ color: COLORS.lightGray }} />
+            <Picker.Item label="Masculino" value="Masculino" />
+            <Picker.Item label="Femenino" value="Femenino" />
+            <Picker.Item label="Otro" value="Otro" />
+          </Picker>
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        {generoError ? <Text style={styles.errorTextSmall}>{generoError}</Text> : null}
+      </View>
+
+      {/* Campo: Teléfono */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Teléfono</Text>
+        <TextInput
+          style={[styles.input, telefonoError ? styles.inputError : {}]}
+          value={residentTelefono}
+          onChangeText={(text) => setResidentTelefono(formatPhoneNumber(text))}
+          keyboardType="phone-pad"
+          placeholder="Ej: (123) 456-7890"
+          placeholderTextColor={COLORS.lightGray}
+          maxLength={14}
+          onBlur={() => validateResident()}
+        />
+        {telefonoError ? <Text style={styles.errorTextSmall}>{telefonoError}</Text> : null}
+      </View>
+
+      {/* Switch: Residente Activo */}
+      <View style={styles.switchContainer}>
+        <Text style={styles.inputLabel}>Residente Activo</Text>
+        <Switch
+          onValueChange={setResidentActivo}
+          value={residentActivo}
+          trackColor={{ false: COLORS.lightGray, true: COLORS.primaryGreen }}
+          thumbColor={COLORS.white}
+        />
+      </View>
+
+      {/* Campos de promedio de frecuencia */}
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Promedio Frecuencia Reposo</Text>
+        <TextInput
+          style={styles.input}
+          value={residentPromedioReposo}
+          onChangeText={setResidentPromedioReposo}
+          keyboardType="numeric"
+          placeholder="Ej: 60"
+          placeholderTextColor={COLORS.lightGray}
+        />
+      </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Promedio Frecuencia Activa</Text>
+        <TextInput
+          style={styles.input}
+          value={residentPromedioActivo}
+          onChangeText={setResidentPromedioActivo}
+          keyboardType="numeric"
+          placeholder="Ej: 120"
+          placeholderTextColor={COLORS.lightGray}
+        />
+      </View>
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>Promedio Frecuencia Agitado</Text>
+        <TextInput
+          style={styles.input}
+          value={residentPromedioAgitado}
+          onChangeText={setResidentPromedioAgitado}
+          keyboardType="numeric"
+          placeholder="Ej: 150"
+          placeholderTextColor={COLORS.lightGray}
+        />
+      </View>
+
+      <TouchableOpacity style={styles.primaryButton} onPress={handleSaveResident} disabled={isLoading}>
+        {isLoading ? (
+          <ActivityIndicator color={COLORS.white} />
+        ) : (
+          <Text style={styles.buttonText}>Guardar Cambios del Residente</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 
+// --- Estilos ---
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.pageBackground,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: IS_LARGE_SCREEN ? 30 : 20,
-    alignItems: 'center',
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.pageBackground,
+    backgroundColor: COLORS.backgroundLight,
+    padding: 20,
   },
   loadingText: {
     marginTop: 10,
-    fontSize: 16,
-    color: COLORS.darkText,
+    fontSize: IS_LARGE_SCREEN ? 18 : 16,
+    color: COLORS.darkGray,
   },
-  header: {
-    flexDirection: 'row',
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-    maxWidth: 800,
-    marginBottom: 20,
+    backgroundColor: COLORS.backgroundLight,
+    padding: 20,
   },
-  headerTitle: {
-    fontSize: IS_LARGE_SCREEN ? 26 : 22,
+  errorText: {
+    color: COLORS.errorRed,
+    textAlign: 'center',
+    fontSize: IS_LARGE_SCREEN ? 16 : 14,
+    marginBottom: 15,
+  },
+  retryButton: {
+    backgroundColor: COLORS.accentBlue,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: IS_LARGE_SCREEN ? 16 : 14,
     fontWeight: 'bold',
-    color: COLORS.darkText,
-    marginLeft: 15,
   },
-  formContainer: {
-    width: '100%',
-    maxWidth: 800,
+  sectionContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 15,
-    padding: IS_LARGE_SCREEN ? 30 : 20,
+    borderRadius: 12,
+    padding: IS_LARGE_SCREEN ? 20 : 20, // Reduced padding
+    marginBottom: IS_LARGE_SCREEN ? 20 : 20, // Reduced margin
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
+    width: '100%',
+    maxWidth: IS_LARGE_SCREEN ? 380 : '100%', // Significantly reduced max width
   },
   sectionTitle: {
-    fontSize: IS_LARGE_SCREEN ? 20 : 18,
+    fontSize: IS_LARGE_SCREEN ? 22 : 20, // Slightly smaller font
     fontWeight: 'bold',
-    color: COLORS.primaryGreen,
-    marginBottom: 15,
-    marginTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.veryLightGray,
-    paddingBottom: 8,
+    color: COLORS.darkGray,
+    marginBottom: 20, // Reduced margin
+    textAlign: 'center',
+  },
+  inputGroup: {
+    marginBottom: 10, // Reduced margin
   },
   inputLabel: {
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
+    fontSize: IS_LARGE_SCREEN ? 14 : 13, // Slightly smaller font
     color: COLORS.darkText,
-    marginBottom: 5,
-    marginTop: 10,
+    marginBottom: 6, // Reduced margin
     fontWeight: '600',
   },
   input: {
-    height: 45,
-    borderColor: COLORS.inputBorder,
     borderWidth: 1,
+    borderColor: COLORS.inputBorder,
     borderRadius: 8,
-    paddingHorizontal: 15,
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
+    padding: IS_LARGE_SCREEN ? 10 : 8, // Reduced padding
+    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
     color: COLORS.darkText,
     backgroundColor: COLORS.inputBackground,
-    marginBottom: 15,
   },
-  dateInputContainer: {
+  inputError: {
+    borderColor: COLORS.errorRed,
+    borderWidth: 2,
+  },
+  errorTextSmall: {
+    color: COLORS.errorRed,
+    fontSize: IS_LARGE_SCREEN ? 12 : 11, // Slightly smaller font
+    marginTop: 4, // Reduced margin
+    paddingLeft: 5,
+  },
+  dateDisplay: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: 45,
-    borderColor: COLORS.inputBorder,
     borderWidth: 1,
+    borderColor: COLORS.inputBorder,
     borderRadius: 8,
-    paddingHorizontal: 15,
     backgroundColor: COLORS.inputBackground,
-    marginBottom: 15,
+    paddingRight: 10,
   },
-  dateInputText: {
+  dateTextInput: {
     flex: 1,
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
+    padding: IS_LARGE_SCREEN ? 10 : 8, // Reduced padding
+    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
     color: COLORS.darkText,
   },
-  webDatePickerBackdrop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
+  calendarIcon: {
+    marginLeft: 10,
   },
-  webDatePickerContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    padding: 20,
-    maxWidth: 400,
-    width: '90%',
-  },
-  closeDatePickerButton: {
-    marginTop: 15,
-    padding: 10,
-    backgroundColor: COLORS.primaryGreen,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  closeDatePickerButtonText: {
-    color: COLORS.white,
-    fontWeight: 'bold',
+  datePickerWeb: {
+    width: '100%',
+    height: 40, // Reduced height
+    color: COLORS.darkText,
+    paddingHorizontal: 10,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    appearance: 'none',
+    outline: 'none',
   },
   pickerContainer: {
-    borderColor: COLORS.inputBorder,
     borderWidth: 1,
+    borderColor: COLORS.inputBorder,
     borderRadius: 8,
-    marginBottom: 15,
     backgroundColor: COLORS.inputBackground,
   },
   picker: {
-    height: 45,
+    height: Platform.OS === 'ios' ? 120 : 40, // Reduced height for picker
     width: '100%',
     color: COLORS.darkText,
   },
   pickerItem: {
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
+    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
+    color: COLORS.darkText,
+  },
+  imagePickerButton: {
+    alignItems: 'center',
+    marginBottom: 10, // Reduced margin
+  },
+  profileImage: {
+    width: 120, // Reduced size
+    height: 120, // Reduced size
+    borderRadius: 60, // Adjusted border radius
+    marginBottom: 8, // Reduced margin
+    borderColor: COLORS.primaryGreen,
+    borderWidth: 3,
+  },
+  profileImagePlaceholder: {
+    width: 120, // Reduced size
+    height: 120, // Reduced size
+    borderRadius: 60, // Adjusted border radius
+    backgroundColor: COLORS.veryLightGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8, // Reduced margin
+    borderColor: COLORS.lightGray,
+    borderWidth: 1,
+  },
+  imagePickerButtonText: {
+    color: COLORS.accentBlue,
+    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
+    fontWeight: 'bold',
+  },
+  removeImageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -5,
+    marginBottom: 8, // Reduced margin
+    padding: 5,
+  },
+  removeImageButtonText: {
+    color: COLORS.errorRed,
+    fontSize: IS_LARGE_SCREEN ? 13 : 12, // Slightly smaller font
+    marginLeft: 5,
   },
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 15,
-    paddingVertical: 5,
-  },
-  profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    alignSelf: 'center',
-    marginBottom: 15,
-    borderColor: COLORS.primaryGreen,
-    borderWidth: 2,
-  },
-  profileImagePlaceholder: {
-    alignSelf: 'center',
-    marginBottom: 15,
-  },
-  imagePickerButton: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.accentBlue,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    marginBottom: 10, // Reduced margin
+    paddingVertical: 8, // Reduced padding
+    paddingHorizontal: 10,
+    backgroundColor: COLORS.inputBackground,
     borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-    gap: 10,
+    borderWidth: 1,
+    borderColor: COLORS.inputBorder,
   },
-  imagePickerButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  saveButton: {
+  primaryButton: {
     backgroundColor: COLORS.primaryGreen,
-    paddingVertical: 14,
+    paddingVertical: IS_LARGE_SCREEN ? 12 : 10, // Reduced padding
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    shadowColor: '#000',
+    marginTop: 15, // Reduced margin
+    shadowColor: COLORS.darkGray,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
-    elevation: 8,
+    elevation: 6,
+    width: '100%',
+    maxWidth: IS_LARGE_SCREEN ? 350 : '100%', // Adjusted max width for button
   },
-  saveButtonText: {
+  buttonText: {
     color: COLORS.white,
-    fontSize: IS_LARGE_SCREEN ? 18 : 16,
+    fontSize: IS_LARGE_SCREEN ? 16 : 15, // Slightly smaller font
     fontWeight: 'bold',
   },
 });
