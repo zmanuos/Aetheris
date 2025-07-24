@@ -22,6 +22,7 @@ const adminMenuItems = [
   { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
   { id: 'EmployeeManagement', title: 'Empleados', icon: 'person-add-outline', type: 'item' },
   { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
+  { id: 'ChatGeneral', title: 'Mensajes', icon: 'chatbubble-outline', type: 'item' },
   { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
     { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
     { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
@@ -36,6 +37,7 @@ const adminMenuItems = [
 const employeeMenuItems = [
   { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
   { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
+  { id: 'ChatGeneral', title: 'Mensajes', icon: 'chatbubble-outline', type: 'item' },
   { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
     { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
     { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },

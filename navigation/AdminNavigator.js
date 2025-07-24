@@ -19,6 +19,8 @@ import EmployeeEditScreen from '../screens/admin/EmployeeEditScreen';
 import DeviceManagementScreen from '../screens/admin/DeviceManagementScreen';
 import MyAccountScreen from '../components/navigation/MyAccountScreen';
 import ResidentEditScreen from '../screens/employee/ResidentEditScreen';
+import ChatGeneralScreen from '../screens/employee/ChatGeneralScreen';
+
 
 const Drawer = createDrawerNavigator();
 const ResidentsStack = createStackNavigator();
@@ -99,6 +101,7 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
     >
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
+      <Drawer.Screen name="ChatGeneral" component={ChatGeneralScreen} options={{ title: 'MENSAJES' }} />
       <Drawer.Screen
         name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }}
       />
