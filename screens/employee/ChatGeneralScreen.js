@@ -390,6 +390,20 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
         senderDisplayName = `${selectedConversation.familiar.nombre} ${selectedConversation.familiar.apellido}`
       }
 
+      const messageDate = new Date(message.fecha)
+      const today = new Date()
+      const isSameDay =
+        messageDate.getDate() === today.getDate() &&
+        messageDate.getMonth() === today.getMonth() &&
+        messageDate.getFullYear() === today.getFullYear()
+
+      const timeOptions = { hour: "2-digit", minute: "2-digit" }
+      const dateTimeOptions = { dateStyle: "short", timeStyle: "short" }
+
+      const formattedDateTime = isSameDay
+        ? messageDate.toLocaleTimeString("es-ES", timeOptions)
+        : messageDate.toLocaleString("es-ES", dateTimeOptions)
+
       return (
         <View
           style={[styles.messageBubble, isSentByCurrentUser ? styles.messageBubbleSent : styles.messageBubbleReceived]}
@@ -399,7 +413,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
           )}
           <Text style={[styles.messageText, isSentByCurrentUser && styles.messageTextSent]}>{message.nota}</Text>
           <Text style={[styles.messageDate, isSentByCurrentUser && styles.messageDateSent]}>
-            {new Date(message.fecha).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}
+            {formattedDateTime}
           </Text>
         </View>
       )
