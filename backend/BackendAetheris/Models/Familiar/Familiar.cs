@@ -10,10 +10,12 @@ public class Familiar
     private static string selectAll = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR";
     private static string select = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE id_familiar = @ID";
     private static string selectByFirebaseUid = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE firebase_uid = @FirebaseUid";
+    private static string selectEmailByFirebaseUid = "SELECT email FROM FAMILIAR WHERE firebase_uid = @FirebaseUid";
     private static string selectByResidenteId = "SELECT id_familiar, nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid FROM FAMILIAR WHERE id_residente = @IdResidente";
     private static string insertFamiliar = "INSERT INTO FAMILIAR (nombre, apellido, fecha_nacimiento, genero, telefono, id_residente, id_parentesco, firebase_uid) VALUES (@nombre, @apellido, @fecha_nacimiento, @genero, @telefono, @id_residente, @id_parentesco, @firebase_uid); SELECT LAST_INSERT_ID();";
     private static string updateTelefono = "UPDATE FAMILIAR SET telefono = @telefono WHERE id_familiar = @id";
     private static string updateFamiliar = "UPDATE FAMILIAR SET nombre = @nombre, apellido = @apellido, fecha_nacimiento = @fecha_nacimiento, genero = @genero, telefono = @telefono, id_residente = @id_residente, id_parentesco = @id_parentesco, firebase_uid = @firebase_uid WHERE id_familiar = @id_familiar";
+    private static string updateEmailByFirebaseUid = "UPDATE FAMILIAR SET email = @newEmail WHERE firebase_uid = @FirebaseUid";
 
     #endregion
 
@@ -113,6 +115,43 @@ public class Familiar
         {
             throw new FamiliarNotFoundException($"con Firebase UID: {firebaseUid}");
         }
+    }
+
+    public static string GetEmailByFirebaseUid(string firebaseUid)
+    {
+        MySqlCommand command = new MySqlCommand(selectEmailByFirebaseUid);
+        command.Parameters.AddWithValue("@FirebaseUid", firebaseUid);
+        DataTable table = SqlServerConnection.ExecuteQuery(command);
+
+        if (table.Rows.Count > 0 && table.Rows[0]["email"] != DBNull.Value)
+        {
+            return (string)table.Rows[0]["email"];
+        }
+        else
+        {
+            throw new FamiliarNotFoundException($"con Firebase UID: {firebaseUid}");
+        }
+    }
+
+    public static bool UpdatePasswordByFirebaseUid(string firebaseUid)
+    {
+        // This method would typically interact with Firebase Authentication
+        // For demonstration, we'll assume a successful update if the user exists.
+        // In a real application, you'd use the Firebase Admin SDK here.
+        Familiar existingFamiliar = GetByFirebaseUid(firebaseUid);
+        if (existingFamiliar != null)
+        {
+            return true; 
+        }
+        return false;
+    }
+
+    public static bool UpdateEmailByFirebaseUid(string firebaseUid, string newEmail)
+    {
+        MySqlCommand command = new MySqlCommand(updateEmailByFirebaseUid);
+        command.Parameters.AddWithValue("@newEmail", newEmail);
+        command.Parameters.AddWithValue("@FirebaseUid", firebaseUid);
+        return SqlServerConnection.ExecuteCommand(command) > 0;
     }
 
     public static List<Familiar> GetByResidenteId(int idResidente)

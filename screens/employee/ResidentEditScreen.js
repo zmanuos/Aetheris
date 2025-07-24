@@ -1,5 +1,4 @@
-// ResidentEditScreen.js
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,14 +13,18 @@ import {
   Dimensions,
   ActionSheetIOS,
   Alert,
-  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+
+import { app, auth, db } from '../../config/firebaseConfig';
+import { updatePassword, updateEmail } from 'firebase/auth';
+import { updateDoc, doc } from 'firebase/firestore';
+
+import BackButton from '../../components/shared/BackButton';
 import { useNotification } from '../../src/context/NotificationContext';
-import BackButton from '../../components/shared/BackButton'; // Asumiendo que aún se usa
 
 import {
   formatName,
@@ -29,12 +32,13 @@ import {
   isAdult,
   formatPhoneNumber,
   isValidPhoneNumber,
+  isValidDateFormat,
+  isValidEmail,
 } from '../../components/shared/Validations';
 
 import Config from '../../config/config';
 const API_URL = Config.API_BASE_URL;
 
-// --- COLORES (Consistencia con los demás archivos) ---
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
@@ -44,671 +48,1253 @@ const LIGHT_GRAY = '#888';
 const VERY_LIGHT_GRAY = '#eee';
 const BACKGROUND_LIGHT = '#fcfcfc';
 const WHITE = '#fff';
+const ERROR_RED = '#DC3545';
+const BUTTON_HOVER_COLOR = '#5aa130';
 
-const COLORS = {
-  primaryGreen: PRIMARY_GREEN,
-  lightGreen: LIGHT_GREEN,
-  accentGreenBackground: ACCENT_GREEN_BACKGROUND,
-  darkGray: DARK_GRAY,
-  mediumGray: MEDIUM_GRAY,
-  lightGray: LIGHT_GRAY,
-  veryLightGray: VERY_LIGHT_GRAY,
-  backgroundLight: BACKGROUND_LIGHT,
-  white: WHITE,
-  errorRed: '#DC3545',
-  inputBorder: '#D1D5DB',
-  inputBackground: '#F9FAFB',
-  darkText: '#1F2937',
-  accentBlue: '#3B82F6',
-};
-
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
-const baseStaticUrl = API_URL.replace('/api', '');
 
-// `residentId` y `navigation` son ahora props
-export default function ResidentEditScreen({ residentId, navigation }) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [fetchError, setFetchError] = useState('');
+export default function ResidentEditScreen({ navigation, route }) {
+  const { residentId } = route.params; // Only need resident ID
   const { showNotification } = useNotification();
 
-  // Estados para datos del Residente
+  // Resident data states
   const [residentName, setResidentName] = useState('');
   const [residentApellido, setResidentApellido] = useState('');
-  const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date(2000, 0, 1));
+  const [residentFechaNacimiento, setResidentFechaNacimiento] = useState(new Date(1990, 0, 1));
   const [showResidentDatePicker, setShowResidentDatePicker] = useState(false);
   const [residentGenero, setResidentGenero] = useState('');
   const [residentTelefono, setResidentTelefono] = useState('');
-  const [residentFotoFilename, setResidentFotoFilename] = useState('');
+  const residentPhotoDataRef = useRef(null);
   const [residentFotoPreview, setResidentFotoPreview] = useState(null);
-  const [residentActivo, setResidentActivo] = useState(true);
-  const [residentDispositivoId, setResidentDispositivoId] = useState(null);
-  const [residentPromedioReposo, setResidentPromedioReposo] = useState('');
-  const [residentPromedioActivo, setResidentPromedioActivo] = useState('');
-  const [residentPromedioAgitado, setResidentPromedioAgitado] = useState('');
+  const [currentResidentPhoto, setCurrentResidentPhoto] = useState(null);
 
-  // Estados para validaciones
-  const [nameError, setNameError] = useState('');
-  const [apellidoError, setApellidoError] = useState('');
-  const [fechaNacimientoError, setFechaNacimientoError] = useState('');
-  const [generoError, setGeneroError] = useState('');
-  const [telefonoError, setTelefonoError] = useState('');
+  // Resident validation errors
+  const [residentNameError, setResidentNameError] = useState('');
+  const [residentApellidoError, setResidentApellidoError] = useState('');
+  const [residentFechaNacimientoError, setResidentFechaNacimientoError] = useState('');
+  const [residentGeneroError, setResidentGeneroError] = useState('');
+  const [residentTelefonoError, setResidentTelefonoError] = useState('');
 
-  const scrollViewRef = useRef(null);
+  // Family member data states
+  const [familiarId, setFamiliarId] = useState(null);
+  const [familiarName, setFamiliarName] = useState('');
+  const [familiarApellido, setFamiliarApellido] = useState('');
+  const [familiarFechaNacimiento, setFamiliarFechaNacimiento] = useState(new Date(1990, 0, 1));
+  const [showFamiliarDatePicker, setShowFamiliarDatePicker] = useState(false);
+  const [familiarGenero, setFamiliarGenero] = useState('');
+  const [familiarTelefono, setFamiliarTelefono] = useState('');
+  const [familiarParentesco, setFamiliarParentesco] = useState('');
+  const [familiarFirebaseEmail, setFamiliarFirebaseEmail] = useState('');
+  const [familiarFirebasePassword, setFamiliarFirebasePassword] = useState('');
+  const [familiarConfirmPassword, setFamiliarConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [familiarFirebaseUid, setFamiliarFirebaseUid] = useState('');
+  const [originalEmail, setOriginalEmail] = useState('');
 
-  // --- Funciones de Validación ---
-  const validateResident = () => {
-    let valid = true;
-    if (!isValidName(residentName)) { setNameError('Nombre inválido.'); valid = false; } else { setNameError(''); }
-    if (!isValidName(residentApellido)) { setApellidoError('Apellido inválido.'); valid = false; } else { setApellidoError(''); }
-    if (!isAdult(residentFechaNacimiento)) { setFechaNacimientoError('El residente debe ser mayor de 18 años.'); valid = false; } else { setFechaNacimientoError(''); }
-    if (!residentGenero) { setGeneroError('Selecciona un género.'); valid = false; } else { setGeneroError(''); }
-    if (!isValidPhoneNumber(residentTelefono)) { setTelefonoError('Número de teléfono inválido (10 dígitos).'); valid = false; } else { setTelefonoError(''); }
-    return valid;
+  // Family member validation errors
+  const [familiarNameError, setFamiliarNameError] = useState('');
+  const [familiarApellidoError, setFamiliarApellidoError] = useState('');
+  const [familiarFechaNacimientoError, setFamiliarFechaNacimientoError] = useState('');
+  const [familiarGeneroError, setFamiliarGeneroError] = useState('');
+  const [familiarTelefonoError, setFamiliarTelefonoError] = useState('');
+  const [familiarParentescoError, setFamiliarParentescoError] = useState('');
+  const [familiarFirebaseEmailError, setFamiliarFirebaseEmailError] = useState('');
+  const [familiarFirebasePasswordError, setFamiliarFirebasePasswordError] = useState('');
+  const [familiarConfirmPasswordError, setFamiliarConfirmPasswordError] = useState('');
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [parentescos, setParentescos] = useState([]);
+
+  // Load existing data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchParentescos(),
+          fetchResidentAndFamiliarData()
+        ]);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        showNotification('Error al cargar los datos', 'error');
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const fetchParentescos = async () => {
+    try {
+      const response = await fetch(`${API_URL}/Parentesco`);
+      const data = await response.json();
+
+      if (response.ok && data.parentesco) {
+        setParentescos(data.parentesco);
+      } else {
+        console.error('Error al cargar parentescos:', data.message || 'Error desconocido');
+        setParentescos([
+          { id: 1, nombre: 'Hijo/a' }, 
+          { id: 2, nombre: 'Cónyuge' },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error de conexión al cargar parentescos:', error);
+      setParentescos([
+        { id: 1, nombre: 'Hijo/a' }, 
+        { id: 2, nombre: 'Cónyuge' },
+      ]);
+    }
   };
 
-  // --- Precarga de datos del Residente ---
-  const fetchResidentData = useCallback(async () => {
-    if (!residentId) {
-      setIsLoading(false);
-      return;
-    }
-
-    setIsLoading(true);
-    setFetchError('');
+  const fetchResidentAndFamiliarData = async () => {
     try {
-      const residentResponse = await fetch(`${API_URL}/Residente/${residentId}`);
-      if (!residentResponse.ok) {
-        throw new Error('No se pudo cargar el residente.');
-      }
-      const residentData = await residentResponse.json();
+      // Get family member data by resident ID using the new endpoint
+      const familiarResponse = await fetch(`${API_URL}/Familiar/byresidente/${residentId}`);
+      const familiarData = await familiarResponse.json();
 
-      setResidentName(residentData.nombre || '');
-      setResidentApellido(residentData.apellido || '');
-      if (residentData.fecha_nacimiento) {
-        setResidentFechaNacimiento(new Date(residentData.fecha_nacimiento));
-      }
-      setResidentGenero(residentData.genero || '');
-      setResidentTelefono(formatPhoneNumber(residentData.telefono || ''));
-      setResidentActivo(residentData.activo);
-      setResidentDispositivoId(residentData.id_dispositivo || null);
-      setResidentPromedioReposo(residentData.promedio_frecuencia_reposo?.toString() || '');
-      setResidentPromedioActivo(residentData.promedio_frecuencia_activa?.toString() || '');
-      setResidentPromedioAgitado(residentData.promedio_frecuencia_agitado?.toString() || '');
+      if (familiarResponse.ok && familiarData.status === 0 && familiarData.familiares.length > 0) {
+        const familiar = familiarData.familiares[0]; // Get first family member
+        const resident = familiar.residente;
 
-      if (residentData.foto && residentData.foto !== 'nophoto.png') {
-        setResidentFotoFilename(residentData.foto);
-        setResidentFotoPreview(`${baseStaticUrl}/images/residents/${residentData.foto}`);
+        // Set resident data
+        setResidentName(resident.nombre || '');
+        setResidentApellido(resident.apellido || '');
+        setResidentFechaNacimiento(new Date(resident.fecha_nacimiento));
+        setResidentGenero(resident.genero || '');
+        setResidentTelefono(resident.telefono || '');
+        
+        // Set photo if exists
+        if (resident.foto && resident.foto !== 'nophoto.png') {
+          const baseStaticUrl = API_URL.replace('/api', '');
+          const photoUrl = `${baseStaticUrl}/images/residents/${resident.foto}`;
+          setCurrentResidentPhoto(photoUrl);
+          setResidentFotoPreview(photoUrl);
+        }
+
+        // Set family member data
+        setFamiliarId(familiar.id);
+        setFamiliarName(familiar.nombre || '');
+        setFamiliarApellido(familiar.apellido || '');
+        setFamiliarFechaNacimiento(new Date(familiar.fecha_nacimiento));
+        setFamiliarGenero(familiar.genero || '');
+        setFamiliarTelefono(familiar.telefono || '');
+        setFamiliarParentesco(familiar.parentesco?.id?.toString() || '');
+        setFamiliarFirebaseUid(familiar.firebase_uid || '');
+
+        // Get email using Firebase UID
+        if (familiar.firebase_uid) {
+          try {
+            const emailResponse = await fetch(`${API_URL}/Familiar/email/firebase/${familiar.firebase_uid}`);
+            const emailData = await emailResponse.json();
+            
+            if (emailResponse.ok && emailData.status === 0) {
+              setFamiliarFirebaseEmail(emailData.email || '');
+              setOriginalEmail(emailData.email || '');
+            }
+          } catch (emailError) {
+            console.error('Error fetching email:', emailError);
+          }
+        }
       } else {
-        setResidentFotoFilename('nophoto.png');
-        setResidentFotoPreview(null);
+        showNotification('No se encontraron datos del residente o familiar', 'error');
       }
-
     } catch (error) {
-      console.error('Error al cargar datos del residente:', error);
-      setFetchError('Error al cargar los datos del residente. Intenta de nuevo.');
-      showNotification('Error al cargar los datos del residente.', 'error');
-    } finally {
-      setIsLoading(false);
+      console.error('Error fetching resident and familiar data:', error);
+      showNotification('Error de conexión al cargar datos', 'error');
     }
-  }, [residentId, showNotification]);
+  };
 
-  useEffect(() => {
-    fetchResidentData();
-  }, [fetchResidentData]);
-
-  // --- Manejadores de fechas ---
-  const onChangeResidentDate = (event, selectedDate) => {
+  const onChangeResidentDateMobile = (event, selectedDate) => {
     const currentDate = selectedDate || residentFechaNacimiento;
-    setShowResidentDatePicker(Platform.OS === 'ios');
+    setShowResidentDatePicker(Platform.OS === 'ios' ? false : false);
     setResidentFechaNacimiento(currentDate);
   };
 
-  const showResidentDatepicker = () => {
-    setShowResidentDatePicker(true);
+  const onChangeResidentDateWeb = (event) => {
+    const dateString = event.target.value;
+    if (dateString) {
+      const date = new Date(dateString + 'T00:00:00Z');
+      if (!isNaN(date.getTime())) {
+        setResidentFechaNacimiento(date);
+      }
+    }
   };
 
-  // --- Manejo de la selección de imagen ---
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
-      Alert.alert("Permiso Requerido", "Necesitamos acceso a tu galería para poder seleccionar una imagen.");
+  const onChangeFamiliarDateMobile = (event, selectedDate) => {
+    const currentDate = selectedDate || familiarFechaNacimiento;
+    setShowFamiliarDatePicker(Platform.OS === 'ios' ? false : false);
+    setFamiliarFechaNacimiento(currentDate);
+  };
+
+  const onChangeFamiliarDateWeb = (event) => {
+    const dateString = event.target.value;
+    if (dateString) {
+      const date = new Date(dateString + 'T00:00:00Z');
+      if (!isNaN(date.getTime())) {
+        setFamiliarFechaNacimiento(date);
+      }
+    }
+  };
+
+  const processImageResult = async (result) => {
+    if (!result.canceled) {
+      const assetUri = result.assets[0].uri;
+      let imageDataForUpload = null;
+      let previewUri = assetUri;
+
+      if (assetUri.startsWith('data:')) {
+        try {
+          const response = await fetch(assetUri);
+          const blob = await response.blob();
+
+          const match = assetUri.match(/^data:(.*?);base64,/);
+          const mimeType = match ? match[1] : 'image/jpeg';
+          let extension = mimeType.split('/')[1] || 'jpeg';
+
+          imageDataForUpload = { blob, name: `photo.${extension}`, type: mimeType };
+        } catch (blobError) {
+          console.error('Error al convertir data URI a Blob:', blobError);
+          showNotification('No se pudo procesar la imagen seleccionada.', 'error');
+          residentPhotoDataRef.current = null;
+          setResidentFotoPreview(currentResidentPhoto);
+          return;
+        }
+      } else {
+        let filename = assetUri.split('/').pop();
+        let type = 'image/jpeg';
+        const extensionMatch = filename.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
+        if (extensionMatch) {
+          const ext = extensionMatch[1].toLowerCase();
+          switch (ext) {
+            case 'png': type = 'image/png'; break;
+            case 'jpg':
+            case 'jpeg': type = 'image/jpeg'; break;
+            case 'gif': type = 'image/gif'; break;
+            default: type = 'application/octet-stream';
+          }
+        }
+        imageDataForUpload = { uri: assetUri, name: filename, type: type };
+      }
+
+      residentPhotoDataRef.current = imageDataForUpload;
+      setResidentFotoPreview(previewUri);
+    }
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      showNotification('Permiso requerido para acceder a la cámara.', 'error');
       return;
     }
 
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+    let result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+    processImageResult(result);
+  };
+
+  const choosePhotoFromLibrary = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showNotification('Permiso requerido para acceder a la galería de fotos.', 'error');
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 0.5,
     });
-
-    if (!pickerResult.canceled) {
-      const selectedAsset = pickerResult.assets[0];
-      setResidentFotoPreview(selectedAsset.uri);
-      const fileName = selectedAsset.uri.split('/').pop();
-      setResidentFotoFilename(fileName);
-    }
+    processImageResult(result);
   };
 
-  const openImagePicker = () => {
+  const handleImagePickOption = () => {
     if (Platform.OS === 'ios') {
       ActionSheetIOS.showActionSheetWithOptions(
         {
-          options: ['Cancelar', 'Seleccionar de Galería', 'Tomar Foto'],
+          options: ['Cancelar', 'Tomar Foto', 'Seleccionar de Galería'],
           cancelButtonIndex: 0,
         },
-        async (buttonIndex) => {
+        (buttonIndex) => {
           if (buttonIndex === 1) {
-            pickImage();
+            takePhoto();
           } else if (buttonIndex === 2) {
-            Alert.alert("Función no disponible", "La opción de tomar foto no está implementada aún.");
-            // Implementar lógica para tomar foto si es necesario
+            choosePhotoFromLibrary();
           }
         }
       );
+    } else if (Platform.OS === 'web') {
+      choosePhotoFromLibrary();
     } else {
-      // Para Android y Web, usar el pickImage directamente
-      pickImage();
+      Alert.alert(
+        "Actualizar Foto",
+        "¿De dónde quieres seleccionar la nueva foto?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Tomar Foto", onPress: takePhoto },
+          { text: "Seleccionar de Galería", onPress: choosePhotoFromLibrary },
+        ],
+        { cancelable: true }
+      );
     }
   };
 
-  // --- Función para subir la foto ---
-  const uploadPhoto = async (uri, fileName) => {
-    if (!uri) return 'nophoto.png'; // Si no hay URI, no hay foto para subir
-
-    const fileExtension = fileName.split('.').pop();
-    const newFileName = `resident_${residentId}_${Date.now()}.${fileExtension}`;
-
-    try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
-
-      const formData = new FormData();
-      formData.append('file', blob, newFileName);
-
-      const uploadResponse = await fetch(`${API_URL}/upload/resident_photo`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          // No Content-Type header when using FormData, browser sets it
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        const errorText = await uploadResponse.text();
-        throw new Error(`Error al subir la foto: ${errorText}`);
-      }
-
-      const uploadResult = await uploadResponse.json();
-      return uploadResult.fileName; // Retorna el nombre de archivo guardado en el servidor
-
-    } catch (error) {
-      console.error('Error en uploadPhoto:', error);
-      showNotification(`Error al subir la foto: ${error.message}`, 'error');
-      return 'nophoto.png'; // Retornar un valor predeterminado en caso de error
+  const validateField = (fieldName, value) => {
+    let isValid = true;
+    switch (fieldName) {
+      case 'residentName':
+        if (!value.trim()) {
+          setResidentNameError('El nombre es obligatorio.');
+          isValid = false;
+        } else if (!isValidName(value)) {
+          setResidentNameError('El nombre solo puede contener letras y espacios.');
+          isValid = false;
+        } else {
+          setResidentNameError('');
+        }
+        break;
+      case 'residentApellido':
+        if (!value.trim()) {
+          setResidentApellidoError('El apellido es obligatorio.');
+          isValid = false;
+        } else if (!isValidName(value)) {
+          setResidentApellidoError('El apellido solo puede contener letras y espacios.');
+          isValid = false;
+        } else {
+          setResidentApellidoError('');
+        }
+        break;
+      case 'residentFechaNacimiento':
+        const rDateString = value.toISOString().split('T')[0];
+        if (!rDateString) {
+          setResidentFechaNacimientoError('La fecha de nacimiento es obligatoria.');
+          isValid = false;
+        } else if (!isValidDateFormat(rDateString)) {
+          setResidentFechaNacimientoError('Formato de fecha inválido (YYYY-MM-DD).');
+          isValid = false;
+        } else if (!isAdult(rDateString)) {
+          setResidentFechaNacimientoError('La edad no cumple con los requisitos (mayor de 18 y no más de 120 años).');
+          isValid = false;
+        } else {
+          setResidentFechaNacimientoError('');
+        }
+        break;
+      case 'residentGenero':
+        if (!value) {
+          setResidentGeneroError('El género es obligatorio.');
+          isValid = false;
+        } else {
+          setResidentGeneroError('');
+        }
+        break;
+      case 'residentTelefono':
+        if (!value) {
+          setResidentTelefonoError('El teléfono es obligatorio.');
+          isValid = false;
+        } else if (!isValidPhoneNumber(value)) {
+          setResidentTelefonoError('El teléfono debe tener exactamente 10 dígitos numéricos.');
+          isValid = false;
+        } else {
+          setResidentTelefonoError('');
+        }
+        break;
+      case 'familiarName':
+        if (!value.trim()) {
+          setFamiliarNameError('El nombre es obligatorio.');
+          isValid = false;
+        } else if (!isValidName(value)) {
+          setFamiliarNameError('El nombre solo puede contener letras y espacios.');
+          isValid = false;
+        } else {
+          setFamiliarNameError('');
+        }
+        break;
+      case 'familiarApellido':
+        if (!value.trim()) {
+          setFamiliarApellidoError('El apellido es obligatorio.');
+          isValid = false;
+        } else if (!isValidName(value)) {
+          setFamiliarApellidoError('El apellido solo puede contener letras y espacios.');
+          isValid = false;
+        } else {
+          setFamiliarApellidoError('');
+        }
+        break;
+      case 'familiarFechaNacimiento':
+        const fDateString = value.toISOString().split('T')[0];
+        if (!fDateString) {
+          setFamiliarFechaNacimientoError('La fecha de nacimiento es obligatoria.');
+          isValid = false;
+        } else if (!isValidDateFormat(fDateString)) {
+          setFamiliarFechaNacimientoError('Formato de fecha inválido (YYYY-MM-DD).');
+          isValid = false;
+        } else if (!isAdult(fDateString)) {
+          setFamiliarFechaNacimientoError('La edad no cumple con los requisitos (mayor de 18 y no más de 120 años).');
+          isValid = false;
+        } else {
+          setFamiliarFechaNacimientoError('');
+        }
+        break;
+      case 'familiarGenero':
+        if (!value) {
+          setFamiliarGeneroError('El género es obligatorio.');
+          isValid = false;
+        } else {
+          setFamiliarGeneroError('');
+        }
+        break;
+      case 'familiarTelefono':
+        if (!value) {
+          setFamiliarTelefonoError('El teléfono es obligatorio.');
+          isValid = false;
+        } else if (!isValidPhoneNumber(value)) {
+          setFamiliarTelefonoError('El teléfono debe tener exactamente 10 dígitos numéricos.');
+          isValid = false;
+        } else {
+          setFamiliarTelefonoError('');
+        }
+        break;
+      case 'familiarParentesco':
+        if (!value) {
+          setFamiliarParentescoError('El parentesco es obligatorio.');
+          isValid = false;
+        } else {
+          setFamiliarParentescoError('');
+        }
+        break;
+      case 'familiarFirebaseEmail':
+        if (!value.trim()) {
+          setFamiliarFirebaseEmailError('El correo electrónico es obligatorio.');
+          isValid = false;
+        } else if (!isValidEmail(value)) {
+          setFamiliarFirebaseEmailError('El formato del correo electrónico no es válido.');
+          isValid = false;
+        } else {
+          setFamiliarFirebaseEmailError('');
+        }
+        break;
+      case 'familiarFirebasePassword':
+        // Password is optional for editing - only validate if provided
+        if (value && value.length < 6) {
+          setFamiliarFirebasePasswordError('La contraseña debe tener al menos 6 caracteres.');
+          isValid = false;
+        } else {
+          setFamiliarFirebasePasswordError('');
+        }
+        break;
+      case 'familiarConfirmPassword':
+        if (familiarFirebasePassword && !value) {
+          setFamiliarConfirmPasswordError('Confirma tu contraseña.');
+          isValid = false;
+        } else if (value !== familiarFirebasePassword) {
+          setFamiliarConfirmPasswordError('Las contraseñas no coinciden.');
+          isValid = false;
+        } else {
+          setFamiliarConfirmPasswordError('');
+        }
+        break;
+      default:
+        break;
     }
+    return isValid;
   };
 
-  // --- Guardar Cambios del Residente ---
-  const handleSaveResident = async () => {
-    if (!validateResident()) {
-      showNotification('Por favor, corrige los errores en el formulario del residente.', 'error');
+  const handleCombinedUpdate = async () => {
+    setIsLoading(true);
+
+    // Validate all fields
+    const isResidentNameValid = validateField('residentName', residentName);
+    const isResidentApellidoValid = validateField('residentApellido', residentApellido);
+    const isResidentFechaNacimientoValid = validateField('residentFechaNacimiento', residentFechaNacimiento);
+    const isResidentGeneroValid = validateField('residentGenero', residentGenero);
+    const isResidentTelefonoValid = validateField('residentTelefono', residentTelefono);
+
+    const isFamiliarNameValid = validateField('familiarName', familiarName);
+    const isFamiliarApellidoValid = validateField('familiarApellido', familiarApellido);
+    const isFamiliarFechaNacimientoValid = validateField('familiarFechaNacimiento', familiarFechaNacimiento);
+    const isFamiliarGeneroValid = validateField('familiarGenero', familiarGenero);
+    const isFamiliarTelefonoValid = validateField('familiarTelefono', familiarTelefono);
+    const isFamiliarParentescoValid = validateField('familiarParentesco', familiarParentesco);
+    const isFamiliarFirebaseEmailValid = validateField('familiarFirebaseEmail', familiarFirebaseEmail);
+    const isFamiliarFirebasePasswordValid = validateField('familiarFirebasePassword', familiarFirebasePassword);
+    const isFamiliarConfirmPasswordValid = validateField('familiarConfirmPassword', familiarConfirmPassword);
+
+    if (
+      !isResidentNameValid || !isResidentApellidoValid || !isResidentFechaNacimientoValid ||
+      !isResidentGeneroValid || !isResidentTelefonoValid ||
+      !isFamiliarNameValid || !isFamiliarApellidoValid || !isFamiliarFechaNacimientoValid ||
+      !isFamiliarGeneroValid || !isFamiliarTelefonoValid || !isFamiliarParentescoValid ||
+      !isFamiliarFirebaseEmailValid || !isFamiliarFirebasePasswordValid || !isFamiliarConfirmPasswordValid
+    ) {
+      showNotification('Por favor, corrige los errores en el formulario antes de continuar.', 'error');
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-    setFetchError(''); // Limpiar errores previos
     try {
-      let finalPhotoFilename = residentFotoFilename;
+      // Update email if changed using the new endpoint
+      if (familiarFirebaseEmail !== originalEmail && familiarFirebaseUid) {
+        try {
+          const emailUpdateResponse = await fetch(`${API_URL}/Familiar/email/firebase`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firebaseUid: familiarFirebaseUid,
+              newEmail: familiarFirebaseEmail
+            }),
+          });
 
-      // Solo subir la foto si ha cambiado o es nueva
-      if (residentFotoPreview && residentFotoPreview.startsWith('file://')) { // Es una nueva imagen local
-        finalPhotoFilename = await uploadPhoto(residentFotoPreview, residentFotoFilename);
-      } else if (!residentFotoPreview && residentFotoFilename !== 'nophoto.png') {
-        // Si se eliminó la foto y no es nophoto.png
-        finalPhotoFilename = 'nophoto.png';
+          const emailUpdateData = await emailUpdateResponse.json();
+          if (!emailUpdateResponse.ok || emailUpdateData.status !== 0) {
+            throw new Error(emailUpdateData.message || 'Error updating email');
+          }
+        } catch (emailError) {
+          console.error("Error updating email:", emailError);
+          showNotification('Error al actualizar el correo electrónico.', 'error');
+          setIsLoading(false);
+          return;
+        }
       }
 
-      const residentDataToUpdate = {
-        nombre: residentName,
-        apellido: residentApellido,
-        fecha_nacimiento: residentFechaNacimiento.toISOString().split('T')[0],
-        genero: residentGenero,
-        telefono: residentTelefono.replace(/\D/g, ''), // Guardar solo dígitos
-        foto: finalPhotoFilename,
-        activo: residentActivo,
-        id_dispositivo: residentDispositivoId || null,
-        promedio_frecuencia_reposo: parseFloat(residentPromedioReposo) || null,
-        promedio_frecuencia_activa: parseFloat(residentPromedioActivo) || null,
-        promedio_frecuencia_agitado: parseFloat(residentPromedioAgitado) || null,
-      };
+      // Update password if provided using the new endpoint
+      if (familiarFirebasePassword && familiarFirebaseUid) {
+        try {
+          const passwordUpdateResponse = await fetch(`${API_URL}/Familiar/password/firebase`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              firebaseUid: familiarFirebaseUid,
+              newPassword: familiarFirebasePassword
+            }),
+          });
 
-      const method = residentId ? 'PUT' : 'POST';
-      const url = residentId ? `${API_URL}/Residente/${residentId}` : `${API_URL}/Residente`;
+          const passwordUpdateData = await passwordUpdateResponse.json();
+          if (!passwordUpdateResponse.ok || passwordUpdateData.status !== 0) {
+            throw new Error(passwordUpdateData.message || 'Error updating password');
+          }
+        } catch (passwordError) {
+          console.error("Error updating password:", passwordError);
+          showNotification('Error al actualizar la contraseña.', 'error');
+          setIsLoading(false);
+          return;
+        }
+      }
 
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(residentDataToUpdate),
+      // Update resident data
+      const residentFormData = new FormData();
+      residentFormData.append('nombre', formatName(residentName));
+      residentFormData.append('apellido', formatName(residentApellido));
+
+      const year = residentFechaNacimiento.getFullYear();
+      const month = String(residentFechaNacimiento.getMonth() + 1).padStart(2, '0');
+      const day = String(residentFechaNacimiento.getDate()).padStart(2, '0');
+      residentFormData.append('fechaNacimiento', `${year}-${month}-${day}`);
+
+      residentFormData.append('genero', residentGenero);
+      residentFormData.append('telefono', formatPhoneNumber(residentTelefono));
+
+      const residentResponse = await fetch(`${API_URL}/Residente/${residentId}`, {
+        method: 'PUT',
+        body: residentFormData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al guardar el residente.');
+      const residentData = await residentResponse.json();
+
+      if (!residentResponse.ok || residentData.status !== 0) {
+        showNotification(residentData.message || 'Error al actualizar datos del residente.', 'error');
+        setIsLoading(false);
+        return;
       }
 
-      showNotification('Datos del residente guardados exitosamente.', 'success');
-      // No navegar aquí para permitir la edición conjunta
+      // Update photo if changed
+      const currentResidentPhotoData = residentPhotoDataRef.current;
+      if (currentResidentPhotoData) {
+        const photoUploadFormData = new FormData();
+        photoUploadFormData.append('IdResidente', residentId.toString());
+
+        if (currentResidentPhotoData.blob) {
+          photoUploadFormData.append('FotoArchivo', currentResidentPhotoData.blob, currentResidentPhotoData.name);
+        } else {
+          photoUploadFormData.append('FotoArchivo', {
+            uri: currentResidentPhotoData.uri,
+            name: currentResidentPhotoData.name,
+            type: currentResidentPhotoData.type,
+          });
+        }
+
+        try {
+          const photoUploadResponse = await fetch(`${API_URL}/Residente/UploadPhoto`, {
+            method: 'POST',
+            body: photoUploadFormData,
+          });
+
+          if (!photoUploadResponse.ok) {
+            console.warn('Warning: Error uploading resident photo');
+            showNotification('Error al actualizar la foto del residente, pero los datos se guardaron.', 'warning');
+          }
+        } catch (photoError) {
+          console.warn('Warning: Connection error uploading resident photo');
+          showNotification('Error de conexión al actualizar la foto, pero los datos se guardaron.', 'warning');
+        }
+      }
+
+      // Update family member data
+      const familiarFormData = new FormData();
+      familiarFormData.append('nombre', formatName(familiarName));
+      familiarFormData.append('apellido', formatName(familiarApellido));
+      const familiarYear = familiarFechaNacimiento.getFullYear();
+      const familiarMonth = String(familiarFechaNacimiento.getMonth() + 1).padStart(2, '0');
+      const familiarDay = String(familiarFechaNacimiento.getDate()).padStart(2, '0');
+      familiarFormData.append('fechaNacimiento', `${familiarYear}-${familiarMonth}-${familiarDay}`);
+      familiarFormData.append('genero', familiarGenero);
+      familiarFormData.append('telefono', formatPhoneNumber(familiarTelefono));
+      familiarFormData.append('id_parentesco', familiarParentesco);
+
+      const familiarResponse = await fetch(`${API_URL}/Familiar/${familiarId}`, {
+        method: 'PUT',
+        body: familiarFormData,
+      });
+
+      const familiarData = await familiarResponse.json();
+
+      if (familiarResponse.ok && familiarData.status === 0) {
+        showNotification('Datos actualizados exitosamente.', 'success');
+        navigation.navigate('ResidentsScreen', { updateSuccess: true });
+      } else {
+        if (familiarData.errors) {
+          let errorMessages = Object.values(familiarData.errors).map(errArray => errArray.join(', ')).join('\n');
+          showNotification(`Por favor, corrige los siguientes errores del familiar:\n${errorMessages}`, 'error');
+        } else {
+          showNotification(familiarData.message || 'Error al actualizar datos del familiar.', 'error');
+        }
+      }
 
     } catch (error) {
-      console.error('Error al guardar residente:', error);
-      setFetchError(error.message);
-      showNotification(`Error al guardar residente: ${error.message}`, 'error');
+      console.error('Error updating data:', error);
+      showNotification('No se pudo conectar con el servidor para actualizar los datos.', 'error');
     } finally {
       setIsLoading(false);
     }
   };
 
-
-  if (isLoading && !fetchError) {
+  if (isLoadingData) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primaryGreen} />
-        <Text style={styles.loadingText}>Cargando datos del residente...</Text>
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={PRIMARY_GREEN} />
+          <Text style={styles.loadingText}>Cargando datos...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
-  if (fetchError) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{fetchError}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchResidentData}>
-          <Text style={styles.retryButtonText}>Reintentar</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  const formattedResidentDateForDisplay = residentFechaNacimiento.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedResidentDateForWebInput = residentFechaNacimiento.toISOString().split('T')[0];
+
+  const formattedFamiliarDateForDisplay = familiarFechaNacimiento.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formattedFamiliarDateForWebInput = familiarFechaNacimiento.toISOString().split('T')[0];
 
   return (
-    <View style={styles.sectionContainer}>
-      <Text style={styles.sectionTitle}>Datos del Residente</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <BackButton onPress={() => navigation.goBack()} />
+        <Text style={styles.title}>Editar Residente y Familiar</Text>
+        <View style={{ width: 24 }} />
+      </View>
 
-      {/* Campo: Foto del Residente (Moved to top) */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Foto</Text>
-        <TouchableOpacity style={styles.imagePickerButton} onPress={openImagePicker}>
-          {residentFotoPreview ? (
-            <Image source={{ uri: residentFotoPreview }} style={styles.profileImage} />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <Ionicons name="image" size={50} color={COLORS.lightGray} />
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <View style={styles.mainContentWrapper}>
+          <View style={styles.formCard}>
+            <TouchableOpacity style={styles.photoContainer} onPress={handleImagePickOption} disabled={isLoading}>
+              {residentFotoPreview ? (
+                <Image source={{ uri: residentFotoPreview }} style={styles.residentPhotoPreview} />
+              ) : (
+                <View style={styles.photoPlaceholder}>
+                  <Ionicons name="camera" size={50} color={LIGHT_GRAY} />
+                  <Text style={styles.photoPlaceholderText}>Actualizar Foto</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.detailsSection}>
+              <Text style={styles.sectionTitle}>Datos Personales del Residente</Text>
+
+              <Text style={styles.inputLabel}>Nombre</Text>
+              <View style={[styles.inputContainer, residentNameError ? styles.inputError : null]}>
+                <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: Juan"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={residentName}
+                  onChangeText={(text) => {setResidentName(formatName(text)); setResidentNameError('');}}
+                  onBlur={() => validateField('residentName', residentName)}
+                  editable={!isLoading}
+                />
+              </View>
+              {residentNameError ? <Text style={styles.errorText}>{residentNameError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Apellido</Text>
+              <View style={[styles.inputContainer, residentApellidoError ? styles.inputError : null]}>
+                <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: Pérez"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={residentApellido}
+                  onChangeText={(text) => {setResidentApellido(formatName(text)); setResidentApellidoError('');}}
+                  onBlur={() => validateField('residentApellido', residentApellido)}
+                  editable={!isLoading}
+                />
+              </View>
+              {residentApellidoError ? <Text style={styles.errorText}>{residentApellidoError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Género</Text>
+              <View style={[styles.pickerInputContainer, residentGeneroError ? styles.inputError : null]}>
+                <Ionicons name="person-circle-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <Picker
+                  selectedValue={residentGenero}
+                  onValueChange={(itemValue) => {setResidentGenero(itemValue); setResidentGeneroError('');}}
+                  onBlur={() => validateField('residentGenero', residentGenero)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                  enabled={!isLoading}
+                >
+                  <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
+                  <Picker.Item label="Masculino" value="Masculino" />
+                  <Picker.Item label="Femenino" value="Femenino" />
+                </Picker>
+              </View>
+              {residentGeneroError ? <Text style={styles.errorText}>{residentGeneroError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
+              {Platform.OS === 'web' ? (
+                <View style={[styles.inputContainer, residentFechaNacimientoError ? styles.inputError : null]}>
+                  <Ionicons name="calendar-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                  <input
+                    type="date"
+                    value={formattedResidentDateForWebInput}
+                    onChange={onChangeResidentDateWeb}
+                    onBlur={() => validateField('residentFechaNacimiento', residentFechaNacimiento)}
+                    style={styles.datePickerWeb}
+                    disabled={isLoading}
+                  />
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.inputContainer, residentFechaNacimientoError ? styles.inputError : null]}
+                    onPress={() => setShowResidentDatePicker(true)}
+                    disabled={isLoading}
+                  >
+                    <Ionicons name="calendar-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                    <Text style={styles.dateInputText}>{formattedResidentDateForDisplay}</Text>
+                  </TouchableOpacity>
+                  {showResidentDatePicker && (
+                    <DateTimePicker
+                      testID="residentDatePicker"
+                      value={residentFechaNacimiento}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={onChangeResidentDateMobile}
+                      maximumDate={new Date()}
+                    />
+                  )}
+                </>
+              )}
+              {residentFechaNacimientoError ? <Text style={styles.errorText}>{residentFechaNacimientoError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Teléfono</Text>
+              <View style={[styles.inputContainer, residentTelefonoError ? styles.inputError : null]}>
+                <Ionicons name="call-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: 5512345678"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={residentTelefono}
+                  onChangeText={(text) => {setResidentTelefono(formatPhoneNumber(text)); setResidentTelefonoError('');}}
+                  onBlur={() => validateField('residentTelefono', residentTelefono)}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  editable={!isLoading}
+                />
+                <Text style={styles.charCounter}>{residentTelefono.length}/10</Text>
+              </View>
+              {residentTelefonoError ? <Text style={styles.errorText}>{residentTelefonoError}</Text> : null}
             </View>
-          )}
-          <Text style={styles.imagePickerButtonText}>
-            {residentFotoPreview ? 'Cambiar Foto' : 'Seleccionar Foto'}
-          </Text>
-        </TouchableOpacity>
-        {residentFotoPreview && (
-          <TouchableOpacity onPress={() => { setResidentFotoPreview(null); setResidentFotoFilename('nophoto.png'); }} style={styles.removeImageButton}>
-            <Ionicons name="close-circle" size={24} color={COLORS.errorRed} />
-            <Text style={styles.removeImageButtonText}>Quitar Foto</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+          </View>
 
-      {/* Campo: Nombre */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Nombre</Text>
-        <TextInput
-          style={[styles.input, nameError ? styles.inputError : {}]}
-          value={residentName}
-          onChangeText={setResidentName}
-          placeholder="Nombre del residente"
-          placeholderTextColor={COLORS.lightGray}
-          onBlur={() => validateResident()}
-        />
-        {nameError ? <Text style={styles.errorTextSmall}>{nameError}</Text> : null}
-      </View>
+          <View style={styles.formCard}>
+            <View style={styles.familiarFormContent}>
+              <Text style={styles.sectionTitle}>Datos del Familiar</Text>
 
-      {/* Campo: Apellido */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Apellido</Text>
-        <TextInput
-          style={[styles.input, apellidoError ? styles.inputError : {}]}
-          value={residentApellido}
-          onChangeText={setResidentApellido}
-          placeholder="Apellido del residente"
-          placeholderTextColor={COLORS.lightGray}
-          onBlur={() => validateResident()}
-        />
-        {apellidoError ? <Text style={styles.errorTextSmall}>{apellidoError}</Text> : null}
-      </View>
+              <Text style={styles.inputLabel}>Nombre Familiar</Text>
+              <View style={[styles.inputContainer, familiarNameError ? styles.inputError : null]}>
+                <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: Ana"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={familiarName}
+                  onChangeText={(text) => {setFamiliarName(formatName(text)); setFamiliarNameError('');}}
+                  onBlur={() => validateField('familiarName', familiarName)}
+                  editable={!isLoading}
+                />
+              </View>
+              {familiarNameError ? <Text style={styles.errorText}>{familiarNameError}</Text> : null}
 
-      {/* Campo: Fecha de Nacimiento */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Fecha de Nacimiento</Text>
-        <TouchableOpacity onPress={showResidentDatepicker} style={styles.dateDisplay}>
-          <TextInput
-            style={[styles.input, fechaNacimientoError ? styles.inputError : {}, styles.dateTextInput]}
-            value={residentFechaNacimiento.toLocaleDateString('es-ES')}
-            editable={false}
-            placeholder="DD/MM/AAAA"
-            placeholderTextColor={COLORS.lightGray}
-          />
-          <Ionicons name="calendar" size={20} color={COLORS.mediumGray} style={styles.calendarIcon} />
-        </TouchableOpacity>
-        {showResidentDatePicker && (
-          <DateTimePicker
-            testID="residentDatePicker"
-            value={residentFechaNacimiento}
-            mode="date"
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={onChangeResidentDate}
-            maximumDate={new Date()}
-            locale="es-ES"
-            style={Platform.OS === 'web' ? styles.datePickerWeb : undefined}
-          />
-        )}
-        {fechaNacimientoError ? <Text style={styles.errorTextSmall}>{fechaNacimientoError}</Text> : null}
-      </View>
+              <Text style={styles.inputLabel}>Apellido Familiar</Text>
+              <View style={[styles.inputContainer, familiarApellidoError ? styles.inputError : null]}>
+                <Ionicons name="person-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: Gómez"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={familiarApellido}
+                  onChangeText={(text) => {setFamiliarApellido(formatName(text)); setFamiliarApellidoError('');}}
+                  onBlur={() => validateField('familiarApellido', familiarApellido)}
+                  editable={!isLoading}
+                />
+              </View>
+              {familiarApellidoError ? <Text style={styles.errorText}>{familiarApellidoError}</Text> : null}
 
-      {/* Campo: Género */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Género</Text>
-        <View style={[styles.pickerContainer, generoError ? styles.inputError : {}]}>
-          <Picker
-            selectedValue={residentGenero}
-            onValueChange={(itemValue) => setResidentGenero(itemValue)}
-            style={styles.picker}
-            itemStyle={styles.pickerItem}
-          >
-            <Picker.Item label="Selecciona" value="" enabled={false} style={{ color: COLORS.lightGray }} />
-            <Picker.Item label="Masculino" value="Masculino" />
-            <Picker.Item label="Femenino" value="Femenino" />
-            <Picker.Item label="Otro" value="Otro" />
-          </Picker>
+              <Text style={styles.inputLabel}>Género Familiar</Text>
+              <View style={[styles.pickerInputContainer, familiarGeneroError ? styles.inputError : null]}>
+                <Ionicons name="person-circle-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <Picker
+                  selectedValue={familiarGenero}
+                  onValueChange={(itemValue) => {setFamiliarGenero(itemValue); setFamiliarGeneroError('');}}
+                  onBlur={() => validateField('familiarGenero', familiarGenero)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                  enabled={!isLoading}
+                >
+                  <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
+                  <Picker.Item label="Masculino" value="Masculino" />
+                  <Picker.Item label="Femenino" value="Femenino" />
+                </Picker>
+              </View>
+              {familiarGeneroError ? <Text style={styles.errorText}>{familiarGeneroError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Fecha de Nacimiento Familiar</Text>
+              {Platform.OS === 'web' ? (
+                <View style={[styles.inputContainer, familiarFechaNacimientoError ? styles.inputError : null]}>
+                  <Ionicons name="calendar-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                  <input
+                    type="date"
+                    value={formattedFamiliarDateForWebInput}
+                    onChange={onChangeFamiliarDateWeb}
+                    onBlur={() => validateField('familiarFechaNacimiento', familiarFechaNacimiento)}
+                    style={styles.datePickerWeb}
+                    disabled={isLoading}
+                  />
+                </View>
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={[styles.inputContainer, familiarFechaNacimientoError ? styles.inputError : null]}
+                    onPress={() => setShowFamiliarDatePicker(true)}
+                    disabled={isLoading}
+                  >
+                    <Ionicons name="calendar-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                    <Text style={styles.dateInputText}>{formattedFamiliarDateForDisplay}</Text>
+                  </TouchableOpacity>
+                  {showFamiliarDatePicker && (
+                    <DateTimePicker
+                      testID="familiarDatePicker"
+                      value={familiarFechaNacimiento}
+                      mode="date"
+                      display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                      onChange={onChangeFamiliarDateMobile}
+                      maximumDate={new Date()}
+                    />
+                  )}
+                </>
+              )}
+              {familiarFechaNacimientoError ? <Text style={styles.errorText}>{familiarFechaNacimientoError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Teléfono Familiar</Text>
+              <View style={[styles.inputContainer, familiarTelefonoError ? styles.inputError : null]}>
+                <Ionicons name="call-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ej: 5512345678"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={familiarTelefono}
+                  onChangeText={(text) => {setFamiliarTelefono(formatPhoneNumber(text)); setFamiliarTelefonoError('');}}
+                  onBlur={() => validateField('familiarTelefono', familiarTelefono)}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  editable={!isLoading}
+                />
+                <Text style={styles.charCounter}>{familiarTelefono.length}/10</Text>
+              </View>
+              {familiarTelefonoError ? <Text style={styles.errorText}>{familiarTelefonoError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Parentesco</Text>
+              <View style={[styles.pickerInputContainer, familiarParentescoError ? styles.inputError : null]}>
+                <Ionicons name="people-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <Picker
+                  selectedValue={familiarParentesco}
+                  onValueChange={(itemValue) => {setFamiliarParentesco(itemValue); setFamiliarParentescoError('');}}
+                  onBlur={() => validateField('familiarParentesco', familiarParentesco)}
+                  style={styles.picker}
+                  itemStyle={styles.pickerItem}
+                  enabled={!isLoading}
+                >
+                  <Picker.Item label="Seleccionar Parentesco..." value="" enabled={true} color={LIGHT_GRAY} />
+                  {parentescos.map((p) => (
+                    <Picker.Item key={p.id} label={p.nombre} value={p.id.toString()} />
+                  ))}
+                </Picker>
+              </View>
+              {familiarParentescoError ? <Text style={styles.errorText}>{familiarParentescoError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Correo electrónico</Text>
+              <View style={[styles.inputContainer, familiarFirebaseEmailError ? styles.inputError : null]}>
+                <Ionicons name="mail-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="ejemplo@dominio.com"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={familiarFirebaseEmail}
+                  onChangeText={(text) => {setFamiliarFirebaseEmail(text); setFamiliarFirebaseEmailError('');}}
+                  onBlur={() => validateField('familiarFirebaseEmail', familiarFirebaseEmail)}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!isLoading}
+                />
+              </View>
+              {familiarFirebaseEmailError ? <Text style={styles.errorText}>{familiarFirebaseEmailError}</Text> : null}
+
+              <Text style={styles.inputLabel}>Nueva Contraseña (opcional)</Text>
+              <View style={[styles.inputContainer, familiarFirebasePasswordError ? styles.inputError : null]}>
+                <Ionicons name="lock-closed-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Dejar vacío para mantener actual"
+                  placeholderTextColor={LIGHT_GRAY}
+                  value={familiarFirebasePassword}
+                  onChangeText={(text) => {setFamiliarFirebasePassword(text); setFamiliarFirebasePasswordError('');}}
+                  onBlur={() => validateField('familiarFirebasePassword', familiarFirebasePassword)}
+                  secureTextEntry={!showPassword}
+                  autoCompleteType={Platform.OS === 'web' ? 'new-password' : 'off'}
+                  autoComplete={Platform.OS === 'web' ? 'new-password' : 'off'}
+                  editable={!isLoading}
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
+                  <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={MEDIUM_GRAY} />
+                </TouchableOpacity>
+              </View>
+              {familiarFirebasePasswordError ? <Text style={styles.errorText}>{familiarFirebasePasswordError}</Text> : null}
+
+              {familiarFirebasePassword ? (
+                <>
+                  <Text style={styles.inputLabel}>Confirmar Nueva Contraseña</Text>
+                  <View style={[styles.inputContainer, familiarConfirmPasswordError ? styles.inputError : null]}>
+                    <Ionicons name="lock-closed-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                    <TextInput
+                      style={styles.inputField}
+                      placeholder="Confirmar nueva contraseña"
+                      placeholderTextColor={LIGHT_GRAY}
+                      value={familiarConfirmPassword}
+                      onChangeText={(text) => {setFamiliarConfirmPassword(text); setFamiliarConfirmPasswordError('');}}
+                      onBlur={() => validateField('familiarConfirmPassword', familiarConfirmPassword)}
+                      secureTextEntry={!showPassword}
+                      autoCompleteType={Platform.OS === 'web' ? 'new-password' : 'off'}
+                      autoComplete={Platform.OS === 'web' ? 'new-password' : 'off'}
+                      editable={!isLoading}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
+                      <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={MEDIUM_GRAY} />
+                    </TouchableOpacity>
+                  </View>
+                  {familiarConfirmPasswordError ? <Text style={styles.errorText}>{familiarConfirmPasswordError}</Text> : null}
+                </>
+              ) : null}
+
+            </View>
+          </View>
         </View>
-        {generoError ? <Text style={styles.errorTextSmall}>{generoError}</Text> : null}
-      </View>
 
-      {/* Campo: Teléfono */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Teléfono</Text>
-        <TextInput
-          style={[styles.input, telefonoError ? styles.inputError : {}]}
-          value={residentTelefono}
-          onChangeText={(text) => setResidentTelefono(formatPhoneNumber(text))}
-          keyboardType="phone-pad"
-          placeholder="Ej: (123) 456-7890"
-          placeholderTextColor={COLORS.lightGray}
-          maxLength={14}
-          onBlur={() => validateResident()}
-        />
-        {telefonoError ? <Text style={styles.errorTextSmall}>{telefonoError}</Text> : null}
-      </View>
-
-      {/* Switch: Residente Activo */}
-      <View style={styles.switchContainer}>
-        <Text style={styles.inputLabel}>Residente Activo</Text>
-        <Switch
-          onValueChange={setResidentActivo}
-          value={residentActivo}
-          trackColor={{ false: COLORS.lightGray, true: COLORS.primaryGreen }}
-          thumbColor={COLORS.white}
-        />
-      </View>
-
-      {/* Campos de promedio de frecuencia */}
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Promedio Frecuencia Reposo</Text>
-        <TextInput
-          style={styles.input}
-          value={residentPromedioReposo}
-          onChangeText={setResidentPromedioReposo}
-          keyboardType="numeric"
-          placeholder="Ej: 60"
-          placeholderTextColor={COLORS.lightGray}
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Promedio Frecuencia Activa</Text>
-        <TextInput
-          style={styles.input}
-          value={residentPromedioActivo}
-          onChangeText={setResidentPromedioActivo}
-          keyboardType="numeric"
-          placeholder="Ej: 120"
-          placeholderTextColor={COLORS.lightGray}
-        />
-      </View>
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Promedio Frecuencia Agitado</Text>
-        <TextInput
-          style={styles.input}
-          value={residentPromedioAgitado}
-          onChangeText={setResidentPromedioAgitado}
-          keyboardType="numeric"
-          placeholder="Ej: 150"
-          placeholderTextColor={COLORS.lightGray}
-        />
-      </View>
-
-      <TouchableOpacity style={styles.primaryButton} onPress={handleSaveResident} disabled={isLoading}>
-        {isLoading ? (
-          <ActivityIndicator color={COLORS.white} />
-        ) : (
-          <Text style={styles.buttonText}>Guardar Cambios del Residente</Text>
-        )}
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          style={styles.primaryButton}
+          onPress={handleCombinedUpdate}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={WHITE} />
+          ) : (
+            <Text style={styles.primaryButtonText}>Actualizar Datos</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
-// --- Estilos ---
+// Styles remain the same as in the previous version
+const containerBaseStyles = {
+  backgroundColor: WHITE,
+  borderRadius: 15,
+  padding: 10,
+  shadowColor: DARK_GRAY,
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.1,
+  shadowRadius: 8,
+  elevation: 6,
+  borderWidth: 1.5,
+  borderColor: VERY_LIGHT_GRAY,
+};
+
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: BACKGROUND_LIGHT,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundLight,
-    padding: 20,
   },
   loadingText: {
     marginTop: 10,
-    fontSize: IS_LARGE_SCREEN ? 18 : 16,
-    color: COLORS.darkGray,
+    fontSize: 16,
+    color: MEDIUM_GRAY,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.backgroundLight,
-    padding: 20,
-  },
-  errorText: {
-    color: COLORS.errorRed,
-    textAlign: 'center',
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
-    marginBottom: 15,
-  },
-  retryButton: {
-    backgroundColor: COLORS.accentBlue,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: COLORS.white,
-    fontSize: IS_LARGE_SCREEN ? 16 : 14,
-    fontWeight: 'bold',
-  },
-  sectionContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: IS_LARGE_SCREEN ? 20 : 20, // Reduced padding
-    marginBottom: IS_LARGE_SCREEN ? 20 : 20, // Reduced margin
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    width: '100%',
-    maxWidth: IS_LARGE_SCREEN ? 380 : '100%', // Significantly reduced max width
-  },
-  sectionTitle: {
-    fontSize: IS_LARGE_SCREEN ? 22 : 20, // Slightly smaller font
-    fontWeight: 'bold',
-    color: COLORS.darkGray,
-    marginBottom: 20, // Reduced margin
-    textAlign: 'center',
-  },
-  inputGroup: {
-    marginBottom: 10, // Reduced margin
-  },
-  inputLabel: {
-    fontSize: IS_LARGE_SCREEN ? 14 : 13, // Slightly smaller font
-    color: COLORS.darkText,
-    marginBottom: 6, // Reduced margin
-    fontWeight: '600',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    borderRadius: 8,
-    padding: IS_LARGE_SCREEN ? 10 : 8, // Reduced padding
-    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
-    color: COLORS.darkText,
-    backgroundColor: COLORS.inputBackground,
-  },
-  inputError: {
-    borderColor: COLORS.errorRed,
-    borderWidth: 2,
-  },
-  errorTextSmall: {
-    color: COLORS.errorRed,
-    fontSize: IS_LARGE_SCREEN ? 12 : 11, // Slightly smaller font
-    marginTop: 4, // Reduced margin
-    paddingLeft: 5,
-  },
-  dateDisplay: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    borderRadius: 8,
-    backgroundColor: COLORS.inputBackground,
-    paddingRight: 10,
+    justifyContent: 'center',
+    padding: 18,
+    backgroundColor: 'transparent',
+    borderBottomWidth: 0,
+    shadowColor: 'transparent',
+    elevation: 0,
+    paddingTop: Platform.OS === 'android' ? 35 : 18,
   },
-  dateTextInput: {
+  title: {
+    fontSize: IS_LARGE_SCREEN ? 26 : 22,
+    fontWeight: '700',
+    color: DARK_GRAY,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 5,
+  },
+  mainContentWrapper: {
+    flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    maxWidth: IS_LARGE_SCREEN ? 900 : '98%',
+    width: '100%',
+    paddingHorizontal: 8,
+  },
+  formCard: {
+    ...containerBaseStyles,
+    padding: IS_LARGE_SCREEN ? 10 : 8,
+    margin: IS_LARGE_SCREEN ? 8 : 5,
+    alignItems: 'center',
     flex: 1,
-    padding: IS_LARGE_SCREEN ? 10 : 8, // Reduced padding
-    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
-    color: COLORS.darkText,
+    minWidth: IS_LARGE_SCREEN ? 300 : 250,
+    maxWidth: IS_LARGE_SCREEN ? '49%' : '100%',
+    width: '100%',
   },
-  calendarIcon: {
-    marginLeft: 10,
+  photoContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: VERY_LIGHT_GRAY,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: LIGHT_GRAY,
+    borderStyle: 'dashed',
+    marginBottom: 10,
+  },
+  photoPlaceholder: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  photoPlaceholderText: {
+    color: LIGHT_GRAY,
+    fontSize: 14,
+    marginTop: 5,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  residentPhotoPreview: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  detailsSection: {
+    width: '100%',
+  },
+  familiarFormContent: {
+    width: '100%',
+  },
+  sectionTitle: {
+    fontSize: IS_LARGE_SCREEN ? 20 : 18,
+    fontWeight: '700',
+    color: PRIMARY_GREEN,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: DARK_GRAY,
+    marginBottom: 3,
+    fontWeight: '600',
+    marginTop: 6,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: VERY_LIGHT_GRAY,
+    borderWidth: 1.5,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: BACKGROUND_LIGHT,
+    height: 35,
+  },
+  inputField: {
+    flex: 1,
+    height: '100%',
+    color: MEDIUM_GRAY,
+    fontSize: 13,
+    paddingLeft: 6,
+    ...Platform.select({
+      web: {
+        outline: 'none',
+        WebkitAppearance: 'none',
+        MozAppearance: 'none',
+        appearance: 'none',
+      },
+    }),
+  },
+  inputIcon: {
+    marginRight: 0,
+    fontSize: 16,
+  },
+  inputError: {
+    borderColor: ERROR_RED,
+    borderWidth: 2,
+  },
+  errorText: {
+    color: ERROR_RED,
+    fontSize: 10,
+    marginBottom: 0,
+    marginTop: 3,
+    alignSelf: 'flex-start',
+    paddingLeft: 4,
+    fontWeight: '500',
+  },
+  pickerInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: BACKGROUND_LIGHT,
+    height: 35,
+    borderWidth: 1.5,
+    borderColor: VERY_LIGHT_GRAY,
+  },
+  picker: {
+    flex: 1,
+    height: '100%',
+    color: MEDIUM_GRAY,
+    borderWidth: 0,
+    borderColor: 'transparent',
+    backgroundColor: 'transparent',
+    borderRadius: 0,
+    ...Platform.select({
+      web: {
+        outline: 'none',
+      },
+    }),
+  },
+  pickerItem: {
+    fontSize: 13,
+  },
+  dateInputText: {
+    flex: 1,
+    fontSize: 13,
+    color: MEDIUM_GRAY,
+    paddingLeft: 6,
   },
   datePickerWeb: {
-    width: '100%',
-    height: 40, // Reduced height
-    color: COLORS.darkText,
-    paddingHorizontal: 10,
-    backgroundColor: 'transparent',
+    flex: 1,
+    height: '100%',
+    color: MEDIUM_GRAY,
+    fontSize: 13,
+    paddingLeft: 6,
     borderWidth: 0,
+    backgroundColor: 'transparent',
     WebkitAppearance: 'none',
     MozAppearance: 'none',
     appearance: 'none',
     outline: 'none',
+    cursor: 'pointer',
+    paddingRight: Platform.OS === 'web' ? 8 : 0,
   },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    borderRadius: 8,
-    backgroundColor: COLORS.inputBackground,
-  },
-  picker: {
-    height: Platform.OS === 'ios' ? 120 : 40, // Reduced height for picker
-    width: '100%',
-    color: COLORS.darkText,
-  },
-  pickerItem: {
-    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
-    color: COLORS.darkText,
-  },
-  imagePickerButton: {
-    alignItems: 'center',
-    marginBottom: 10, // Reduced margin
-  },
-  profileImage: {
-    width: 120, // Reduced size
-    height: 120, // Reduced size
-    borderRadius: 60, // Adjusted border radius
-    marginBottom: 8, // Reduced margin
-    borderColor: COLORS.primaryGreen,
-    borderWidth: 3,
-  },
-  profileImagePlaceholder: {
-    width: 120, // Reduced size
-    height: 120, // Reduced size
-    borderRadius: 60, // Adjusted border radius
-    backgroundColor: COLORS.veryLightGray,
+  passwordToggle: {
+    paddingLeft: 8,
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8, // Reduced margin
-    borderColor: COLORS.lightGray,
-    borderWidth: 1,
   },
-  imagePickerButtonText: {
-    color: COLORS.accentBlue,
-    fontSize: IS_LARGE_SCREEN ? 15 : 14, // Slightly smaller font
-    fontWeight: 'bold',
-  },
-  removeImageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: -5,
-    marginBottom: 8, // Reduced margin
-    padding: 5,
-  },
-  removeImageButtonText: {
-    color: COLORS.errorRed,
-    fontSize: IS_LARGE_SCREEN ? 13 : 12, // Slightly smaller font
-    marginLeft: 5,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10, // Reduced margin
-    paddingVertical: 8, // Reduced padding
-    paddingHorizontal: 10,
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
+  charCounter: {
+    fontSize: 10,
+    color: LIGHT_GRAY,
+    marginLeft: 6,
   },
   primaryButton: {
-    backgroundColor: COLORS.primaryGreen,
-    paddingVertical: IS_LARGE_SCREEN ? 12 : 10, // Reduced padding
-    borderRadius: 10,
+    backgroundColor: PRIMARY_GREEN,
+    paddingVertical: 8,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 15, // Reduced margin
-    shadowColor: COLORS.darkGray,
+    marginTop: 10,
+    marginBottom: 15,
+    width: IS_LARGE_SCREEN ? 350 : '85%',
+    maxWidth: 450,
+    shadowColor: PRIMARY_GREEN,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 6,
-    width: '100%',
-    maxWidth: IS_LARGE_SCREEN ? 350 : '100%', // Adjusted max width for button
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+    ...Platform.select({
+      web: {
+        cursor: 'pointer',
+        transitionDuration: '0.3s',
+        transitionProperty: 'background-color',
+        ':hover': {
+          backgroundColor: BUTTON_HOVER_COLOR,
+        },
+      },
+    }),
   },
-  buttonText: {
-    color: COLORS.white,
-    fontSize: IS_LARGE_SCREEN ? 16 : 15, // Slightly smaller font
+  primaryButtonText: {
+    color: WHITE,
+    fontSize: 14,
     fontWeight: 'bold',
   },
 });

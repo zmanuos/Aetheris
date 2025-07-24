@@ -151,7 +151,7 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
   };
 
   const handleEditResident = (id) => {
-    navigation.navigate('EditResidentAndFamiliar', { residentId: id });
+    navigation.navigate('ResidentEditScreen', { residentId: id }); // Changed from 'EditResidentAndFamiliar'
   };
 
   const handleAssignDevice = (residentId) => {

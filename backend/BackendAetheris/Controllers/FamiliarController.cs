@@ -1,11 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks; // Necesario para métodos asíncronos
+using FirebaseAdmin.Auth; // Necesario para FirebaseAuthException y UserRecord
 
 [Route("api/[controller]")]
 [ApiController]
 public class FamiliarController : ControllerBase
 {
+    private readonly IFirebaseAuthService _firebaseAuthService; // Declaración del servicio inyectado
+
+    // Constructor para inyección de dependencia
+    public FamiliarController(IFirebaseAuthService firebaseAuthService)
+    {
+        _firebaseAuthService = firebaseAuthService;
+    }
+
     [HttpGet]
     public ActionResult Get()
     {
@@ -144,6 +154,89 @@ public class FamiliarController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, MessageResponse.GetReponse(3, "Error interno al actualizar el familiar: " + ex.Message, MessageType.Error));
+        }
+    }
+
+    // NUEVO ENDPOINT: Obtener el correo del familiar por el id de firebase.
+    [HttpGet("email/firebase/{firebaseUid}")]
+    public async Task<ActionResult> GetFamiliarEmailByFirebaseUid(string firebaseUid)
+    {
+        try
+        {
+            UserRecord userRecord = await _firebaseAuthService.GetUserByUidAsync(firebaseUid);
+            return Ok(EmailResponse.GetResponse(userRecord.Email));
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(MessageResponse.GetReponse(1, "Familiar no encontrado en Firebase Authentication.", MessageType.Error));
+            }
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Error de Firebase: {ex.Message}", MessageType.CriticalError));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al obtener el correo del familiar: {ex.Message}", MessageType.CriticalError));
+        }
+    }
+
+    // NUEVO ENDPOINT: Cambiar la contraseña del correo del firebase del familiar, teniendo el id del firebase del familiar.
+    [HttpPost("password/firebase")] // Se cambió a POST y toma un DTO para la nueva contraseña
+    public async Task<ActionResult> UpdateFamiliarPasswordByFirebaseUid([FromBody] FamiliarUpdatePasswordDto updateDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await _firebaseAuthService.SetUserPasswordAsync(updateDto.firebaseUid, updateDto.newPassword);
+            return Ok(MessageResponse.GetReponse(0, "Contraseña del familiar actualizada exitosamente en Firebase.", MessageType.Success));
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(MessageResponse.GetReponse(1, "Familiar no encontrado en Firebase Authentication.", MessageType.Error));
+            }
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Error de Firebase: {ex.Message}", MessageType.CriticalError));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al actualizar la contraseña del familiar: {ex.Message}", MessageType.CriticalError));
+        }
+    }
+
+    // NUEVO ENDPOINT: Cambiar el correo, teniendo como parametro el id del firebase del familiar.
+    [HttpPost("email/firebase")] // Se cambió a POST para consistencia y toma un DTO
+    public async Task<ActionResult> UpdateFamiliarEmail([FromBody] FamiliarUpdateEmailDto updateDto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            await _firebaseAuthService.UpdateUserEmailAsync(updateDto.firebaseUid, updateDto.newEmail);
+            return Ok(MessageResponse.GetReponse(0, "Correo electrónico del familiar actualizado exitosamente en Firebase.", MessageType.Success));
+        }
+        catch (FirebaseAuthException ex)
+        {
+            if (ex.AuthErrorCode == AuthErrorCode.UserNotFound)
+            {
+                return NotFound(MessageResponse.GetReponse(1, "Familiar no encontrado en Firebase Authentication.", MessageType.Error));
+            }
+            if (ex.AuthErrorCode == AuthErrorCode.EmailAlreadyExists)
+            {
+                return Conflict(MessageResponse.GetReponse(2, "El nuevo correo electrónico ya está en uso por otra cuenta de Firebase.", MessageType.Warning));
+            }
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Error de Firebase: {ex.Message}", MessageType.CriticalError));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, MessageResponse.GetReponse(999, $"Ocurrió un error inesperado al actualizar el correo del familiar: {ex.Message}", MessageType.CriticalError));
         }
     }
 }

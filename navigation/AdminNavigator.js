@@ -7,7 +7,6 @@ import SideMenu from '../components/navigation/SideMenu';
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen';
-import CombinedEditScreen from '../screens/employee/CombinedEditScreen';
 import ResidentProfileScreen from '../screens/employee/ResidentProfileScreen';
 import WeeklyCheckupDetailScreen from '../screens/employee/WeeklyCheckupDetailScreen';
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
@@ -35,7 +34,7 @@ function ResidentsStackScreen() {
     >
       <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
       <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
-      <ResidentsStack.Screen name="EditResidentAndFamiliar" component={CombinedEditScreen} />
+      <ResidentsStack.Screen name="ResidentEditScreen" component={ResidentEditScreen} />
       <ResidentsStack.Screen name="ResidentProfile" component={ResidentProfileScreen} />
       <ResidentsStack.Screen name="WeeklyCheckupDetail" component={WeeklyCheckupDetailScreen} />
       <ResidentsStack.Screen name="ResidentEdit" component={ResidentEditScreen} />
