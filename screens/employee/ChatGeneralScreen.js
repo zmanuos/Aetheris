@@ -35,12 +35,12 @@ const COLORS = {
   BACKGROUND_LIGHT: '#FFFFFF',
   HOVER_EFFECT_COLOR: '#E5E5EA',
   DIVIDER: '#EFEFF4',
-  
+
   MESSAGE_SENT: '#6BB240',
   MESSAGE_RECEIVED: '#FFFFFF',
   MESSAGE_BORDER: '#E0E0E0',
 
-  ERROR: '#FF3B30', 
+  ERROR: '#FF3B30',
   WARNING: '#FFCC00',
   TEXT_PRIMARY: '#1C1C1E',
   TEXT_SECONDARY: '#8E8E93',
@@ -60,12 +60,12 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
   const [newMessage, setNewMessage] = useState("")
   const [isSendingMessage, setIsSendingMessage] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  
+
   const [currentConversationMessagesToShowCount, setCurrentConversationMessagesToShowCount] = useState(INITIAL_MESSAGES_COUNT)
   const [loadingMoreOldMessages, setLoadingMoreOldMessages] = useState(false)
 
   const chatFlatListRef = useRef(null)
-  const messageInputRef = useRef(null) 
+  const messageInputRef = useRef(null)
   const soundObjectRef = useRef(new Audio.Sound())
 
   // Refs para el manejo del scroll al cargar mensajes antiguos y el scroll inicial
@@ -78,6 +78,15 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
   const selectedConversation = useMemo(() => {
     return conversations.find((conv) => conv.familiarId === selectedConversationId)
   }, [conversations, selectedConversationId])
+
+  // Moved messagesToDisplay before useEffect that uses it
+  const messagesToDisplay = useMemo(() => {
+    if (!selectedConversation) return []
+    const totalMessages = selectedConversation.messages.length
+    return selectedConversation.messages.slice(
+      Math.max(0, totalMessages - currentConversationMessagesToShowCount)
+    )
+  }, [selectedConversation, currentConversationMessagesToShowCount])
 
   useEffect(() => {
     const loadSound = async () => {
@@ -225,7 +234,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
         // Marcar el scroll inicial como hecho solo si realmente se ha desplazado al final de la conversación cargada.
         // Esto previene que se marque como hecho si solo se cargaron algunos mensajes iniciales.
         if (messagesCurrentlyDisplayed === totalMessagesInConversation) {
-            initialScrollDoneRef.current = true;
+          initialScrollDoneRef.current = true;
         }
       }
     }
@@ -323,13 +332,6 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
     })
   }, [conversations, searchQuery])
 
-  const messagesToDisplay = useMemo(() => {
-    if (!selectedConversation) return []
-    const totalMessages = selectedConversation.messages.length
-    return selectedConversation.messages.slice(
-      Math.max(0, totalMessages - currentConversationMessagesToShowCount)
-    )
-  }, [selectedConversation, currentConversationMessagesToShowCount])
 
   // Captura la altura del contenido y el offset del scroll ANTES de cargar más mensajes
   const onScroll = useCallback(({ nativeEvent }) => {
@@ -481,7 +483,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
               refreshControl={
                 <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[COLORS.PRIMARY_GREEN]} />
               }
-              showsVerticalScrollIndicator={true} 
+              showsVerticalScrollIndicator={true}
               alwaysBounceVertical={true}
             />
           </View>
@@ -504,7 +506,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
                         : "U"}
                     </Text>
                   </View>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.chatHeaderContent}
                     onPress={() => {
                       console.log(`Redirigir a perfil de familiar: ${selectedConversation.familiar?.nombre} ${selectedConversation.familiar?.apellido}`)
@@ -513,7 +515,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
                   >
                     <Text style={styles.chatHeaderTitle}>
                       {selectedConversation.familiar
-                        ? `${selectedConversation.familiar.nombre} ${selectedConversation.familiar.apellido}` 
+                        ? `${selectedConversation.familiar.nombre} ${selectedConversation.familiar.apellido}`
                         : "Familiar Desconocido"}
                     </Text>
                     <Text style={styles.chatHeaderSubtitle}>
@@ -562,7 +564,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
                     />
                     <TouchableOpacity
                       style={[
-                        styles.sendButton, 
+                        styles.sendButton,
                         (!newMessage.trim() || isSendingMessage) && styles.sendButtonDisabled
                       ]}
                       onPress={sendMessage}
@@ -660,14 +662,14 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: COLORS.DARK_GRAY,
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.1, 
+        shadowOpacity: 0.1,
         shadowRadius: 16,
       },
       android: {
-        elevation: 10, 
+        elevation: 10,
       },
       web: {
-        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)", 
+        boxShadow: "0 8px 24px rgba(0, 0, 0, 0.1)",
       },
     }),
   },
@@ -695,18 +697,18 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 40,
     backgroundColor: COLORS.VERY_LIGHT_GRAY,
-    borderRadius: 10, 
+    borderRadius: 10,
     paddingHorizontal: 12,
     fontSize: 16,
     color: COLORS.TEXT_PRIMARY,
     borderWidth: 1,
-    borderColor: COLORS.DIVIDER, 
+    borderColor: COLORS.DIVIDER,
     ...Platform.select({
       web: {
         outlineWidth: 0,
         "&:focus": {
-          borderColor: COLORS.PRIMARY_GREEN, 
-          boxShadow: `0 0 0 2px ${COLORS.LIGHT_GREEN}` 
+          borderColor: COLORS.PRIMARY_GREEN,
+          boxShadow: `0 0 0 2px ${COLORS.LIGHT_GREEN}`
         }
       },
     }),
@@ -718,14 +720,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    marginHorizontal: 12, 
-    marginVertical: 6, 
-    borderRadius: 12, 
+    marginHorizontal: 12,
+    marginVertical: 6,
+    borderRadius: 12,
     backgroundColor: COLORS.WHITE,
     ...commonShadow,
   },
   conversationListItemActive: {
-    backgroundColor: COLORS.ACCENT_BACKGROUND, 
+    backgroundColor: COLORS.ACCENT_BACKGROUND,
     ...Platform.select({
       ios: {
         shadowColor: COLORS.DARK_GRAY,
@@ -739,7 +741,7 @@ const styles = StyleSheet.create({
       web: {
         boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)",
         "&:hover": {
-          backgroundColor: COLORS.ACCENT_BACKGROUND, 
+          backgroundColor: COLORS.ACCENT_BACKGROUND,
         },
       },
     }),
@@ -748,22 +750,22 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: COLORS.PRIMARY_GREEN, 
+    backgroundColor: COLORS.PRIMARY_GREEN,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
   },
   conversationAvatarText: {
     color: COLORS.WHITE,
-    fontSize: 18, 
-    fontWeight: "700", 
+    fontSize: 18,
+    fontWeight: "700",
   },
   conversationContent: {
     flex: 1,
     marginRight: 8,
   },
   conversationListName: {
-    fontSize: 17, 
+    fontSize: 17,
     fontWeight: "600",
     color: COLORS.TEXT_PRIMARY,
     marginBottom: 2,
@@ -772,29 +774,29 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.TEXT_MUTED,
     lineHeight: 20,
-    fontWeight: "400", 
+    fontWeight: "400",
   },
   conversationMeta: {
     alignItems: "flex-end",
   },
   conversationListDate: {
     fontSize: 12,
-    color: COLORS.TEXT_MUTED, 
+    color: COLORS.TEXT_MUTED,
     fontWeight: "400",
   },
   chatMessagesPane: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND_LIGHT, 
+    backgroundColor: COLORS.BACKGROUND_LIGHT,
   },
   chatHeader: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16, 
-    borderBottomWidth: 1, 
+    padding: 16,
+    borderBottomWidth: 1,
     borderBottomColor: COLORS.DIVIDER,
     backgroundColor: COLORS.WHITE,
     ...commonShadow,
-    zIndex: 1, 
+    zIndex: 1,
   },
   backButton: {
     marginRight: 12,
@@ -817,28 +819,28 @@ const styles = StyleSheet.create({
   },
   chatHeaderContent: {
     flex: 1,
-    paddingVertical: 4, 
+    paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 8,
     ...Platform.select({
       web: {
         cursor: "pointer",
         "&:hover": {
-          backgroundColor: COLORS.HOVER_EFFECT_COLOR, 
+          backgroundColor: COLORS.HOVER_EFFECT_COLOR,
         },
       },
     }),
   },
   chatHeaderTitle: {
     fontSize: 18,
-    fontWeight: "600", 
+    fontWeight: "600",
     color: COLORS.TEXT_PRIMARY,
     marginBottom: 2,
   },
   chatHeaderSubtitle: {
     fontSize: 14,
     color: COLORS.TEXT_SECONDARY,
-    fontWeight: "400", 
+    fontWeight: "400",
   },
   messagesListContent: {
     paddingVertical: 16,
@@ -848,37 +850,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   messageBubble: {
-    borderRadius: 18, 
-    paddingVertical: 10, 
-    paddingHorizontal: 14, 
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     marginBottom: 10,
-    maxWidth: "85%", 
+    maxWidth: "85%",
     ...commonShadow,
   },
   messageBubbleSent: {
-    backgroundColor: COLORS.MESSAGE_SENT, 
+    backgroundColor: COLORS.MESSAGE_SENT,
     alignSelf: "flex-end",
-    borderBottomRightRadius: 6, 
+    borderBottomRightRadius: 6,
   },
   messageTextSent: {
-    color: COLORS.WHITE, 
+    color: COLORS.WHITE,
     fontSize: 15,
     fontWeight: "400",
   },
   messageDateSent: {
-    color: "rgba(255, 255, 255, 0.7)", 
+    color: "rgba(255, 255, 255, 0.7)",
     fontSize: 10,
-    fontWeight: "300", 
+    fontWeight: "300",
   },
   messageBubbleReceived: {
-    backgroundColor: COLORS.MESSAGE_RECEIVED, 
+    backgroundColor: COLORS.MESSAGE_RECEIVED,
     alignSelf: "flex-start",
-    borderBottomLeftRadius: 6, 
+    borderBottomLeftRadius: 6,
     borderWidth: 1,
-    borderColor: COLORS.MESSAGE_BORDER, 
+    borderColor: COLORS.MESSAGE_BORDER,
   },
   messageText: {
-    color: COLORS.TEXT_PRIMARY, 
+    color: COLORS.TEXT_PRIMARY,
     fontSize: 15,
     lineHeight: 20,
     fontWeight: "400",
@@ -891,10 +893,10 @@ const styles = StyleSheet.create({
   },
   messageDate: {
     fontSize: 10,
-    color: COLORS.TEXT_MUTED, 
+    color: COLORS.TEXT_MUTED,
     textAlign: "right",
     marginTop: 6,
-    fontWeight: "300", 
+    fontWeight: "300",
   },
   inputAreaContainer: {
     borderTopWidth: 1,
@@ -905,16 +907,16 @@ const styles = StyleSheet.create({
   inputArea: {
     flexDirection: "row",
     alignItems: "flex-end",
-    padding: 12, 
-    gap: 8, 
+    padding: 12,
+    gap: 8,
   },
   messageInput: {
     flex: 1,
-    backgroundColor: COLORS.VERY_LIGHT_GRAY, 
-    borderRadius: 22, 
+    backgroundColor: COLORS.VERY_LIGHT_GRAY,
+    borderRadius: 22,
     paddingHorizontal: 16,
-    paddingVertical: 10, 
-    minHeight: 44, 
+    paddingVertical: 10,
+    minHeight: 44,
     maxHeight: 120,
     fontSize: 16,
     color: COLORS.TEXT_PRIMARY,
@@ -933,10 +935,10 @@ const styles = StyleSheet.create({
     }),
   },
   sendButton: {
-    backgroundColor: COLORS.PRIMARY_GREEN, 
-    width: 44, 
-    height: 44, 
-    borderRadius: 22, 
+    backgroundColor: COLORS.PRIMARY_GREEN,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: "center",
     alignItems: "center",
     ...Platform.select({
@@ -950,12 +952,12 @@ const styles = StyleSheet.create({
     }),
   },
   sendButtonDisabled: {
-    backgroundColor: COLORS.LIGHT_GREEN, 
+    backgroundColor: COLORS.LIGHT_GREEN,
     ...Platform.select({
       web: {
         cursor: "not-allowed",
         "&:hover": {
-          backgroundColor: COLORS.LIGHT_GREEN, 
+          backgroundColor: COLORS.LIGHT_GREEN,
         },
       },
     }),
@@ -963,10 +965,10 @@ const styles = StyleSheet.create({
   noConversationSelected: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center", 
+    alignItems: "center",
     padding: 32,
     gap: 16,
-    backgroundColor: COLORS.BACKGROUND_LIGHT, 
+    backgroundColor: COLORS.BACKGROUND_LIGHT,
   },
   noConversationSelectedText: {
     fontSize: 18,

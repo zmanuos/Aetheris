@@ -174,7 +174,7 @@ export default function CreateConsultaScreen() {
   // Si no llegan datos nuevos, los timers seguirán corriendo y se congelarán los valores actuales al pasar 3 segundos.
 
   // Funciones para capturar/liberar cada valor manualmente
-  const handleCapture = (type) => {
+  const handleCapture = (type) => { 
     switch (type) {
       case 'Spo2':
         setFrozenSpo2(sensorData.Spo2);
