@@ -1,470 +1,468 @@
-// AETHERIS/screens/admin/CreateConsultaScreen.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    ScrollView,
-    TouchableOpacity,
-    StyleSheet,
-    Platform,
-    Dimensions,
-    SafeAreaView,
-    KeyboardAvoidingView,
+  SafeAreaView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Switch,
+  Dimensions,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { Ionicons } from '@expo/vector-icons';
 
-// Colores ajustados para un diseño más minimalista y profesional
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
-const ACCENT_GREEN_BACKGROUND = '#EEF7E8'; // Used for subtle backgrounds
+const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
 const DARK_GRAY = '#333';
 const MEDIUM_GRAY = '#555';
-const LIGHT_GRAY = '#888'; // For placeholders and secondary text
-const VERY_LIGHT_GRAY = '#eee'; // Used for subtle borders
-const BACKGROUND_LIGHT = '#fcfcfc'; // Overall screen background
-const WHITE = '#fff'; // Card and input background
-const BUTTON_HOVER_COLOR = '#5aa130'; // For button hover state
+const LIGHT_GRAY = '#888';
+const VERY_LIGHT_GRAY = '#eee';
+const BACKGROUND_LIGHT = '#fcfcfc';
+const WHITE = '#fff';
 
 const { width } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
+const AUTO_CAPTURE_DELAY = 3000; // milisegundos (3 segundos)
 
 export default function CreateConsultaScreen() {
-    const [idResidente, setIdResidente] = useState('');
-    const [currentDateTime, setCurrentDateTime] = useState('');
-    const [frecuencia, setFrecuencia] = useState('');
-    const [oxigeno, setOxigeno] = useState('');
-    const [temperatura, setTemperatura] = useState('');
-    const [peso, setPeso] = useState('');
-    const [estatura, setEstatura] = useState('');
-    const [observaciones, setObservaciones] = useState('');
+  // Estados para los campos del formulario
+  const [frecuencia, setFrecuencia] = useState('');
+  const [oxigeno, setOxigeno] = useState('');
+  const [temperatura, setTemperatura] = useState('');
+  const [peso, setPeso] = useState('');
+  const [estatura, setEstatura] = useState('');
+  const [observaciones, setObservaciones] = useState('');
 
-    const [residentes, setResidentes] = useState([
-        { id: 1, nombre: 'María González', edad: 82, telefono: '664-123-4567', area: 'Dormitorio' },
-        { id: 2, nombre: 'Jorge Martínez', edad: 75, telefono: '664-987-6543', area: 'Comedor' },
-        { id: 3, nombre: 'Luz Ramírez', edad: 91, telefono: '664-555-1212', area: 'Sala de estar' },
-    ]);
+  // Estado para el switch global
+  const [autoFillEnabled, setAutoFillEnabled] = useState(true);
 
-    useEffect(() => {
-        const now = new Date();
-        const formattedDate = now.toLocaleDateString('es-MX', {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: false,
-        });
-        setCurrentDateTime(formattedDate);
-    }, []);
+  // Estado para los datos en tiempo real
+  const [sensorData, setSensorData] = useState({
+    Spo2: '',
+    Pulso: '',
+    TemperaturaCorporal: '',
+    Peso: '',
+    Altura: '',
+  });
 
-    const imc = useMemo(() => {
-        const parsedPeso = parseFloat(peso);
-        const parsedEstaturaCm = parseFloat(estatura);
+  // Estados para los valores congelados
+  const [frozenSpo2, setFrozenSpo2] = useState(null);
+  const [frozenPulso, setFrozenPulso] = useState(null);
+  const [frozenTemp, setFrozenTemp] = useState(null);
+  const [frozenPeso, setFrozenPeso] = useState(null);
+  const [frozenAltura, setFrozenAltura] = useState(null);
 
-        if (isNaN(parsedPeso) || isNaN(parsedEstaturaCm) || parsedEstaturaCm === 0) {
-            return '';
+  // Refs para los temporizadores de autocaptura
+  const spo2Timer = useRef(null);
+  const pulsoTimer = useRef(null);
+  const tempTimer = useRef(null);
+  const pesoTimer = useRef(null);
+  const alturaTimer = useRef(null);
+
+  // Guardar el último valor recibido para cada sensor
+  const lastSpo2 = useRef('');
+  const lastPulso = useRef('');
+  const lastTemp = useRef('');
+  const lastPeso = useRef('');
+  const lastAltura = useRef('');
+
+  // WebSocket
+  const ws = useRef(null);
+
+  // Función para iniciar/reiniciar el temporizador de cada sensor
+  const startOrResetTimer = (type, value) => {
+    const setFrozen = {
+      Spo2: setFrozenSpo2,
+      Pulso: setFrozenPulso,
+      Temp: setFrozenTemp,
+      Peso: setFrozenPeso,
+      Altura: setFrozenAltura,
+    };
+    const setForm = {
+      Spo2: setOxigeno,
+      Pulso: setFrecuencia,
+      Temp: setTemperatura,
+      Peso: setPeso,
+      Altura: setEstatura,
+    };
+    const timers = {
+      Spo2: spo2Timer,
+      Pulso: pulsoTimer,
+      Temp: tempTimer,
+      Peso: pesoTimer,
+      Altura: alturaTimer,
+    };
+    // Limpia el temporizador anterior
+    clearTimeout(timers[type].current);
+    // Inicia uno nuevo
+    timers[type].current = setTimeout(() => {
+      setFrozen[type](value);
+      setForm[type](value);
+    }, AUTO_CAPTURE_DELAY);
+  };
+
+  // Efecto para manejar WebSocket y autocaptura
+  useEffect(() => {
+    if (!autoFillEnabled) return;
+    ws.current = new WebSocket('ws://localhost:5214/ws/sensor_data');
+    ws.current.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+
+        // --- SpO2 ---
+        if (frozenSpo2 === null) {
+          if (data.Spo2 !== undefined && data.Spo2 !== lastSpo2.current) {
+            lastSpo2.current = data.Spo2;
+            startOrResetTimer('Spo2', data.Spo2);
+          }
+        }
+        // --- Pulso ---
+        if (frozenPulso === null) {
+          if (data.Pulso !== undefined && data.Pulso !== lastPulso.current) {
+            lastPulso.current = data.Pulso;
+            startOrResetTimer('Pulso', data.Pulso);
+          }
+        }
+        // --- Temperatura ---
+        if (frozenTemp === null) {
+          if (data.TemperaturaCorporal !== undefined && data.TemperaturaCorporal !== lastTemp.current) {
+            lastTemp.current = data.TemperaturaCorporal;
+            startOrResetTimer('Temp', data.TemperaturaCorporal);
+          }
+        }
+        // --- Peso ---
+        if (frozenPeso === null) {
+          if (data.Peso !== undefined && data.Peso !== lastPeso.current) {
+            lastPeso.current = data.Peso;
+            startOrResetTimer('Peso', data.Peso);
+          }
+        }
+        // --- Altura ---
+        if (frozenAltura === null) {
+          if (data.Altura !== undefined && data.Altura !== lastAltura.current) {
+            lastAltura.current = data.Altura;
+            startOrResetTimer('Altura', data.Altura);
+          }
         }
 
-        const estaturaM = parsedEstaturaCm / 100;
-        const calculatedIMC = parsedPeso / (estaturaM * estaturaM);
-        return calculatedIMC.toFixed(2);
-    }, [peso, estatura]);
-
-    const handleGuardar = () => {
-        console.log({
-            idResidente,
-            fecha: currentDateTime,
-            frecuencia,
-            oxigeno,
-            temperatura,
-            peso,
-            estatura,
-            imc,
-            observaciones,
-        });
-        console.log('Consulta guardada (simulado)');
+        setSensorData(prevData => ({
+          ...prevData,
+          Spo2: data.Spo2 !== undefined ? String(data.Spo2) : prevData.Spo2,
+          Pulso: data.Pulso !== undefined ? String(data.Pulso) : prevData.Pulso,
+          TemperaturaCorporal: data.TemperaturaCorporal !== undefined ? String(data.TemperaturaCorporal) : prevData.TemperaturaCorporal,
+          Peso: data.Peso !== undefined ? String(data.Peso) : prevData.Peso,
+          Altura: data.Altura !== undefined ? String(data.Altura) : prevData.Altura,
+        }));
+      } catch (error) {
+        console.error('Error al parsear el mensaje WebSocket:', error);
+      }
     };
+    return () => {
+      if (ws.current) ws.current.close();
+      clearTimeout(spo2Timer.current);
+      clearTimeout(pulsoTimer.current);
+      clearTimeout(tempTimer.current);
+      clearTimeout(pesoTimer.current);
+      clearTimeout(alturaTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoFillEnabled, frozenSpo2, frozenPulso, frozenTemp, frozenPeso, frozenAltura]);
 
-    const residenteSeleccionado = residentes.find((r) => r.id === idResidente);
+  // Si no llegan datos nuevos, los timers seguirán corriendo y se congelarán los valores actuales al pasar 3 segundos.
 
-    return (
-        <SafeAreaView style={styles.safeArea}>
-            {/* Contenedor para Fecha y Hora - Fuera del formulario, arriba a la derecha */}
-            <View style={styles.dateTimeContainer}>
-                <Ionicons name="calendar-outline" size={16} color={PRIMARY_GREEN} style={styles.dateTimeIcon} />
-                <Text style={styles.dateTimeText}>{currentDateTime}</Text>
+  // Funciones para capturar/liberar cada valor manualmente
+  const handleCapture = (type) => {
+    switch (type) {
+      case 'Spo2':
+        setFrozenSpo2(sensorData.Spo2);
+        setOxigeno(sensorData.Spo2);
+        clearTimeout(spo2Timer.current);
+        break;
+      case 'Pulso':
+        setFrozenPulso(sensorData.Pulso);
+        setFrecuencia(sensorData.Pulso);
+        clearTimeout(pulsoTimer.current);
+        break;
+      case 'Temp':
+        setFrozenTemp(sensorData.TemperaturaCorporal);
+        setTemperatura(sensorData.TemperaturaCorporal);
+        clearTimeout(tempTimer.current);
+        break;
+      case 'Peso':
+        setFrozenPeso(sensorData.Peso);
+        setPeso(sensorData.Peso);
+        clearTimeout(pesoTimer.current);
+        break;
+      case 'Altura':
+        setFrozenAltura(sensorData.Altura);
+        setEstatura(sensorData.Altura);
+        clearTimeout(alturaTimer.current);
+        break;
+      default: break;
+    }
+  };
+  const handleRelease = (type) => {
+    switch (type) {
+      case 'Spo2':
+        setFrozenSpo2(null);
+        setOxigeno('');
+        lastSpo2.current = '';
+        break;
+      case 'Pulso':
+        setFrozenPulso(null);
+        setFrecuencia('');
+        lastPulso.current = '';
+        break;
+      case 'Temp':
+        setFrozenTemp(null);
+        setTemperatura('');
+        lastTemp.current = '';
+        break;
+      case 'Peso':
+        setFrozenPeso(null);
+        setPeso('');
+        lastPeso.current = '';
+        break;
+      case 'Altura':
+        setFrozenAltura(null);
+        setEstatura('');
+        lastAltura.current = '';
+        break;
+      default: break;
+    }
+  };
+
+  // Renderiza un cuadro individual
+  const renderSensorBox = (label, value, frozenValue, onCapture, onRelease, unit) => (
+    <View style={styles.sensorMiniBox}>
+      <Text style={styles.sensorMiniLabel}>{label}</Text>
+      <Text style={styles.sensorMiniValue}>{frozenValue !== null ? frozenValue : value || '--'} {unit}</Text>
+      <TouchableOpacity
+        style={styles.miniButton}
+        onPress={frozenValue === null ? onCapture : onRelease}
+      >
+        <Text style={styles.miniButtonText}>
+          {frozenValue === null ? 'Capturar' : 'Liberar'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  // Aquí iría tu lógica para enviar el formulario (POST a /api/ChequeoSemanal)
+  const handleSubmit = () => {
+    // Implementa la lógica de envío aquí
+    // ...
+    alert('Consulta enviada (simulado)');
+  };
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoidingView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.scrollViewContent}>
+          <View style={styles.mainContentArea}>
+            <Text style={styles.title}>Nueva Consulta</Text>
+
+            {/* Switch global */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10, alignSelf: 'center' }}>
+              <Text style={{ marginRight: 10, color: '#333', fontWeight: '600' }}>
+                Autocompletar con sensores
+              </Text>
+              <Switch
+                value={autoFillEnabled}
+                onValueChange={setAutoFillEnabled}
+                thumbColor={autoFillEnabled ? PRIMARY_GREEN : '#ccc'}
+                trackColor={{ false: '#ccc', true: LIGHT_GREEN }}
+              />
             </View>
 
-            <KeyboardAvoidingView
-                style={styles.keyboardAvoidingView}
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            >
-                <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                    <View style={styles.mainContentArea}>
-                        <Text style={styles.title}>Nueva Consulta</Text>
+            {/* Cuadros individuales a la derecha */}
+            {autoFillEnabled && (
+              <View style={styles.sensorMiniBoxContainer}>
+                {renderSensorBox('SpO2', sensorData.Spo2, frozenSpo2, () => handleCapture('Spo2'), () => handleRelease('Spo2'), '%')}
+                {renderSensorBox('Pulso', sensorData.Pulso, frozenPulso, () => handleCapture('Pulso'), () => handleRelease('Pulso'), 'lpm')}
+                {renderSensorBox('Temp.', sensorData.TemperaturaCorporal, frozenTemp, () => handleCapture('Temp'), () => handleRelease('Temp'), '°C')}
+                {renderSensorBox('Peso', sensorData.Peso, frozenPeso, () => handleCapture('Peso'), () => handleRelease('Peso'), 'kg')}
+                {renderSensorBox('Altura', sensorData.Altura, frozenAltura, () => handleCapture('Altura'), () => handleRelease('Altura'), 'cm')}
+              </View>
+            )}
 
-                        {/* Selector de residente */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Residente</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="people-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <Picker
-                                    selectedValue={idResidente}
-                                    onValueChange={(itemValue) => setIdResidente(Number(itemValue))}
-                                    style={styles.picker}
-                                    itemStyle={styles.pickerItem}
-                                >
-                                    <Picker.Item label="-- Selecciona un residente --" value="" color={LIGHT_GRAY} />
-                                    {residentes.map((res) => (
-                                        <Picker.Item key={res.id} label={res.nombre} value={res.id} />
-                                    ))}
-                                </Picker>
-                            </View>
-                        </View>
+            {/* Formulario */}
+            <View style={styles.formBox}>
+              <Text style={styles.label}>Frecuencia Cardíaca (lpm)</Text>
+              <TextInput
+                style={styles.input}
+                value={frecuencia}
+                onChangeText={setFrecuencia}
+                keyboardType="numeric"
+                placeholder="Ej: 80"
+              />
 
-                        {/* Info del residente (con datos simulados) */}
-                        {residenteSeleccionado && (
-                            <View style={styles.infoBox}>
-                                <Text style={styles.infoText}>
-                                    <Text style={styles.infoLabel}>Nombre:</Text> {residenteSeleccionado.nombre}
-                                </Text>
-                                <Text style={styles.infoText}>
-                                    <Text style={styles.infoLabel}>Edad:</Text> {residenteSeleccionado.edad} años
-                                </Text>
-                                <Text style={styles.infoText}>
-                                    <Text style={styles.infoLabel}>Teléfono:</Text> {residenteSeleccionado.telefono}
-                                </Text>
-                                <Text style={styles.infoText}>
-                                    <Text style={styles.infoLabel}>Área asignada:</Text> {residenteSeleccionado.area}
-                                </Text>
-                            </View>
-                        )}
+              <Text style={styles.label}>SpO2 (%)</Text>
+              <TextInput
+                style={styles.input}
+                value={oxigeno}
+                onChangeText={setOxigeno}
+                keyboardType="numeric"
+                placeholder="Ej: 98"
+              />
 
-                        {/* Campos clínicos */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Frecuencia cardíaca (lpm)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="heart-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={frecuencia}
-                                    onChangeText={setFrecuencia}
-                                    placeholder="Ej: 75"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
+              <Text style={styles.label}>Temperatura Corporal (°C)</Text>
+              <TextInput
+                style={styles.input}
+                value={temperatura}
+                onChangeText={setTemperatura}
+                keyboardType="numeric"
+                placeholder="Ej: 36.5"
+              />
 
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Oxigenación (%)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="water-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={oxigeno}
-                                    onChangeText={setOxigeno}
-                                    placeholder="Ej: 96.5"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    keyboardType="decimal-pad"
-                                />
-                            </View>
-                        </View>
+              <Text style={styles.label}>Peso (kg)</Text>
+              <TextInput
+                style={styles.input}
+                value={peso}
+                onChangeText={setPeso}
+                keyboardType="numeric"
+                placeholder="Ej: 70"
+              />
 
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Temperatura (°C)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="thermometer-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={temperatura}
-                                    onChangeText={setTemperatura}
-                                    placeholder="Ej: 36.5"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    keyboardType="decimal-pad"
-                                />
-                            </View>
-                        </View>
+              <Text style={styles.label}>Estatura (cm)</Text>
+              <TextInput
+                style={styles.input}
+                value={estatura}
+                onChangeText={setEstatura}
+                keyboardType="numeric"
+                placeholder="Ej: 170"
+              />
 
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Peso (kg)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="body-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={peso}
-                                    onChangeText={setPeso}
-                                    placeholder="Ej: 60.2"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    keyboardType="decimal-pad"
-                                />
-                            </View>
-                        </View>
+              <Text style={styles.label}>Observaciones</Text>
+              <TextInput
+                style={[styles.input, { height: 80 }]}
+                value={observaciones}
+                onChangeText={setObservaciones}
+                multiline
+                placeholder="Observaciones adicionales"
+              />
 
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Estatura (cm)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="resize-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={estatura}
-                                    onChangeText={setEstatura}
-                                    placeholder="Ej: 158"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    keyboardType="numeric"
-                                />
-                            </View>
-                        </View>
-
-                        {/* Índice de Masa Corporal (IMC) - Campo de solo lectura */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Índice de Masa Corporal (IMC)</Text>
-                            <View style={styles.inputContainerWithIcon}>
-                                <Ionicons name="body-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                <TextInput
-                                    style={styles.input}
-                                    value={imc}
-                                    editable={false}
-                                    placeholder="Calculado automáticamente"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                />
-                            </View>
-                        </View>
-
-                        {/* Apartado de Observaciones */}
-                        <View style={styles.fieldWrapper}>
-                            <Text style={styles.inputLabel}>Observaciones</Text>
-                            <View style={[styles.inputContainerWithIcon, styles.textAreaContainer]}>
-                                <Ionicons name="document-text-outline" size={18} color={MEDIUM_GRAY} style={[styles.inputIcon, styles.textAreaIcon]} />
-                                <TextInput
-                                    style={[styles.input, styles.textArea]}
-                                    value={observaciones}
-                                    onChangeText={setObservaciones}
-                                    placeholder="Añade cualquier observación relevante aquí..."
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    multiline={true}
-                                    numberOfLines={4}
-                                    textAlignVertical="top"
-                                />
-                            </View>
-                        </View>
-
-                        {/* Botón Guardar */}
-                        <TouchableOpacity style={styles.primaryButton} onPress={handleGuardar}>
-                            <Text style={styles.primaryButtonText}>GUARDAR CONSULTA</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </SafeAreaView>
-    );
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.submitButtonText}>Enviar Consulta</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    safeArea: {
-        flex: 1,
-        backgroundColor: BACKGROUND_LIGHT,
-        paddingTop: Platform.OS === 'android' ? 25 : 0,
-    },
-    dateTimeContainer: {
-        position: 'absolute',
-        top: Platform.OS === 'ios' ? 50 : 20,
-        right: 15,
-        backgroundColor: WHITE,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        flexDirection: 'row',
-        alignItems: 'center',
-        zIndex: 10,
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY,
-        ...Platform.select({
-            ios: {
-                shadowColor: DARK_GRAY,
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-            },
-            android: {
-                elevation: 3,
-            },
-            web: {
-                boxShadow: `0 2px 4px rgba(51, 51, 51, 0.1)`,
-            },
-        }),
-    },
-    dateTimeIcon: {
-        marginRight: 8,
-        color: PRIMARY_GREEN,
-    },
-    dateTimeText: {
-        fontSize: 13,
-        color: DARK_GRAY,
-        fontWeight: '700',
-    },
-    keyboardAvoidingView: {
-        flex: 1,
-    },
-    scrollViewContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        paddingVertical: 10, // Más reducido para un formulario más corto
-        alignItems: 'center',
-    },
-    mainContentArea: {
-        width: '90%',
-        maxWidth: IS_LARGE_SCREEN ? 500 : '90%',
-        backgroundColor: WHITE,
-        borderRadius: 12,
-        borderTopLeftRadius: 12,
-        borderTopRightRadius: 12,
-        borderTopWidth: 4,
-        borderTopColor: PRIMARY_GREEN,
-        padding: IS_LARGE_SCREEN ? 15 : 10, // Más reducido para un formulario más corto
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY,
-        ...Platform.select({
-            ios: {
-                shadowColor: DARK_GRAY,
-                shadowOffset: { width: 0, height: 3 },
-                shadowOpacity: 0.08,
-                shadowRadius: 6,
-            },
-            android: {
-                elevation: 4,
-            },
-            web: {
-                boxShadow: `0 3px 6px rgba(51, 51, 51, 0.08)`,
-            },
-        }),
-    },
-    title: {
-        fontSize: IS_LARGE_SCREEN ? 24 : 20,
-        fontWeight: '700',
-        color: DARK_GRAY,
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    fieldWrapper: {
-        marginBottom: 8, // Más reducido para un formulario más corto
-    },
-    inputLabel: {
-        fontSize: 13,
-        color: MEDIUM_GRAY,
-        marginBottom: 5,
-        fontWeight: '600',
-    },
-    inputContainerWithIcon: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY,
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        backgroundColor: WHITE,
-        height: 40,
-    },
-    inputIcon: {
-        marginRight: 10,
-    },
-    input: {
-        flex: 1,
-        height: '100%',
-        fontSize: 14,
-        color: DARK_GRAY,
-        paddingVertical: 0,
-        ...Platform.select({
-            web: {
-                outline: 'none',
-            },
-        }),
-    },
-    textAreaContainer: {
-        height: 90,
-        alignItems: 'flex-start',
-        paddingVertical: 8,
-    },
-    textArea: {
-        height: '100%',
-        paddingVertical: 0,
-        textAlignVertical: 'top',
-    },
-    textAreaIcon: {
-        paddingTop: 3,
-    },
-    picker: {
-        flex: 1,
-        color: DARK_GRAY,
-        fontSize: 14,
-        ...Platform.select({
-            web: {
-                outline: 'none',
-            },
-        }),
-    },
-    pickerItem: {
-        fontSize: 14,
-        color: DARK_GRAY,
-    },
-    infoBox: {
-        backgroundColor: ACCENT_GREEN_BACKGROUND,
-        padding: 12,
-        borderRadius: 10,
-        marginBottom: 15,
-        borderLeftWidth: 3,
-        borderLeftColor: LIGHT_GREEN,
-    },
-    infoText: {
-        fontSize: 13,
-        marginBottom: 3,
-        color: MEDIUM_GRAY,
-    },
-    infoLabel: {
-        fontWeight: 'bold',
-        color: DARK_GRAY,
-    },
-    primaryButton: {
-        backgroundColor: PRIMARY_GREEN,
-        paddingVertical: 12,
-        borderRadius: 8,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 15, // Más reducido para un formulario más corto
-        marginBottom: 10,
-        ...Platform.select({
-            ios: {
-                shadowColor: PRIMARY_GREEN,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.2,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 5,
-            },
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.2s',
-                transitionProperty: 'background-color, transform, box-shadow',
-                boxShadow: `0 4px 8px rgba(107, 178, 64, 0.2)`,
-                ':hover': {
-                    backgroundColor: BUTTON_HOVER_COLOR,
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 12px rgba(107, 178, 64, 0.3)`,
-                },
-                ':active': {
-                    transform: 'translateY(0)',
-                    boxShadow: `0 3px 6px rgba(107, 178, 64, 0.2)`,
-                },
-            },
-        }),
-    },
-    primaryButtonText: {
-        color: WHITE,
-        fontSize: 15,
-        fontWeight: 'bold',
-        letterSpacing: 0.5,
-    },
+  safeArea: {
+    flex: 1,
+    backgroundColor: BACKGROUND_LIGHT,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: IS_LARGE_SCREEN ? 40 : 16,
+    backgroundColor: BACKGROUND_LIGHT,
+  },
+  mainContentArea: {
+    width: IS_LARGE_SCREEN ? 600 : '100%',
+    backgroundColor: WHITE,
+    borderRadius: 16,
+    padding: 24,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: PRIMARY_GREEN,
+    marginBottom: 18,
+    alignSelf: 'center',
+  },
+  sensorMiniBoxContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginBottom: 18,
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sensorMiniBox: {
+    backgroundColor: ACCENT_GREEN_BACKGROUND,
+    borderRadius: 8,
+    padding: 10,
+    marginLeft: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: LIGHT_GREEN,
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  sensorMiniLabel: {
+    fontWeight: 'bold',
+    color: PRIMARY_GREEN,
+    fontSize: 13,
+    marginBottom: 2,
+  },
+  sensorMiniValue: {
+    color: DARK_GRAY,
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  miniButton: {
+    backgroundColor: PRIMARY_GREEN,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  miniButtonText: {
+    color: WHITE,
+    fontWeight: 'bold',
+    fontSize: 13,
+  },
+  formBox: {
+    marginTop: 10,
+  },
+  label: {
+    color: MEDIUM_GRAY,
+    fontWeight: '600',
+    marginBottom: 4,
+    marginTop: 10,
+  },
+  input: {
+    backgroundColor: VERY_LIGHT_GRAY,
+    borderRadius: 6,
+    padding: 10,
+    fontSize: 15,
+    marginBottom: 6,
+    borderWidth: 1,
+    borderColor: LIGHT_GRAY,
+  },
+  submitButton: {
+    backgroundColor: PRIMARY_GREEN,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 18,
+  },
+  submitButtonText: {
+    color: WHITE,
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
 });

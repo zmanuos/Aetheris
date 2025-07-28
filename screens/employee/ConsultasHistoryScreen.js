@@ -1,5 +1,4 @@
-// AETHERIS/screens/admin/ConsultasHistory.js
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -11,476 +10,704 @@ import {
     Dimensions,
     SafeAreaView,
     KeyboardAvoidingView,
-    Image // Import Image component
+    Image,
+    ActivityIndicator,
+    RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 
-// Colores basados en EmployeeManagementScreen.js y ajustados para minimalismo
+const API_URL = 'http://localhost:5214/api';
+const IMAGE_BASE_URL = 'http://localhost:5214/images/residents/';
+
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
 const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
-const DARK_GRAY = '#333';
-const MEDIUM_GRAY = '#555';
-const LIGHT_GRAY = '#888';
-const VERY_LIGHT_GRAY = '#eee';
-const BACKGROUND_LIGHT = '#fcfcfc'; // Slightly lighter background
-const WHITE = '#fff';
-const ERROR_RED = '#DC3545';
-const BUTTON_HOVER_COLOR = '#5aa130';
+const DARK_GRAY = '#2C3E50';
+const MEDIUM_GRAY = '#5D6D7E';
+const LIGHT_GRAY = '#85929E';
+const VERY_LIGHT_GRAY = '#F8F9FA';
+const BACKGROUND_LIGHT = '#FFFFFF';
+const WHITE = '#FFFFFF';
+const ERROR_RED = '#E74C3C';
+const WARNING_ORANGE = '#F39C12';
+const SUCCESS_GREEN = '#27AE60';
+const CARD_SHADOW = '#BDC3C7';
 
 const { width } = Dimensions.get('window');
-const IS_LARGE_SCREEN = width > 900;
+const IS_LARGE_SCREEN = width > 768;
 
-// Sample data with added photo URLs
-const sampleConsultas = [
-    {
-        id: '1',
-        residente: 'Juan Pérez',
-        fecha: '2025-07-01',
-        frecuencia_cardiaca: 72,
-        oxigeno: 98,
-        temperatura: 36.7,
-        notas: 'Paciente estable, continuar con dieta blanda.',
-        photo: 'https://ui-avatars.com/api/?name=Juan+Perez&background=6BB240&color=fff&size=128&rounded=true',
-    },
-    {
-        id: '2',
-        residente: 'María López',
-        fecha: '2025-07-02',
-        frecuencia_cardiaca: 105,
-        oxigeno: 93,
-        temperatura: 38.0,
-        notas: 'Se detectó ligera fiebre, monitorizar.',
-        photo: 'https://ui-avatars.com/api/?name=Maria+Lopez&background=9CD275&color=fff&size=128&rounded=true',
-    },
-    {
-        id: '3',
-        residente: 'Carlos Sánchez',
-        fecha: '2025-07-01',
-        frecuencia_cardiaca: 58,
-        oxigeno: 96,
-        temperatura: 37.1,
-        notas: 'Signos vitales dentro de rangos normales.',
-        photo: 'https://ui-avatars.com/api/?name=Carlos+Sanchez&background=6BB240&color=fff&size=128&rounded=true',
-    },
-    {
-        id: '4',
-        residente: 'Ana Gómez',
-        fecha: '2025-06-29',
-        frecuencia_cardiaca: 80,
-        oxigeno: 92,
-        temperatura: 37.8,
-        notas: 'Oxígeno bajo, se administró oxígeno suplementario.',
-        photo: 'https://ui-avatars.com/api/?name=Ana+Gomez&background=9CD275&color=fff&size=128&rounded=true',
-    },
-    {
-        id: '5',
-        residente: 'Pedro Ramírez',
-        fecha: '2025-07-03',
-        frecuencia_cardiaca: 70,
-        oxigeno: 99,
-        temperatura: 36.5,
-        notas: 'Todo en orden.',
-        photo: 'https://ui-avatars.com/api/?name=Pedro+Ramirez&background=6BB240&color=fff&size=128&rounded=true',
-    },
-];
+const normalizeString = (str) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+};
 
-const getColorFC = (fc) => (fc > 100 || fc < 60 ? ERROR_RED : PRIMARY_GREEN);
-const getColorO2 = (o2) => (o2 < 95 ? '#fd7e14' : PRIMARY_GREEN); // Orange for caution
-const getColorTemp = (temp) => (temp > 37.5 ? ERROR_RED : PRIMARY_GREEN);
+const getColorFC = (fc) => (fc > 100 || fc < 60 ? ERROR_RED : SUCCESS_GREEN);
+const getColorO2 = (o2) => (o2 < 95 ? WARNING_ORANGE : SUCCESS_GREEN);
+const getColorTemp = (temp) => (temp > 37.5 ? ERROR_RED : SUCCESS_GREEN);
 
 const ConsultasHistory = () => {
+    const navigation = useNavigation();
     const [searchName, setSearchName] = useState('');
-    const [dateFrom, setDateFrom] = useState('');
-    const [dateTo, setDateTo] = useState('');
+    const [selectedDate, setSelectedDate] = useState('');
+    const [consultas, setConsultas] = useState([]);
+    const [residentsDataMap, setResidentsDataMap] = useState({});
+    const [employeesDataMap, setEmployeesDataMap] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [error, setError] = useState(null);
+
+    const fetchAllData = useCallback(async () => {
+        try {
+            setError(null);
+            
+            const consultasResponse = await fetch(`${API_URL}/ChequeoSemanal`);
+            if (!consultasResponse.ok) {
+                throw new Error(`Error al cargar consultas: ${consultasResponse.status}`);
+            }
+            const consultasData = await consultasResponse.json();
+            setConsultas(consultasData);
+
+            if (consultasData.length > 0) {
+                const uniqueResidentIds = [...new Set(consultasData.map(c => c.residenteId).filter(id => id != null))];
+                const uniqueEmployeeIds = [...new Set(consultasData.map(c => c.personalId).filter(id => id != null))];
+
+                const residentsPromises = uniqueResidentIds.map(async (id) => {
+                    try {
+                        const response = await fetch(`${API_URL}/Residente/${id}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            return { id, data: data.residente };
+                        }
+                    } catch (err) {
+                        console.warn(`Error loading resident ${id}:`, err);
+                    }
+                    return { id, data: null };
+                });
+
+                const employeesPromises = uniqueEmployeeIds.map(async (id) => {
+                    try {
+                        const response = await fetch(`${API_URL}/Personal/${id}`);
+                        if (response.ok) {
+                            const data = await response.json();
+                            return { id, data: data.personal };
+                        }
+                    } catch (err) {
+                        console.warn(`Error loading employee ${id}:`, err);
+                    }
+                    return { id, data: null };
+                });
+
+                const [residentsResults, employeesResults] = await Promise.all([
+                    Promise.all(residentsPromises),
+                    Promise.all(employeesPromises)
+                ]);
+
+                const newResidentsMap = {};
+                residentsResults.forEach(({ id, data }) => {
+                    if (data) {
+                        newResidentsMap[id] = {
+                            nombre: data.nombre,
+                            apellido: data.apellido,
+                            foto: data.foto,
+                        };
+                    }
+                });
+
+                const newEmployeesMap = {};
+                employeesResults.forEach(({ id, data }) => {
+                    if (data) {
+                        newEmployeesMap[id] = {
+                            nombre: data.nombre,
+                            apellido: data.apellido,
+                        };
+                    }
+                });
+
+                setResidentsDataMap(newResidentsMap);
+                setEmployeesDataMap(newEmployeesMap);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchAllData();
+    }, [fetchAllData]);
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        fetchAllData();
+    }, [fetchAllData]);
 
     const filteredConsultas = useMemo(() => {
-        return sampleConsultas.filter((c) => {
-            const nombreMatch = c.residente.toLowerCase().includes(searchName.toLowerCase());
+        const normalizedSearchName = normalizeString(searchName);
 
-            const fechaObj = new Date(c.fecha + 'T00:00:00');
-            const fromOk = dateFrom ? fechaObj >= new Date(dateFrom + 'T00:00:00') : true;
-            const toOk = dateTo ? fechaObj <= new Date(dateTo + 'T23:59:59') : true;
+        return consultas.filter((c) => {
+            const residentInfo = residentsDataMap[c.residenteId];
+            let residentFullName = '';
+            if (residentInfo) {
+                residentFullName = `${residentInfo.nombre || ''} ${residentInfo.apellido || ''}`.trim();
+            } else {
+                residentFullName = `Residente ${c.residenteId}`;
+            }
 
-            return nombreMatch && fromOk && toOk;
+            const normalizedResidentNameStr = normalizeString(residentFullName);
+            const nameMatch = normalizedResidentNameStr.includes(normalizedSearchName);
+
+            const dateMatch = selectedDate
+                ? new Date(c.fechaChequeo).toDateString() === new Date(selectedDate).toDateString()
+                : true;
+
+            return nameMatch && dateMatch;
         });
-    }, [searchName, dateFrom, dateTo]);
+    }, [searchName, selectedDate, consultas, residentsDataMap]);
+
+    const handleResidentNameClick = (residentId) => {
+        navigation.navigate('Residents', {
+            screen: 'ResidentProfile',
+            params: { residentId: residentId }
+        });
+    };
+
+    const clearFilters = () => {
+        setSearchName('');
+        setSelectedDate('');
+    };
 
     const renderConsultaCard = ({ item, index }) => {
-        const bgColor = index % 2 === 0 ? WHITE : BACKGROUND_LIGHT;
+        const residentInfo = residentsDataMap[item.residenteId];
+        let residentName = `Residente ${item.residenteId}`;
+        let residentPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(residentName)}&background=6BB240&color=fff&size=128&rounded=true`;
+
+        if (residentInfo) {
+            residentName = `${residentInfo.nombre || ''} ${residentInfo.apellido || ''}`.trim();
+            if (residentInfo.foto) {
+                residentPhoto = `${IMAGE_BASE_URL}${residentInfo.foto}`;
+            } else {
+                residentPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(residentName)}&background=6BB240&color=fff&size=128&rounded=true`;
+            }
+        }
+
+        const employeeInfo = employeesDataMap[item.personalId];
+        let employeeName = 'Personal no identificado';
+        if (employeeInfo) {
+            employeeName = `${employeeInfo.nombre || ''} ${employeeInfo.apellido || ''}`.trim();
+        }
 
         return (
-            <View style={[styles.cardContainer, { backgroundColor: bgColor }]}>
-                <View style={styles.headerRow}>
-                    <View style={styles.residenteInfo}>
-                        {item.photo && <Image source={{ uri: item.photo }} style={styles.residentePhoto} />}
-                        <Text style={styles.residenteName}>{item.residente}</Text>
+            <View style={styles.cardContainer}>
+                <View style={styles.cardHeader}>
+                    <TouchableOpacity
+                        onPress={() => handleResidentNameClick(item.residenteId)}
+                        style={styles.residentInfo}
+                        activeOpacity={0.7}
+                    >
+                        <Image source={{ uri: residentPhoto }} style={styles.residentPhoto} />
+                        <View style={styles.residentDetails}>
+                            <Text style={styles.residentName}>{residentName}</Text>
+                            <Text style={styles.residentId}>ID: {item.residenteId}</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <View style={styles.dateContainerCard}>
+                        <Text style={styles.dateText}>
+                            {new Date(item.fechaChequeo).toLocaleDateString('es-ES', { 
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric'
+                            })}
+                        </Text>
                     </View>
-                    <Text style={styles.fecha}>{new Date(item.fecha).toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' })}</Text>
                 </View>
 
-                <Text style={styles.notasInline}>
-                    <Ionicons name="document-text-outline" size={15} color={MEDIUM_GRAY} /> {item.notas}
-                </Text>
-
-                <View style={styles.metricsRow}>
-                    <Text style={[styles.metricText, { color: getColorFC(item.frecuencia_cardiaca) }]}>
-                        <Ionicons name="heart-outline" size={13} color={getColorFC(item.frecuencia_cardiaca)} /> FC: <Text style={styles.metricValue}>{item.frecuencia_cardiaca} bpm</Text>
-                    </Text>
-                    <Text style={[styles.metricText, { color: getColorO2(item.oxigeno) }]}>
-                        <Ionicons name="water-outline" size={13} color={getColorO2(item.oxigeno)} /> Oxígeno: <Text style={styles.metricValue}>{item.oxigeno}%</Text>
-                    </Text>
-                    <Text style={[styles.metricText, { color: getColorTemp(item.temperatura) }]}>
-                        <Ionicons name="thermometer-outline" size={13} color={getColorTemp(item.temperatura)} /> Temp: <Text style={styles.metricValue}>{item.temperatura}°C</Text>
-                    </Text>
+                <View style={styles.employeeSection}>
+                    <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} />
+                    <Text style={styles.employeeText}>Realizado por: {employeeName}</Text>
                 </View>
 
-                <TouchableOpacity
-                    style={styles.verMasButton}
-                    onPress={() => alert(`Ver detalles de consulta de ${item.residente}`)}
-                >
-                    <Ionicons name="eye-outline" size={16} color={PRIMARY_GREEN} />
-                    <Text style={styles.verMasText}>Ver más</Text>
-                </TouchableOpacity>
+                <View style={styles.vitalsGrid}>
+                    <View style={[styles.vitalCard, { borderLeftColor: getColorFC(item.pulso) }]}>
+                        <Ionicons name="heart" size={18} color={getColorFC(item.pulso)} />
+                        <Text style={styles.vitalLabel}>Pulso</Text>
+                        <Text style={[styles.vitalValue, { color: getColorFC(item.pulso) }]}>
+                            {item.pulso} bpm
+                        </Text>
+                    </View>
+
+                    <View style={[styles.vitalCard, { borderLeftColor: getColorO2(item.spo2) }]}>
+                        <Ionicons name="water" size={18} color={getColorO2(item.spo2)} />
+                        <Text style={styles.vitalLabel}>SpO₂</Text>
+                        <Text style={[styles.vitalValue, { color: getColorO2(item.spo2) }]}>
+                            {item.spo2}%
+                        </Text>
+                    </View>
+
+                    <View style={[styles.vitalCard, { borderLeftColor: getColorTemp(item.temperaturaCorporal) }]}>
+                        <Ionicons name="thermometer" size={18} color={getColorTemp(item.temperaturaCorporal)} />
+                        <Text style={styles.vitalLabel}>Temperatura</Text>
+                        <Text style={[styles.vitalValue, { color: getColorTemp(item.temperaturaCorporal) }]}>
+                            {item.temperaturaCorporal}°C
+                        </Text>
+                    </View>
+
+                    <View style={[styles.vitalCard, { borderLeftColor: MEDIUM_GRAY }]}>
+                        <Ionicons name="scale" size={18} color={MEDIUM_GRAY} />
+                        <Text style={styles.vitalLabel}>Peso</Text>
+                        <Text style={styles.vitalValue}>{item.peso} kg</Text>
+                    </View>
+
+                    <View style={[styles.vitalCard, { borderLeftColor: MEDIUM_GRAY }]}>
+                        <Ionicons name="resize" size={18} color={MEDIUM_GRAY} />
+                        <Text style={styles.vitalLabel}>Altura</Text>
+                        <Text style={styles.vitalValue}>{item.altura} cm</Text>
+                    </View>
+
+                    <View style={[styles.vitalCard, { borderLeftColor: MEDIUM_GRAY }]}>
+                        <Ionicons name="calculator" size={18} color={MEDIUM_GRAY} />
+                        <Text style={styles.vitalLabel}>IMC</Text>
+                        <Text style={styles.vitalValue}>{item.imc?.toFixed(1) || 'N/A'}</Text>
+                    </View>
+                </View>
+
+                {item.observaciones && (
+                    <View style={styles.notesSection}>
+                        <Ionicons name="document-text" size={16} color={MEDIUM_GRAY} />
+                        <Text style={styles.notesText}>{item.observaciones}</Text>
+                    </View>
+                )}
             </View>
         );
     };
 
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={PRIMARY_GREEN} />
+                <Text style={styles.loadingText}>Cargando historial de consultas...</Text>
+            </View>
+        );
+    }
+
+    if (error) {
+        return (
+            <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={60} color={ERROR_RED} />
+                <Text style={styles.errorTitle}>Error al cargar datos</Text>
+                <Text style={styles.errorText}>{error}</Text>
+                <TouchableOpacity style={styles.retryButton} onPress={fetchAllData}>
+                    <Text style={styles.retryButtonText}>Reintentar</Text>
+                </TouchableOpacity>
+            </View>
+        );
+    }
+
     return (
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView style={styles.container}>
             <KeyboardAvoidingView
-                style={styles.keyboardAvoidingView}
+                style={styles.keyboardView}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <View style={styles.mainContentArea}>
-
-                    <View style={styles.filtersContainer}>
-                        <View style={styles.searchInputContainer}>
-                            <Ionicons name="search" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <View style={styles.filtersContainer}>
+                    <View style={styles.searchAndDateRow}>
+                        <View style={styles.searchContainer}>
+                            <Ionicons name="search" size={20} color={MEDIUM_GRAY} style={styles.searchIcon} />
                             <TextInput
-                                style={styles.input}
-                                placeholder="Buscar por nombre de residente"
+                                style={styles.searchInput}
+                                placeholder="Buscar por nombre del residente..."
                                 placeholderTextColor={LIGHT_GRAY}
                                 value={searchName}
                                 onChangeText={setSearchName}
                                 autoCorrect={false}
-                                autoCapitalize="none"
-                                clearButtonMode="while-editing"
+                                autoCapitalize="words"
                             />
+                            {searchName.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearchName('')} style={styles.clearButton}>
+                                    <Ionicons name="close-circle" size={20} color={LIGHT_GRAY} />
+                                </TouchableOpacity>
+                            )}
                         </View>
 
-                        <View style={styles.dateFiltersRow}>
+                        <View style={styles.dateFilterContainer}>
+                            <Ionicons name="calendar" size={20} color={MEDIUM_GRAY} style={styles.dateIcon} />
                             {Platform.OS === 'web' ? (
-                                <>
-                                    <View style={styles.dateInputWebContainer}>
-                                        <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                        <input
-                                            type="date"
-                                            value={dateFrom}
-                                            onChange={(e) => setDateFrom(e.target.value)}
-                                            style={styles.dateInputWeb}
-                                            title="Fecha Desde"
-                                        />
-                                    </View>
-                                    <View style={styles.dateInputWebContainer}>
-                                        <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                        <input
-                                            type="date"
-                                            value={dateTo}
-                                            onChange={(e) => setDateTo(e.target.value)}
-                                            style={styles.dateInputWeb}
-                                            title="Fecha Hasta"
-                                        />
-                                    </View>
-                                </>
+                                <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    style={styles.dateInputWeb}
+                                />
                             ) : (
-                                <>
-                                    <View style={styles.nativeDateInputContainer}>
-                                        <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                        <TextInput
-                                            style={styles.inputNativeDate}
-                                            placeholder="Desde (YYYY-MM-DD)"
-                                            placeholderTextColor={LIGHT_GRAY}
-                                            value={dateFrom}
-                                            onChangeText={setDateFrom}
-                                            keyboardType="numeric"
-                                        />
-                                    </View>
-                                    <View style={styles.nativeDateInputContainer}>
-                                        <Ionicons name="calendar-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                                        <TextInput
-                                            style={styles.inputNativeDate}
-                                            placeholder="Hasta (YYYY-MM-DD)"
-                                            placeholderTextColor={LIGHT_GRAY}
-                                            value={dateTo}
-                                            onChangeText={setDateTo}
-                                            keyboardType="numeric"
-                                        />
-                                    </View>
-                                </>
+                                <TextInput
+                                    style={styles.dateInput}
+                                    placeholder="Fecha (YYYY-MM-DD)"
+                                    placeholderTextColor={LIGHT_GRAY}
+                                    value={selectedDate}
+                                    onChangeText={setSelectedDate}
+                                    keyboardType="numeric"
+                                />
+                            )}
+                            {selectedDate.length > 0 && (
+                                <TouchableOpacity onPress={() => setSelectedDate('')} style={styles.clearButton}>
+                                    <Ionicons name="close-circle" size={20} color={LIGHT_GRAY} />
+                                </TouchableOpacity>
                             )}
                         </View>
                     </View>
 
-                    <FlatList
-                        data={filteredConsultas}
-                        keyExtractor={(item) => item.id}
-                        renderItem={renderConsultaCard}
-                        ListEmptyComponent={
-                            <Text style={styles.emptyText}>No se encontraron consultas con los filtros aplicados.</Text>
-                        }
-                        contentContainerStyle={filteredConsultas.length === 0 && styles.flatListEmpty}
-                    />
+                    {(searchName || selectedDate) ? (
+                        <TouchableOpacity style={styles.clearFiltersButton} onPress={clearFilters}>
+                            <Text style={styles.clearFiltersText}>Limpiar filtros</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <Text style={styles.headerSubtitle}>
+                            {filteredConsultas.length} consulta{filteredConsultas.length !== 1 ? 's' : ''} encontrada{filteredConsultas.length !== 1 ? 's' : ''}
+                        </Text>
+                    )}
                 </View>
+
+                <FlatList
+                    data={filteredConsultas}
+                    keyExtractor={(item) => item.id.toString()}
+                    renderItem={renderConsultaCard}
+                    contentContainerStyle={styles.listContainer}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={[PRIMARY_GREEN]}
+                            tintColor={PRIMARY_GREEN}
+                        />
+                    }
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Ionicons name="document-text-outline" size={80} color={LIGHT_GRAY} />
+                            <Text style={styles.emptyTitle}>No hay consultas</Text>
+                            <Text style={styles.emptyText}>
+                                {searchName || selectedDate 
+                                    ? 'No se encontraron consultas con los filtros aplicados'
+                                    : 'Aún no hay consultas registradas'
+                                }
+                            </Text>
+                        </View>
+                    }
+                />
             </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
 
-// Base styles for cards, adjusted for minimalism
-const containerBaseStyles = {
-    backgroundColor: WHITE,
-    borderRadius: 12, // Slightly smaller border radius
-    padding: IS_LARGE_SCREEN ? 20 : 16, // Reduced padding
-    shadowColor: DARK_GRAY,
-    shadowOffset: { width: 0, height: 3 }, // More subtle shadow
-    shadowOpacity: 0.08, // Reduced opacity
-    shadowRadius: 6, // Smaller radius
-    elevation: 4, // Reduced elevation
-    borderWidth: 1, // Thinner border
-    borderColor: VERY_LIGHT_GRAY, // Lighter border
-};
+
 
 const styles = StyleSheet.create({
-    safeArea: {
+    container: {
         flex: 1,
-        backgroundColor: BACKGROUND_LIGHT,
+        backgroundColor: VERY_LIGHT_GRAY,
     },
-    keyboardAvoidingView: {
+    keyboardView: {
         flex: 1,
     },
-    mainContentArea: {
-        flex: 1,
-        padding: IS_LARGE_SCREEN ? 20 : 15,
-        alignItems: 'center',
+    headerSubtitle: {
+        fontSize: 14,
+        color: MEDIUM_GRAY,
+        marginTop: 8,
+        paddingHorizontal: 16,
     },
-    screenTitle: {
-        fontSize: IS_LARGE_SCREEN ? 26 : 22, // Slightly smaller title
-        fontWeight: '700',
-        marginBottom: 25, // Adjusted margin
-        color: DARK_GRAY,
-        alignSelf: 'center',
-    },
-
     filtersContainer: {
-        width: '100%',
-        maxWidth: IS_LARGE_SCREEN ? 750 : 'auto', // Slightly narrower filters
-        marginBottom: 20,
-        gap: 12, // Reduced gap
+        backgroundColor: WHITE,
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: VERY_LIGHT_GRAY,
+        gap: 12,
     },
-    searchInputContainer: {
+    searchAndDateRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 40, // Slightly shorter input
-        borderColor: VERY_LIGHT_GRAY, // Lighter border
-        borderWidth: 1,
-        borderRadius: 8, // Smaller border radius
-        backgroundColor: WHITE,
-        shadowColor: DARK_GRAY,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03, // More subtle shadow
-        shadowRadius: 3,
-        elevation: 1,
-        paddingHorizontal: 10,
-    },
-    input: {
-        flex: 1,
-        height: '100%',
-        fontSize: 14, // Slightly smaller font
-        color: DARK_GRAY,
-        paddingVertical: 0,
+        // Removed flexWrap: 'wrap' to keep them on one line unless forced by small screen
+        gap: 12,
+        // Added justifyContent for web to spread them out
         ...Platform.select({
             web: {
-                outlineStyle: 'none',
+                justifyContent: 'space-between', 
             },
         }),
     },
-    inputIcon: {
-        marginRight: 8, // Reduced margin
-    },
-    dateFiltersRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        gap: 10,
-    },
-    dateInputWebContainer: {
-        flex: 1,
+    searchContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        height: 40, // Slightly shorter input
-        borderColor: VERY_LIGHT_GRAY, // Lighter border
-        borderWidth: 1,
-        borderRadius: 8,
-        backgroundColor: WHITE,
-        shadowColor: DARK_GRAY,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03,
-        shadowRadius: 3,
-        elevation: 1,
-        paddingHorizontal: 10,
+        backgroundColor: VERY_LIGHT_GRAY,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        height: 48,
+        minWidth: 200,
+        // Adjusted flex for web to control width
+        ...Platform.select({
+            web: {
+                flex: 2, // Gives more space to search bar
+                maxWidth: '60%', // Limit its width on larger screens
+            },
+            default: {
+                flex: 1, // Keep original flex for smaller screens/mobile
+            }
+        }),
+    },
+    searchIcon: {
+        marginRight: 12,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: DARK_GRAY,
+        ...Platform.select({
+            web: { outlineStyle: 'none' },
+        }),
+    },
+    dateFilterContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: VERY_LIGHT_GRAY,
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        height: 48,
+        ...Platform.select({
+            web: {
+                width: 180, // Fixed width for date filter on web
+                flexShrink: 0, // Prevent it from shrinking
+                flex: 1, // Allow it to take up available space if needed on smaller web views
+            },
+            default: {
+                flex: 1, // Keep original flex for smaller screens/mobile
+            }
+        })
+    },
+    dateIcon: {
+        marginRight: 12,
+    },
+    dateInput: {
+        flex: 1,
+        fontSize: 16,
+        color: DARK_GRAY,
     },
     dateInputWeb: {
         flex: 1,
-        paddingVertical: 0,
-        fontSize: 14, // Slightly smaller font
+        fontSize: 16,
         color: DARK_GRAY,
-        borderWidth: 0,
         backgroundColor: 'transparent',
+        border: 'none',
+        paddingVertical: 0,
+        paddingHorizontal: 0,
+        cursor: 'pointer',
+        ...Platform.select({
+            web: { outlineStyle: 'none' },
+        }),
+    },
+    clearButton: {
+        padding: 4,
+    },
+    clearFiltersButton: {
+        alignSelf: 'flex-start',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: ACCENT_GREEN_BACKGROUND,
+        borderRadius: 20,
+    },
+    clearFiltersText: {
+        color: PRIMARY_GREEN,
+        fontSize: 14,
+        fontWeight: '600',
+    },
+    listContainer: {
+        padding: 16,
+        paddingBottom: 32,
+    },
+    cardContainer: {
+        backgroundColor: WHITE,
+        borderRadius: 16,
+        marginBottom: 16,
+        padding: 15,
+        shadowColor: CARD_SHADOW,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
         ...Platform.select({
             web: {
-                outlineStyle: 'none',
-                width: '100%',
+                width: '90%', // Still makes it wide
+                alignSelf: 'center',
+                marginHorizontal: 'auto',
             },
         }),
     },
-    nativeDateInputContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        height: 40, // Slightly shorter input
-        borderColor: VERY_LIGHT_GRAY, // Lighter border
-        borderWidth: 1,
-        borderRadius: 8,
-        backgroundColor: WHITE,
-        shadowColor: DARK_GRAY,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.03,
-        shadowRadius: 3,
-        elevation: 1,
-        paddingHorizontal: 10,
-    },
-    inputNativeDate: {
-        flex: 1,
-        height: '100%',
-        fontSize: 14, // Slightly smaller font
-        color: DARK_GRAY,
-        paddingVertical: 0,
-    },
-
-    cardContainer: {
-        ...containerBaseStyles,
-        width: IS_LARGE_SCREEN ? 750 : '100%',
-        alignSelf: 'center',
-        marginBottom: 12, // Reduced margin
-        paddingVertical: IS_LARGE_SCREEN ? 16 : 14, // Reduced padding
-        paddingHorizontal: IS_LARGE_SCREEN ? 22 : 18, // Reduced padding
-    },
-
-    headerRow: {
+    cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 8, // Reduced margin
+        marginBottom: 12,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: VERY_LIGHT_GRAY,
     },
-    residenteInfo: {
+    residentInfo: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 10, // Space between photo and name
+        flex: 1,
     },
-    residentePhoto: {
-        width: 40,
-        height: 40,
-        borderRadius: 20, // Makes it a circle
-        backgroundColor: ACCENT_GREEN_BACKGROUND, // Fallback background
-        borderWidth: 1,
-        borderColor: LIGHT_GREEN,
+    residentPhoto: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        marginRight: 12,
+        backgroundColor: ACCENT_GREEN_BACKGROUND,
     },
-    residenteName: {
-        fontWeight: '600', // Slightly less bold
-        fontSize: IS_LARGE_SCREEN ? 19 : 17, // Slightly smaller font
-        color: DARK_GRAY, // Changed to dark gray for a softer, minimalist feel
+    residentDetails: {
+        flex: 1,
     },
-    fecha: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 12, // Slightly smaller font
+    residentName: {
+        fontSize: 17,
+        fontWeight: '700',
+        color: DARK_GRAY,
+        marginBottom: 2,
+    },
+    residentId: {
+        fontSize: 13,
         color: MEDIUM_GRAY,
+    },
+    dateContainerCard: {
+        backgroundColor: ACCENT_GREEN_BACKGROUND,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 8,
+    },
+    dateText: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: PRIMARY_GREEN,
+    },
+    employeeSection: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        paddingHorizontal: 4,
+    },
+    employeeText: {
+        fontSize: 13,
+        color: MEDIUM_GRAY,
+        marginLeft: 8,
         fontStyle: 'italic',
     },
-
-    notasInline: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 13, // Slightly smaller font
-        color: MEDIUM_GRAY, // Changed to medium gray
-        marginBottom: 10, // Reduced margin
+    vitalsGrid: {
         flexDirection: 'row',
-        alignItems: 'center',
-        gap: 5,
-    },
-    metricText: {
-        fontWeight: '500', // Lighter font weight
-        fontSize: IS_LARGE_SCREEN ? 13 : 12, // Slightly smaller font
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-    },
-    metricValue: {
-        fontWeight: 'bold',
-    },
-    metricsRow: {
-        flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
-        alignItems: 'flex-start',
-        justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: IS_LARGE_SCREEN ? 15 : 8, // Reduced gap
-        marginBottom: 12, // Reduced margin
+        gap: 10,
+        marginBottom: 10,
+        justifyContent: 'space-around',
     },
-
-    verMasButton: {
-        flexDirection: 'row',
-        backgroundColor: 'transparent', // Transparent background
-        paddingVertical: 6, // Reduced padding
-        paddingHorizontal: 10, // Reduced padding
-        borderRadius: 8, // Smaller border radius
+    vitalCard: {
+        backgroundColor: VERY_LIGHT_GRAY,
+        borderRadius: 12,
+        padding: 10,
+        width: IS_LARGE_SCREEN ? '30%' : '48%',
+        borderLeftWidth: 4,
         alignItems: 'center',
+        minHeight: 70,
         justifyContent: 'center',
-        alignSelf: 'flex-end',
-        borderWidth: 1,
-        borderColor: VERY_LIGHT_GRAY, // Lighter border
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transitionDuration: '0.2s',
-                transitionProperty: 'background-color, border-color, color',
-                ':hover': {
-                    backgroundColor: ACCENT_GREEN_BACKGROUND, // Light hover background
-                    borderColor: LIGHT_GREEN,
-                },
-            },
-        }),
     },
-    verMasText: {
-        color: PRIMARY_GREEN,
-        fontSize: 13, // Slightly smaller font
-        fontWeight: '600',
-        marginLeft: 4, // Reduced margin
-        ...Platform.select({
-            web: {
-                ':hover': {
-                    color: PRIMARY_GREEN, // Keep green on hover
-                },
-            },
-        }),
-    },
-
-    emptyText: {
-        marginTop: 40, // Reduced margin
-        textAlign: 'center',
+    vitalLabel: {
+        fontSize: 11,
         color: MEDIUM_GRAY,
-        fontSize: 15, // Slightly smaller font
-        fontWeight: '500',
+        marginTop: 4,
+        marginBottom: 2,
+        textAlign: 'center',
     },
-    flatListEmpty: {
-        flexGrow: 1,
+    vitalValue: {
+        fontSize: 15,
+        fontWeight: '700',
+        color: DARK_GRAY,
+        textAlign: 'center',
+    },
+    notesSection: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        backgroundColor: VERY_LIGHT_GRAY,
+        padding: 12,
+        borderRadius: 12,
+        marginTop: 4,
+    },
+    notesText: {
+        fontSize: 13,
+        color: DARK_GRAY,
+        marginLeft: 10,
+        flex: 1,
+        lineHeight: 18,
+    },
+    loadingContainer: {
+        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: VERY_LIGHT_GRAY,
+    },
+    loadingText: {
+        marginTop: 16,
+        fontSize: 16,
+        color: MEDIUM_GRAY,
+    },
+    errorContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: VERY_LIGHT_GRAY,
+        padding: 32,
+    },
+    errorTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: ERROR_RED,
+        marginTop: 16,
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    errorText: {
+        fontSize: 16,
+        color: MEDIUM_GRAY,
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 22,
+    },
+    retryButton: {
+        backgroundColor: PRIMARY_GREEN,
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+    },
+    retryButtonText: {
+        color: WHITE,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 80,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: MEDIUM_GRAY,
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    emptyText: {
+        fontSize: 16,
+        color: LIGHT_GRAY,
+        textAlign: 'center',
+        lineHeight: 22,
+        paddingHorizontal: 32,
     },
 });
 

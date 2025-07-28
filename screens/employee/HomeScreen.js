@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, Dimensions, ScrollView, useWindowDimensions, To
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
+// --- Importar tu componente SVG ---
+import MaquetaSVG from '../../assets/images/maqueta'; // ¡Asegúrate de que esta ruta sea correcta!
+
 // --- Definiciones de colores y constantes ---
 const PRIMARY_ACCENT = '#4A90E2';
 const SECONDARY_ACCENT = '#7ED321';
@@ -17,15 +20,41 @@ const PURPLE = '#8B5CF6';
 
 const API_ENDPOINT = 'http://localhost:5214/api/Dashboard'; // Your API endpoint
 
+// --- Coordenadas de las áreas en tu mapa SVG ---
+// ¡¡¡ESTO ES LO QUE NECESITAS AJUSTAR MEDIANTE PRUEBA Y ERROR!!!
+// Las coordenadas son relativas al lienzo del SVG (0,0 es la esquina superior izquierda).
+// Estos valores son estimaciones iniciales.
+const AREA_COORDINATES = {
+    "comedor": { x: 350, y: 350 },     // Ej. Centro del comedor
+    "sala medica": { x: 690, y: 410 }, // Ej. Centro de la sala médica
+    "patio": { x: 550, y: 550 },      // Ej. Centro del patio (el área verde grande)
+    "dormitorio": { x: 350, y: 740 },  // Ej. Centro del dormitorio
+    // Agrega o ajusta más áreas según tu maqueta real y los datos de tu API
+};
+
+
 const HomeScreen = () => {
     // --- Hooks y Estado ---
     const { width: screenWidth } = useWindowDimensions();
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: 0 });
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    // Ya no necesitamos chartCardWidth de la misma manera para el mapa,
+    // pero lo dejamos si lo usas en otras partes.
     const [chartCardWidth, setChartCardWidth] = useState(screenWidth * 0.9 / 2 - 10);
     const [dashboardData, setDashboardData] = useState(null); // State for dynamic data
     const [loading, setLoading] = useState(true); // Loading state
     const [error, setError] = useState(null); // Error state
+
+    // --- NUEVO ESTADO PARA CONTEOS DE UBICACIÓN ---
+    // Esto debería venir de tu API, por ahora es un mock
+    const [residentLocationCounts, setResidentLocationCounts] = useState({
+        "comedor": 5,
+        "sala medica": 2,
+        "patio": 8,
+        "dormitorio": 15,
+        "desconocido": 0, // Para residentes sin ubicación mapeada
+    });
+    // Fin NUEVO ESTADO PARA CONTEOS DE UBICACIÓN
 
     // --- Data Fetching ---
     useEffect(() => {
@@ -37,6 +66,14 @@ const HomeScreen = () => {
                 }
                 const data = await response.json();
                 setDashboardData(data);
+
+                // --- ACTUALIZAR CONTEOS DE UBICACIÓN SI LA API LOS PROVEE ---
+                // Asumo que tu API podría devolver algo como data.ubicacionResidentes
+                // Si tu API no tiene este dato, mantén el mock por ahora.
+                if (data.ubicacionResidentes) {
+                    setResidentLocationCounts(data.ubicacionResidentes);
+                }
+                // Fin ACTUALIZAR CONTEOS DE UBICACIÓN
             } catch (err) {
                 console.error("Error fetching dashboard data:", err);
                 setError(err.message);
@@ -90,21 +127,16 @@ const HomeScreen = () => {
         }
     };
 
-    // --- Data for Graphs (derived from dashboardData) ---
-    const datosRitmoCardiacoPromedio = dashboardData ? {
-        labels: dashboardData.ritmoCardiacoPromedioPorDia.map(item => {
-            const date = new Date(item.fecha);
-            return date.toLocaleDateString('es-ES', { weekday: 'short' }); // e.g., 'lun', 'mar'
-        }),
-        datasets: [
-            {
-                data: dashboardData.ritmoCardiacoPromedioPorDia.map(item => item.promedioRitmoCardiaco),
-                color: (opacity = 1) => `rgba(208, 2, 27, ${opacity})`, // Line color as DANGER_COLOR
-                strokeWidth: 2,
-            },
-        ],
-    } : { labels: [], datasets: [{ data: [], color: () => 'transparent' }] };
+    // --- NUEVA FUNCIÓN: Obtener color de los números según el conteo ---
+    const getAreaCountColor = (count) => {
+        if (count >= 10) return DANGER_COLOR;   // Muchos residentes
+        if (count >= 5) return WARNING_COLOR;   // Cantidad moderada
+        return SECONDARY_ACCENT;                // Cantidad baja o ideal
+    };
+    // Fin NUEVA FUNCIÓN
 
+    // --- Data for Graphs (derived from dashboardData) ---
+    // Ritmo cardíaco promedio ya no estará aquí para el LineChart
     const datosAlertasPorTipoPastel = dashboardData ?
         dashboardData.tiposAlertaMasComunes.map(item => {
             let color;
@@ -140,29 +172,8 @@ const HomeScreen = () => {
     };
 
     // --- Manejadores de Eventos y Animaciones ---
-    const handleDataPointClick = ({ value, x, y, index }) => {
-        // Find the status for the clicked data point
-        const clickedDataPoint = dashboardData?.ritmoCardiacoPromedioPorDia[index];
-        const statusColor = getKpiCardStyle(clickedDataPoint?.status)?.borderColor || NEUTRAL_DARK; // Use borderColor for tooltip background
-
-        setTooltipPos({
-            x: x + 15,
-            y: y - 25,
-            visible: true,
-            value,
-            backgroundColor: statusColor, // Pass color to tooltip
-        });
-        fadeAnim.setValue(1);
-
-        setTimeout(() => {
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 500,
-                easing: Easing.ease,
-                useNativeDriver: true,
-            }).start(() => setTooltipPos({ ...tooltipPos, visible: false }));
-        }, 1500);
-    };
+    // handleDataPointClick ya no es necesario para el mapa, solo para el LineChart
+    // Si en el futuro quieres hacer algo al tocar áreas del SVG, necesitarías otra lógica aquí.
 
     if (loading) {
         return (
@@ -216,52 +227,58 @@ const HomeScreen = () => {
                     </View>
                 </View>
 
-                {/* --- Gráficas --- */}
+                {/* --- Gráficas (Ahora el Mapa y la Gráfica de Pastel) --- */}
                 <View style={[styles.chartsAndListsContainer, { marginBottom: 40 }]}>
                     <View style={styles.leftColumn} onLayout={onChartCardLayout}>
+                        {/* --- INICIO: Mapa de Ubicación de Residentes (reemplaza LineChart) --- */}
                         <View style={styles.chartCard}>
-                            <Text style={styles.chartTitle}>Ritmo Cardíaco Promedio (Últimos 7 Días)</Text>
-                            <View style={{ flex: 1, alignItems: 'center' }}>
-                                {dashboardData.ritmoCardiacoPromedioPorDia.length > 0 ? (
-                                    <LineChart
-                                        data={datosRitmoCardiacoPromedio}
-                                        width={chartCardWidth - 20}
-                                        height={240}
-                                        chartConfig={{
-                                            ...chartConfig,
-                                            ...lineChartConfig,
-                                            yAxisLabel: '',
-                                            propsForLabels: {
-                                                fontSize: 9,
-                                                fill: NEUTRAL_MEDIUM,
-                                            },
-                                        }}
-                                        bezier
-                                        style={styles.chartStyle}
-                                        onDataPointClick={handleDataPointClick}
-                                        fromZero={false}
-                                        paddingLeft="20"
-                                    />
-                                ) : (
-                                    <Text style={styles.noDataText}>No hay datos de ritmo cardíaco disponibles.</Text>
-                                )}
-                                {tooltipPos.visible && (
-                                    <Animated.View
-                                        style={[
-                                            styles.tooltip,
-                                            {
-                                                left: tooltipPos.x,
-                                                top: tooltipPos.y,
-                                                opacity: fadeAnim,
-                                                backgroundColor: tooltipPos.backgroundColor || NEUTRAL_DARK, // Apply dynamic color
-                                            },
-                                        ]}
-                                    >
-                                        <Text style={styles.tooltipText}>{tooltipPos.value}</Text>
-                                    </Animated.View>
-                                )}
+                            <Text style={styles.chartTitle}>Ubicación de Residentes</Text>
+                            <View style={styles.svgMapContainer}>
+                                {/* Renderiza tu componente SVG */}
+                                {/* Ajusta width y height para que la imagen sea más grande */}
+                                {/* Aumentamos el multiplicador para el ancho. Podrías necesitar ajustar la altura también */}
+                                <MaquetaSVG width={chartCardWidth * 5} height={350} />
+
+                                {/* Overlay para los números de conteo */}
+                                {Object.entries(residentLocationCounts).map(([areaName, count]) => {
+                                    const coords = AREA_COORDINATES[areaName];
+                                    if (!coords) return null; // No renderizar si no hay coordenadas para el área
+
+                                    // Escalar las coordenadas del SVG (1080x1080) al tamaño del contenedor
+                                    // Ajusta los multiplicadores para 'scaledX' y 'scaledY'
+                                    // Estos valores (0.8 y 0.3) son un punto de partida. Necesitarás ajustarlos manualmente
+                                    // hasta que los números se alineen correctamente con las áreas en tu SVG.
+                                    const scaledX = (coords.x / 1080) * (chartCardWidth * 0.8);
+                                    const scaledY = (coords.y / 1080) * 300; // Ajusta el multiplicador según la nueva altura del SVG (350 en este caso, pero busca un valor que centre el número)
+
+                                    // Ajustar el posicionamiento para centrar el número en la maqueta
+                                    // Esto podría requerir un ajuste fino. Aquí resto un valor para moverlo "arriba a la izquierda" del centro.
+                                    const offsetX = 10;
+                                    const offsetY = 10;
+
+                                    return (
+                                        <View
+                                            key={areaName}
+                                            style={[
+                                                styles.areaCountOverlay,
+                                                { left: scaledX - offsetX, top: scaledY - offsetY }
+                                            ]}
+                                        >
+                                            <Text style={[styles.areaCountText, { color: getAreaCountColor(count) }]}>
+                                                {count}
+                                            </Text>
+                                        </View>
+                                    );
+                                })}
                             </View>
+                            {/* Puedes agregar un mensaje de error si la ubicación no se encuentra */}
+                            {/* {locationError && (
+                                <Text style={styles.locationErrorText}>
+                                    Error de ubicación: {locationError}
+                                </Text>
+                            )} */}
                         </View>
+                        {/* --- FIN: Mapa de Ubicación de Residentes --- */}
                     </View>
 
                     <View style={styles.rightColumn}>
@@ -402,7 +419,7 @@ const HomeScreen = () => {
     );
 };
 
-// --- Configuración Específica de Gráficas ---
+// --- Configuración Específica de Gráficas (lineChartConfig ya no se usará directamente para el mapa) ---
 const lineChartConfig = {
     propsForDots: {
         r: '5',
@@ -547,9 +564,11 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.05,
         shadowRadius: 6,
         elevation: 3,
-        height: 300, // Fixed height to prevent scrolling of the overall dashboard
+        height: 300, // Fixed height para el mapa
         borderWidth: 1,
         borderColor: NEUTRAL_LIGHT,
+        // Eliminamos paddingBottom si queremos que el mapa ocupe todo el espacio vertical disponible
+        // Si el SVG tiene elementos pegados al borde, el padding podría ser necesario.
     },
     chartTitle: {
         fontSize: 18,
@@ -558,6 +577,31 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         textAlign: 'center',
     },
+    // --- NUEVOS ESTILOS PARA EL MAPA SVG ---
+    svgMapContainer: {
+        flex: 1,
+        position: 'relative',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        paddingVertical: 10, // Añadir padding vertical
+    },
+    areaCountOverlay: {
+        position: 'absolute',
+        // Puedes añadir estilos de fondo para los números si quieres que resalten más
+        // backgroundColor: 'rgba(0,0,0,0.5)',
+        // borderRadius: 5,
+        // paddingHorizontal: 5,
+        // paddingVertical: 2,
+    },
+    areaCountText: {
+        fontSize: 18, // Tamaño del número
+        fontWeight: 'bold',
+        textAlign: 'center',
+        // El color se asigna dinámicamente
+    },
+    // Fin NUEVOS ESTILOS
+
     chartStyle: {
         borderRadius: 8,
     },

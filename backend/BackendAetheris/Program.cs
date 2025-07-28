@@ -4,16 +4,17 @@ using Microsoft.Extensions.Configuration;
 using System.IO;
 using System;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Builder; // Asegúrate de que este using esté presente si no lo está
+using Microsoft.AspNetCore.Builder;
+using System.Net.WebSockets;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Text;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- MODIFICACIÓN CLAVE AQUÍ PARA ESCUCHAR EN TODAS LAS IPs ---
-// Esto anulará las configuraciones de puertos en launchSettings.json y cualquier variable de entorno ASPNETCORE_URLS.
-// Asegúrate de que los puertos 5213 y 7160 (o los que elijas) estén libres y permitidos por tu firewall.
 builder.WebHost.UseUrls("http://0.0.0.0:5214", "https://0.0.0.0:7160");
-// --- FIN MODIFICACIÓN ---
-
 
 var serviceAccountKeyPath = builder.Configuration.GetValue<string>("Firebase:ServiceAccountKeyPath");
 
@@ -37,16 +38,92 @@ else
     }
 }
 
-// Inicializa la configuración para SqlServerConnection
-// Esto es necesario para que GetConnectionString() en SqlServerConnection funcione
 SqlServerConnection.InitializeConfiguration(builder.Configuration);
 
 AppConfig.ConfigureServices(builder.Services, builder.Configuration);
 
-builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>(); // Asegúrate de que IFirebaseAuthService y FirebaseAuthService estén definidos
+builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
+builder.Services.AddWebSocketManager();
 
 var app = builder.Build();
 
 AppConfig.ConfigurePipeline(app);
 
+app.UseWebSockets();
+
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path == "/ws/sensor_data")
+    {
+        if (context.WebSockets.IsWebSocketRequest)
+        {
+            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+            await app.Services.GetRequiredService<WebSocketHandler>().HandleWebSocketAsync(webSocket);
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        }
+    }
+    else
+    {
+        await next();
+    }
+});
+
 app.Run();
+
+public static class WebSocketManagerExtensions
+{
+    public static IServiceCollection AddWebSocketManager(this IServiceCollection services)
+    {
+        services.AddSingleton<WebSocketHandler>();
+        return services;
+    }
+}
+
+public class WebSocketHandler
+{
+    private readonly ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+
+    public async Task HandleWebSocketAsync(WebSocket webSocket)
+    {
+        var socketId = Guid.NewGuid().ToString();
+        _sockets.TryAdd(socketId, webSocket);
+
+        Console.WriteLine($"WebSocket conectado: {socketId}");
+
+        var buffer = new byte[1024 * 4];
+        var receiveResult = await webSocket.ReceiveAsync(
+            new ArraySegment<byte>(buffer), CancellationToken.None);
+
+        while (!receiveResult.CloseStatus.HasValue)
+        {
+            receiveResult = await webSocket.ReceiveAsync(
+                new ArraySegment<byte>(buffer), CancellationToken.None);
+        }
+
+        _sockets.TryRemove(socketId, out _);
+        await webSocket.CloseAsync(
+            receiveResult.CloseStatus.Value,
+            receiveResult.CloseStatusDescription, CancellationToken.None);
+        Console.WriteLine($"WebSocket desconectado: {socketId}");
+    }
+
+    public async Task SendMessageToAllAsync(string message)
+    {
+        var bytes = Encoding.UTF8.GetBytes(message);
+        foreach (var pair in _sockets)
+        {
+            var webSocket = pair.Value;
+            if (webSocket.State == WebSocketState.Open)
+            {
+                await webSocket.SendAsync(
+                    new ArraySegment<byte>(bytes, 0, bytes.Length),
+                    WebSocketMessageType.Text,
+                    true,
+                    CancellationToken.None);
+            }
+        }
+    }
+}

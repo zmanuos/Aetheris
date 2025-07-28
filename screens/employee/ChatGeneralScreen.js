@@ -63,11 +63,15 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
   
   const [currentConversationMessagesToShowCount, setCurrentConversationMessagesToShowCount] = useState(INITIAL_MESSAGES_COUNT)
   const [loadingMoreOldMessages, setLoadingMoreOldMessages] = useState(false)
-  const [initialScrollDone, setInitialScrollDone] = useState(false)
 
-  const messageInputRef = useRef(null)
   const chatFlatListRef = useRef(null)
+  const messageInputRef = useRef(null) 
   const soundObjectRef = useRef(new Audio.Sound())
+
+  // Refs para el manejo del scroll al cargar mensajes antiguos y el scroll inicial
+  const contentHeightRef = useRef(0);
+  const scrollOffsetRef = useRef(0);
+  const initialScrollDoneRef = useRef(false); // Ref para controlar el scroll inicial
 
   const { showNotification } = useNotification()
 
@@ -100,16 +104,6 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
       }
     } catch (error) {
       console.error("Error playing sound:", error)
-    }
-  }, [])
-
-  const scrollToBottom = useCallback(() => {
-    if (chatFlatListRef.current) {
-      setTimeout(() => {
-        if (chatFlatListRef.current) {
-          chatFlatListRef.current.scrollToEnd({ animated: false })
-        }
-      }, 50)
     }
   }, [])
 
@@ -204,26 +198,44 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
     fetchNotesAndFamilyData(true)
   }, [fetchNotesAndFamilyData])
 
+  // Resetear el conteo de mensajes a mostrar y el ref del scroll inicial
   useEffect(() => {
     setCurrentConversationMessagesToShowCount(INITIAL_MESSAGES_COUNT)
-    setInitialScrollDone(false)
+    initialScrollDoneRef.current = false // Reiniciar el ref al cambiar de conversación
   }, [selectedConversationId])
 
+  // useEffect para manejar el scroll al final (carga inicial y envío de nuevos mensajes)
   useEffect(() => {
-    if (selectedConversation && selectedConversation.messages.length > 0 && chatFlatListRef.current && !initialScrollDone) {
-      setTimeout(() => {
-        if (chatFlatListRef.current) {
-          chatFlatListRef.current.scrollToEnd({ animated: false })
+    if (chatFlatListRef.current && selectedConversation && selectedConversation.messages.length > 0) {
+      const totalMessagesInConversation = selectedConversation.messages.length;
+      const messagesCurrentlyDisplayed = messagesToDisplay.length;
+
+      // Desplazarse al final si:
+      // 1. Es la carga inicial de la conversación o se ha cambiado de conversación
+      // 2. Se ha enviado un nuevo mensaje (y estamos mostrando todos los mensajes más recientes)
+      // 3. NO estamos cargando mensajes antiguos (para evitar conflictos de scroll)
+      if (!initialScrollDoneRef.current || (messagesCurrentlyDisplayed === totalMessagesInConversation && !loadingMoreOldMessages)) {
+        setTimeout(() => {
+          if (chatFlatListRef.current) {
+            const animatedScroll = initialScrollDoneRef.current; // Usar animación si no es la carga inicial
+            chatFlatListRef.current.scrollToEnd({ animated: animatedScroll });
+          }
+        }, 100); // Pequeño retraso para asegurar que la FlatList ha renderizado
+
+        // Marcar el scroll inicial como hecho solo si realmente se ha desplazado al final de la conversación cargada.
+        // Esto previene que se marque como hecho si solo se cargaron algunos mensajes iniciales.
+        if (messagesCurrentlyDisplayed === totalMessagesInConversation) {
+            initialScrollDoneRef.current = true;
         }
-      }, 50)
-      setInitialScrollDone(true)
+      }
     }
-  }, [selectedConversation, initialScrollDone])
+  }, [selectedConversation, messagesToDisplay.length, loadingMoreOldMessages]); // Dependencias para este efecto
+
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true)
     setCurrentConversationMessagesToShowCount(INITIAL_MESSAGES_COUNT)
-    setInitialScrollDone(false)
+    initialScrollDoneRef.current = false // Reiniciar el ref al refrescar
     fetchNotesAndFamilyData(false)
   }, [fetchNotesAndFamilyData])
 
@@ -277,9 +289,11 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
             : conv,
         ),
       )
+      // Asegurarse de que el conteo incluya el nuevo mensaje para que se muestre inmediatamente
+      // Esto también ayudará a que el useEffect de scroll se active.
       setCurrentConversationMessagesToShowCount(prev => (selectedConversation?.messages?.length || 0) + 1)
 
-      scrollToBottom()
+      // El scroll al final se gestiona ahora por el `useEffect` dedicado.
     } catch (error) {
       console.error("Error sending message:", error)
       setFetchError("Error al enviar el mensaje. Por favor, inténtalo de nuevo.")
@@ -293,7 +307,6 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
     currentUserRole,
     currentUserId,
     showNotification,
-    scrollToBottom,
     playSentMessageSound,
     selectedConversation
   ])
@@ -318,32 +331,34 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
     )
   }, [selectedConversation, currentConversationMessagesToShowCount])
 
-  const handleScroll = useCallback(({ nativeEvent }) => {
-    const { contentOffset, contentSize, layoutMeasurement } = nativeEvent
+  // Captura la altura del contenido y el offset del scroll ANTES de cargar más mensajes
+  const onScroll = useCallback(({ nativeEvent }) => {
+    scrollOffsetRef.current = nativeEvent.contentOffset.y;
+    contentHeightRef.current = nativeEvent.contentSize.height;
 
-    if (contentOffset.y <= 10 && !loadingMoreOldMessages && selectedConversation) {
-      const totalMessages = selectedConversation.messages.length
+    // Detectar si el usuario está cerca del principio para cargar más mensajes
+    if (nativeEvent.contentOffset.y <= 10 && !loadingMoreOldMessages && selectedConversation) {
+      const totalMessages = selectedConversation.messages.length;
       if (currentConversationMessagesToShowCount < totalMessages) {
-        setLoadingMoreOldMessages(true)
-        setCurrentConversationMessagesToShowCount(prevCount => {
-          const newCount = Math.min(prevCount + LOAD_MORE_MESSAGES_COUNT, totalMessages)
-          const oldContentHeight = contentSize.height
-          const oldOffset = contentOffset.y
-          
-          setTimeout(() => {
-              if (chatFlatListRef.current) {
-                const newContentHeight = chatFlatListRef.current._listRef._scrollMetrics.contentLength
-                const heightDifference = newContentHeight - oldContentHeight
-                chatFlatListRef.current.scrollToOffset({ offset: oldOffset + heightDifference, animated: false })
-              }
-              setLoadingMoreOldMessages(false)
-          }, 0)
-          
-          return newCount
-        })
+        setLoadingMoreOldMessages(true);
+        setCurrentConversationMessagesToShowCount(prevCount => Math.min(prevCount + LOAD_MORE_MESSAGES_COUNT, totalMessages));
       }
     }
-  }, [currentConversationMessagesToShowCount, loadingMoreOldMessages, selectedConversation])
+  }, [currentConversationMessagesToShowCount, loadingMoreOldMessages, selectedConversation]);
+
+  // useEffect para ajustar el scroll después de cargar mensajes antiguos
+  useEffect(() => {
+    if (loadingMoreOldMessages && chatFlatListRef.current) {
+      requestAnimationFrame(() => {
+        if (chatFlatListRef.current) {
+          const newContentHeight = chatFlatListRef.current.getScrollResponder().getMetrics().contentLength;
+          const heightDifference = newContentHeight - contentHeightRef.current; // Diferencia de altura
+          chatFlatListRef.current.scrollToOffset({ offset: scrollOffsetRef.current + heightDifference, animated: false });
+          setLoadingMoreOldMessages(false); // Resetear el estado de carga
+        }
+      });
+    }
+  }, [loadingMoreOldMessages]); // Se activa cuando `loadingMoreOldMessages` cambia
 
   const renderConversationListItem = useCallback(
     ({ item }) => {
@@ -397,8 +412,9 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
         messageDate.getMonth() === today.getMonth() &&
         messageDate.getFullYear() === today.getFullYear()
 
-      const timeOptions = { hour: "2-digit", minute: "2-digit" }
-      const dateTimeOptions = { dateStyle: "short", timeStyle: "short" }
+      // Formato de 12 horas con AM/PM
+      const timeOptions = { hour: "2-digit", minute: "2-digit", hour12: true }
+      const dateTimeOptions = { dateStyle: "short", timeStyle: "short", hour12: true }
 
       const formattedDateTime = isSameDay
         ? messageDate.toLocaleTimeString("es-ES", timeOptions)
@@ -517,7 +533,7 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
                   contentContainerStyle={styles.messagesListContent}
                   showsVerticalScrollIndicator={true}
                   alwaysBounceVertical={true}
-                  onScroll={handleScroll}
+                  onScroll={onScroll} // Usamos la nueva función onScroll
                   scrollEventThrottle={16}
                   inverted={false}
                 />
@@ -947,7 +963,7 @@ const styles = StyleSheet.create({
   noConversationSelected: {
     flex: 1,
     justifyContent: "center",
-    alignItems: "center",
+    alignItems: "center", 
     padding: 32,
     gap: 16,
     backgroundColor: COLORS.BACKGROUND_LIGHT, 
