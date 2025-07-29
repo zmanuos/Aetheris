@@ -1,31 +1,36 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Platform } from 'react-native';
+import { Platform, View, Text, StyleSheet } from 'react-native'; // Asegúrate de que View, Text, StyleSheet estén importados si se usan en TestScreen o estilos
+
+// Importaciones de Header y SideMenu (descomentadas, ya verificadas)
 import Header from '../components/navigation/Header';
 import SideMenu from '../components/navigation/SideMenu';
+
+// IMPORTACIONES DE PANTALLAS (TODAS DESCOMENTADAS)
 import HomeScreen from '../screens/employee/HomeScreen';
 import ResidentsScreen from '../screens/employee/ResidentsScreen';
 import CombinedRegistrationScreen from '../screens/employee/CombinedRegistrationScreen';
 import ResidentProfileScreen from '../screens/employee/ResidentProfileScreen';
 import WeeklyCheckupDetailScreen from '../screens/employee/WeeklyCheckupDetailScreen';
+import ResidentEditScreen from '../screens/employee/ResidentEditScreen';
+import ChatGeneralScreen from '../screens/employee/ChatGeneralScreen';
 import CreateConsultasScreen from '../screens/employee/CreateConsultasScreen';
 import ConsultasHistoryScreen from '../screens/employee/ConsultasHistoryScreen';
-import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen';
+import CheckupReportsScreen from '../screens/employee/CheckupReportsScreen'; // Asumimos que ya está corregido internamente
 import EmployeeManagementScreen from '../screens/admin/EmployeeManagementScreen';
 import EmployeeCreationScreen from '../screens/admin/EmployeeCreationScreen';
 import AsylumDataScreen from '../screens/admin/AsylumDataScreen';
 import EmployeeEditScreen from '../screens/admin/EmployeeEditScreen';
 import DeviceManagementScreen from '../screens/admin/DeviceManagementScreen';
 import MyAccountScreen from '../components/navigation/MyAccountScreen';
-import ResidentEditScreen from '../screens/employee/ResidentEditScreen';
-import ChatGeneralScreen from '../screens/employee/ChatGeneralScreen';
 
 
 const Drawer = createDrawerNavigator();
 const ResidentsStack = createStackNavigator();
 const EmployeeStack = createStackNavigator();
 
+// FUNCIONES STACK (ResidentsStackScreen y EmployeeManagementStackScreen descomentadas)
 function ResidentsStackScreen() {
   return (
     <ResidentsStack.Navigator
@@ -71,6 +76,16 @@ function EmployeeManagementStackScreen() {
   );
 }
 
+// Componente de prueba mínimo (si no lo usas, puedes eliminarlo)
+function TestScreen() {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Pantalla de Prueba de Admin Navigator</Text>
+      <Text style={styles.text}>¡Si ves esto, funciona!</Text>
+    </View>
+  );
+}
+
 const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
   return (
     <Drawer.Navigator
@@ -99,12 +114,11 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
         },
       })}
     >
+      {/* PANTALLAS DEL DRAWER (TODAS DESCOMENTADAS y sin comentarios adicionales que puedan generar texto) */}
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
       <Drawer.Screen name="ChatGeneral" component={ChatGeneralScreen} options={{ title: 'MENSAJES' }} />
-      <Drawer.Screen
-        name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }}
-      />
+      <Drawer.Screen name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }} />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />
       <Drawer.Screen name="CheckupReports" component={CheckupReportsScreen} options={{ title: 'REPORTES DE CHEQUEOS' }} />
@@ -124,4 +138,31 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
   );
 };
 
-export default AdminNavigator;  
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+  },
+  sideMenuContainer: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fcfcfc',
+  },
+  text: {
+    fontSize: 18,
+    marginBottom: 10,
+    color: '#333',
+  },
+  logoutButton: {
+    fontSize: 16,
+    color: 'blue',
+    marginTop: 20,
+    textDecorationLine: 'underline',
+  },
+});
+
+export default AdminNavigator;

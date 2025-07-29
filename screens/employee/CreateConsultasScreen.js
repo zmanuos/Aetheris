@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Config from '../config/config'; // <-- ¡Aquí está la importación!
+
 import {
   SafeAreaView,
   View,
@@ -12,6 +14,7 @@ import {
   Switch,
   Dimensions,
 } from 'react-native';
+
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -107,7 +110,7 @@ export default function CreateConsultaScreen() {
   // Efecto para manejar WebSocket y autocaptura
   useEffect(() => {
     if (!autoFillEnabled) return;
-    ws.current = new WebSocket('ws://localhost:5214/ws/sensor_data');
+    ws.current = new WebSocket(`ws://${Config.ip}:${Config.port}/ws/sensor_data`);
     ws.current.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);

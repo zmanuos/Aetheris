@@ -7,7 +7,7 @@ import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import BackButton from "../../components/shared/BackButton"
-import { Audio } from 'expo-av';
+import { Audio } from 'expo-audio';
 
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
 import FamilyContactCard from "../../components/shared/resident_profile/FamilyContactCard"

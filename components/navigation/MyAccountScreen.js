@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Config from '../../config/config'; // Import the Config file
 
 // Import the Notification component
 import Notification from '../shared/Notification'; // Adjust path if necessary
@@ -105,7 +106,7 @@ const MyAccountScreen = ({ route }) => {
       try {
         setLoadingInitialData(true);
         // setMessage(null); // No longer needed
-        const response = await fetch(`http://localhost:5214/api/Personal/manage/get-correo/${firebaseUid}`);
+        const response = await fetch(`${Config.API_BASE_URL}/Personal/manage/get-correo/${firebaseUid}`); // Use Config.API_BASE_URL
 
         if (!response.ok) {
           throw new Error(`Error HTTP: ${response.status}`);
@@ -186,7 +187,7 @@ const MyAccountScreen = ({ route }) => {
       // Perform Email Update if changed
       if (isEmailChanged) {
         try {
-          const emailResponse = await fetch('http://localhost:5214/api/Personal/manage/update-email', {
+          const emailResponse = await fetch(`${Config.API_BASE_URL}/Personal/manage/update-email`, { // Use Config.API_BASE_URL
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -225,7 +226,7 @@ const MyAccountScreen = ({ route }) => {
       // Perform Password Update if changed
       if (isPasswordChanged && passwordUpdateSuccessful) { // Only attempt password update if no major email error
         try {
-          const passwordResponse = await fetch('http://localhost:5214/api/Personal/manage/update-password', {
+          const passwordResponse = await fetch(`${Config.API_BASE_URL}/Personal/manage/update-password`, { // Use Config.API_BASE_URL
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, Dimensions, ScrollView, useWindowDimensions, To
 import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 
+// IMPORTAR EL ARCHIVO DE CONFIGURACIÓN
+import Config from '../../config/config'; // <-- ¡Aquí está la importación!
+
 // --- Importar tu componente SVG ---
 import MaquetaSVG from '../../assets/images/maqueta'; // ¡Asegúrate de que esta ruta sea correcta!
 
@@ -18,7 +21,8 @@ const BACKGROUND_LIGHT = '#F8F9FA';
 const CARD_BACKGROUND = '#FFFFFF';
 const PURPLE = '#8B5CF6';
 
-const API_ENDPOINT = 'http://localhost:5214/api/Dashboard'; // Your API endpoint
+// Usar la URL base del archivo de configuración
+const API_ENDPOINT = `${Config.API_BASE_URL}/Dashboard`; // <-- ¡Cambiado aquí!
 
 // --- Coordenadas de las áreas en tu mapa SVG ---
 // ¡¡¡ESTO ES LO QUE NECESITAS AJUSTAR MEDIANTE PRUEBA Y ERROR!!!

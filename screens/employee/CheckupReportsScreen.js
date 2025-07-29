@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Platform, TextInput, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Config from '../config/config'; // <-- ¡Aquí está la importación!
 // Importaciones para PDF (si estás en web o un entorno que lo soporte)
 // Estas librerías solo son para Web
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+// import html2canvas from 'html2canvas'; // COMENTADO
+// import jsPDF from 'jspdf'; // COMENTADO
 // Esta librería es para Mobile (iOS/Android)
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 
@@ -35,8 +36,7 @@ const residentNames = {
     // "8": "Residente Prueba 8" <-- Eliminado
 };
 
-const API_BASE_URL = 'http://localhost:5214/api'; // Tu URL base de la API
-
+const API_ENDPOINT = `${Config.API_BASE_URL}/api`; // <-- ¡Cambiado aquí!
 const CheckupReportsScreen = () => {
     // --- Refs para los componentes de reporte para la exportación a PDF (solo relevantes para web) ---
     const staffReportRef = useRef(null);
@@ -350,38 +350,41 @@ const CheckupReportsScreen = () => {
 
     const exportReportToPdf = useCallback(async (reportRef, fileName, getHtmlContentFunction) => {
         if (Platform.OS === 'web') {
-            if (reportRef.current) {
-                try {
-                    const canvas = await html2canvas(reportRef.current, {
-                        scale: 2, // Aumentar la escala para mejor calidad
-                        useCORS: true, // Importante si tienes imágenes de otros dominios
-                        allowTaint: true, // Permite contenido de otros orígenes, pero puede tener implicaciones de seguridad
-                    });
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdf = new jsPDF('p', 'mm', 'a4');
-                    const imgWidth = 210; // A4 width in mm
-                    const pageHeight = 297; // A4 height in mm
-                    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                    let heightLeft = imgHeight;
-                    let position = 0;
+            // alert("La exportación a PDF para Web ha sido temporalmente deshabilitada para depuración."); // Puedes descomentar esto para avisar al usuario
+            // return; // COMENTAR O ELIMINAR ESTO SI DESCOMENTAS html2canvas/jspdf
+            // if (reportRef.current) {
+            //     try {
+            //         const canvas = await html2canvas(reportRef.current, {
+            //             scale: 2,
+            //             useCORS: true,
+            //             allowTaint: true,
+            //         });
+            //         const imgData = canvas.toDataURL('image/png');
+            //         const pdf = new jsPDF('p', 'mm', 'a4');
+            //         const imgWidth = 210;
+            //         const pageHeight = 297;
+            //         const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            //         let heightLeft = imgHeight;
+            //         let position = 0;
 
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pageHeight;
+            //         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            //         heightLeft -= pageHeight;
 
-                    while (heightLeft >= 0) {
-                        position = heightLeft - imgHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
-                    }
-                    pdf.save(`${fileName}.pdf`);
-                } catch (error) {
-                    console.error("Error al generar PDF en web:", error);
-                    Alert.alert("Error al Exportar (Web)", "No se pudo generar el PDF. Asegúrate de que todo el contenido esté renderizado correctamente. " + error.message);
-                }
-            } else {
-                Alert.alert("Error al Exportar (Web)", "El contenido del reporte no está disponible para exportar.");
-            }
+            //         while (heightLeft >= 0) {
+            //             position = heightLeft - imgHeight;
+            //             pdf.addPage();
+            //             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            //             heightLeft -= pageHeight;
+            //         }
+            //         pdf.save(`${fileName}.pdf`);
+            //     } catch (error) {
+            //         console.error("Error al generar PDF en web:", error);
+            //         Alert.alert("Error al Exportar (Web)", "No se pudo generar el PDF. Asegúrate de que todo el contenido esté renderizado correctamente. " + error.message);
+            //     }
+            // } else {
+            //     Alert.alert("Error al Exportar (Web)", "El contenido del reporte no está disponible para exportar.");
+            // }
+            Alert.alert("Funcionalidad Deshabilitada", "La exportación a PDF para web está temporalmente deshabilitada para depuración.");
         } else { // Mobile (iOS/Android)
             try {
                 const htmlContent = getHtmlContentFunction();

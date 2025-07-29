@@ -88,23 +88,24 @@ export default function ChatGeneralScreen({ navigation, currentUserRole, current
     )
   }, [selectedConversation, currentConversationMessagesToShowCount])
 
-  useEffect(() => {
-    const loadSound = async () => {
-      try {
-        await soundObjectRef.current.loadAsync(require("../../assets/sounds/sent_message2.mp3"))
-      } catch (error) {
-        console.error("Error loading sound:", error)
-      }
+useEffect(() => {
+  const loadSound = async () => {
+    try {
+      await soundObjectRef.current.loadAsync(require("../../assets/sounds/sent_message2.mp3"))
+      await soundObjectRef.current.setVolumeAsync(1); // Establecer volumen al cargar
+    } catch (error) {
+      console.error("Error loading sound:", error)
     }
+  }
 
-    loadSound()
+  loadSound()
 
-    return () => {
-      if (soundObjectRef.current) {
-        soundObjectRef.current.unloadAsync()
-      }
+  return () => {
+    if (soundObjectRef.current) {
+      soundObjectRef.current.unloadAsync()
     }
-  }, [])
+  }
+}, [])
 
   const playSentMessageSound = useCallback(async () => {
     try {
