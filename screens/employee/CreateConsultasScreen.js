@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Config from '../config/config'; // <-- ¡Aquí está la importación!
+import Config from '../../config/config'; 
 
 import {
   SafeAreaView,

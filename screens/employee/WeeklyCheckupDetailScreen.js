@@ -11,7 +11,6 @@ import {
   Image, // Import Image component
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Config from '../../config/config';
 import { useNotification } from '../../src/context/NotificationContext';
 import BackButton from '../../components/shared/BackButton';
 import Config from '../../config/config';

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions, Platform, TextInput, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Config from '../config/config'; // <-- ¡Aquí está la importación!
+import Config from '../../config/config'; // <-- ¡Aquí está la importación!
 // Importaciones para PDF (si estás en web o un entorno que lo soporte)
 // Estas librerías solo son para Web
 // import html2canvas from 'html2canvas'; // COMENTADO

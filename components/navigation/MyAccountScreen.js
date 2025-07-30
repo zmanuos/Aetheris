@@ -70,7 +70,8 @@ const CustomButton = ({ onPress, disabled, loading, title, buttonStyle, textStyl
 };
 
 const MyAccountScreen = ({ route }) => {
-  const { firebaseUid } = route.params;
+  // Add a default empty object for route.params to prevent undefined error
+  const { firebaseUid } = route.params || {}; 
   const [currentEmail, setCurrentEmail] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,7 +99,7 @@ const MyAccountScreen = ({ route }) => {
   useEffect(() => {
     const fetchAdminEmail = async () => {
       if (!firebaseUid) {
-        showNotification('UID de usuario no disponible.', 'error');
+        showNotification('UID de usuario no disponible. Asegúrate de pasar el UID correctamente al navegar a esta pantalla.', 'error');
         setLoadingInitialData(false);
         return;
       }
