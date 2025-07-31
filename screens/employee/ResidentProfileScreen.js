@@ -1,4 +1,3 @@
-// AETHERIS/screens/employee/ResidentProfileScreen.js
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -7,7 +6,7 @@ import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import BackButton from "../../components/shared/BackButton"
-import { Audio } from 'expo-audio';
+import { Audio } from 'expo-av'; // CORRECTED: Changed 'expo-audio' to 'expo-av'
 
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
 import FamilyContactCard from "../../components/shared/resident_profile/FamilyContactCard"
@@ -70,17 +69,17 @@ export default function ResidentProfileScreen({ route, navigation }) {
         messageSentSound.unloadAsync();
       }
     };
-  }, []);
+  }, []); // Empty dependency array ensures this runs once on mount and unloads on unmount
 
-  const playMessageSentSound = async () => {
+  const playMessageSentSound = useCallback(async () => {
     if (messageSentSound) {
       try {
-        await messageSentSound.replayAsync();
+        await messageSentSound.replayAsync(); // Replay from beginning
       } catch (error) {
         console.error("Error playing sound:", error);
       }
     }
-  };
+  }, [messageSentSound]);
 
   const calculateAge = (birthDate) => {
     const today = new Date()
@@ -330,7 +329,7 @@ export default function ResidentProfileScreen({ route, navigation }) {
 
         setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
         setNewMessage("")
-        playMessageSentSound();
+        playMessageSentSound(); // Play sound after successful message send
       } else {
         throw new Error(result.message || "Error al enviar el mensaje")
       }

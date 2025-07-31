@@ -11,13 +11,13 @@ import {
   Image, // Import Image component
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Config from '../../config/config';
 import { useNotification } from '../../src/context/NotificationContext';
 import BackButton from '../../components/shared/BackButton';
-import Config from '../../config/config';
 
 const API_URL = Config.API_BASE_URL;
 // Assuming images are served from a specific base URL. Adjust this if different.
-const IMAGE_BASE_URL = `${API_URL}/images/residents/`;
+const IMAGE_BASE_URL = 'http://localhost:5214/images/residents/';
 
 
 const { width } = Dimensions.get('window');

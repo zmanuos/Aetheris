@@ -1,3 +1,4 @@
+// src/context/SessionContext.js
 import React, { createContext, useContext, useState } from 'react';
 
 const SessionContext = createContext(null);
