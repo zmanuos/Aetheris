@@ -117,7 +117,7 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
       {/* PANTALLAS DEL DRAWER (TODAS DESCOMENTADAS y sin comentarios adicionales que puedan generar texto) */}
       <Drawer.Screen name="Home" component={HomeScreen} options={{ title: 'INICIO' }} />
       <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: 'GESTIÓN RESIDENTES' }} />
-      <Drawer.Screen name="ChatGeneral" component={ChatGeneralScreen} options={{ title: 'MENSAJES' }} />
+      <Drawer.Screen name="ChatGeneral" component={ChatGeneralScreen} options={{ title: 'CHAT CON FAMILIARES' }} />
       <Drawer.Screen name="DeviceManagement" component={DeviceManagementScreen} options={{ title: 'GESTIÓN DE DISPOSITIVOS' }} />
       <Drawer.Screen name="CreateConsultas" component={CreateConsultasScreen} options={{ title: 'CREAR CONSULTAS' }} />
       <Drawer.Screen name="ConsultasHistory" component={ConsultasHistoryScreen} options={{ title: 'HISTORIAL DE CONSULTAS' }} />

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data;
-using System; // Asegúrate de tenerlo si no estaba
+using System;
 
 public class NotaMapper
 {
@@ -8,13 +8,11 @@ public class NotaMapper
     {
         int id = (int)row["id_notas"];
         int idFamiliar = (int)row["id_familiar"];
-        // MODIFICADO: Leer id_personal y manejar DBNull.Value
         int? idPersonal = row["id_personal"] == DBNull.Value ? (int?)null : Convert.ToInt32(row["id_personal"]);
         string notaTexto = (string)row["nota"];
         DateTime fecha = (DateTime)row["fecha"];
-        bool activo = (bool)row["activo"];
+        bool activo = (bool)row["activo"]; // Asegura que 'activo' se lea como booleano
 
-        // ACTUALIZADO: Pasar idPersonal (ahora int?) al constructor
         return new Nota(id, idFamiliar, idPersonal, notaTexto, fecha, activo);
     }
 

@@ -1,3 +1,4 @@
+// LoginForm.js
 "use client"
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -17,6 +18,7 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../config/firebaseConfig';
 import Config from '../../config/config';
+import { useSession } from '../../src/context/SessionContext';
 
 const API_URL = Config.API_BASE_URL;
 
@@ -26,6 +28,8 @@ export default function LoginForm({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const { login, session } = useSession();
 
   const fetchUserDetails = async (role, firebaseUid) => {
     try {
@@ -44,9 +48,8 @@ export default function LoginForm({ onLoginSuccess }) {
         console.log(`[LoginForm] Rol 'employee'. Endpoint: ${endpoint}`);
       } 
       else if (role === 'family') {
-        // MODIFICADO: Usar el endpoint específico para familiares por firebase_uid
         endpoint = `${API_URL}/Familiar/firebase/${firebaseUid}`; 
-        userKey = 'familiar'; // El endpoint devuelve directamente un objeto familiar
+        userKey = 'familiar';
         console.log(`[LoginForm] Rol 'family'. Endpoint: ${endpoint}`);
       } else {
         console.warn("[LoginForm] Rol no reconocido para obtener detalles del usuario:", role);
@@ -68,7 +71,7 @@ export default function LoginForm({ onLoginSuccess }) {
       let currentUser = null;
 
       if (role === 'employee') {
-        const users = data[userKey]; // 'personal'
+        const users = data[userKey];
         if (!Array.isArray(users)) {
           console.error(`[LoginForm] La respuesta no contiene un array en ${userKey}:`, data);
           return null;
@@ -78,8 +81,11 @@ export default function LoginForm({ onLoginSuccess }) {
           user.firebaseUid === firebaseUid
         );
       } else if (role === 'family') {
-        // Para el nuevo endpoint, 'data' ya contiene directamente el objeto familiar
-        currentUser = data[userKey]; // 'familiar'
+        // --- INICIO DE LA CORRECCIÓN ---
+        // Acceder a la propiedad 'familiar' dentro de la respuesta
+        currentUser = data.familiar; 
+        // --- FIN DE LA CORRECCIÓN ---
+
         if (!currentUser) {
             console.warn(`[LoginForm] Familiar con firebase_uid ${firebaseUid} no encontrado en el endpoint. Datos recibidos:`, data);
             return null;
@@ -91,21 +97,23 @@ export default function LoginForm({ onLoginSuccess }) {
         console.log("=== [LoginForm] DETALLES DEL USUARIO ENCONTRADO ===");
         console.log("[LoginForm] Datos completos del usuario de la API:", currentUser);
         
-        const apiUserId = currentUser.id; // Asumimos que 'id' es el ID numérico en tu API
+        const apiUserId = currentUser.id;
         let associatedResidentId = null;
 
         if (role === 'family') {
           console.log("[LoginForm] ID Familiar (desde API):", apiUserId);
           console.log("[LoginForm] Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
           console.log("[LoginForm] Teléfono:", currentUser.telefono);
-          if (currentUser.residente) {
+          // --- INICIO DE LA CORRECCIÓN ADICIONAL para residentId ---
+          if (currentUser.residente && currentUser.residente.id_residente) {
             console.log("[LoginForm] Residente asociado (objeto):", `${currentUser.residente.nombre} ${currentUser.residente.apellido}`);
             console.log("[LoginForm] ID Residente asociado (desde objeto residente):", currentUser.residente.id_residente);
-            associatedResidentId = currentUser.residente.id_residente; // Capturar el ID del residente
-          } else if (currentUser.id_residente) { // Fallback si el ID del residente está directamente en familiar
+            associatedResidentId = currentUser.residente.id_residente;
+          } else if (currentUser.id_residente) { // Fallback por si id_residente está directamente en familiar (menos probable por tu curl)
               console.log("[LoginForm] ID Residente asociado (directo en familiar):", currentUser.id_residente);
               associatedResidentId = currentUser.id_residente;
           }
+          // --- FIN DE LA CORRECCIÓN ADICIONAL ---
           if (currentUser.parentesco) {
             console.log("[LoginForm] Parentesco:", currentUser.parentesco.nombre);
           }
@@ -122,7 +130,7 @@ export default function LoginForm({ onLoginSuccess }) {
           userDetails: currentUser,
           userId: apiUserId, 
           role: role,
-          residentId: associatedResidentId // Retornar el residentId aquí
+          residentId: associatedResidentId
         };
       } else {
         console.warn(`[LoginForm] Usuario con firebase_uid ${firebaseUid} no encontrado en el endpoint ${userKey}.`);
@@ -187,18 +195,20 @@ export default function LoginForm({ onLoginSuccess }) {
             console.log("[LoginForm] Rol:", assignedRole);
             console.log("[LoginForm] ID de usuario (API, personal/familiar):", userDetails.userId); 
             if (assignedRole === 'family') {
-              console.log("[LoginForm] ID Residente Asociado:", userDetails.residentId); // Log el residentId para familiar
+              console.log("[LoginForm] ID Residente Asociado:", userDetails.residentId);
             } else if (assignedRole === 'admin') {
               console.log("[LoginForm] ID Personal (para API - Admin):", userDetails.userId); 
             }
             console.log("===============================");
             
+            login(user.uid, assignedRole, userDetails.userId, userDetails.residentId); 
+            
+            console.log(">>> Objeto de sesión DESPUÉS de iniciar sesión:", session);
+
             if (onLoginSuccess) {
-              // userDetails.userId ahora contendrá el ID numérico del backend para 'employee'/'family',
-              // o 'null' para 'admin'.
-              // userDetails.residentId contendrá el ID del residente para 'family', o 'null' para otros.
               onLoginSuccess(assignedRole, user.uid, userDetails.userId, userDetails.residentId);
             }
+
           } else {
             let customErrorMessage = `Tu cuenta de ${assignedRole} no tiene un perfil asociado en la base de datos de la aplicación. `;
             customErrorMessage += "Por favor, contacta al administrador.";

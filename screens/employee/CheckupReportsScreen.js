@@ -36,7 +36,7 @@ const residentNames = {
     // "8": "Residente Prueba 8" <-- Eliminado
 };
 
-const API_ENDPOINT = `${Config.API_BASE_URL}/api`; // <-- ¡Cambiado aquí!
+const API_ENDPOINT = `${Config.API_BASE_URL}`; // <-- ¡Cambiado aquí!
 const CheckupReportsScreen = () => {
     // --- Refs para los componentes de reporte para la exportación a PDF (solo relevantes para web) ---
     const staffReportRef = useRef(null);
@@ -61,7 +61,7 @@ const CheckupReportsScreen = () => {
             try {
                 setLoadingChequeos(true);
                 setError(null);
-                const response = await fetch(`${API_BASE_URL}/ChequeoSemanal`, {
+                const response = await fetch(`${API_ENDPOINT}/ChequeoSemanal`, {
                     headers: {
                         'accept': 'text/plain'
                     }
@@ -75,7 +75,7 @@ const CheckupReportsScreen = () => {
             } catch (err) {
                 console.error("Error fetching chequeos semanales:", err);
                 setError("No se pudieron cargar los datos de chequeos semanales.");
-                Alert.alert("Error de Conexión", "No se pudieron cargar los datos de chequeos. Asegúrate de que la API de chequeos esté funcionando en " + API_BASE_URL);
+                Alert.alert("Error de Conexión", "No se pudieron cargar los datos de chequeos. Asegúrate de que la API de chequeos esté funcionando en " + API_ENDPOINT);
             } finally {
                 setLoadingChequeos(false);
             }
@@ -89,7 +89,7 @@ const CheckupReportsScreen = () => {
         const fetchAllStaffNames = async () => {
             try {
                 setLoadingStaff(true);
-                const response = await fetch(`${API_BASE_URL}/Personal`, {
+                const response = await fetch(`${API_ENDPOINT}/Personal`, {
                     headers: {
                         'accept': '*/*'
                     }
@@ -113,7 +113,7 @@ const CheckupReportsScreen = () => {
             } catch (err) {
                 console.error("Error fetching all personal data:", err);
                 setError("No se pudieron cargar los nombres del personal.");
-                Alert.alert("Error de Conexión", "No se pudieron cargar los nombres del personal. Asegúrate de que la API de personal esté funcionando en " + API_BASE_URL);
+                Alert.alert("Error de Conexión", "No se pudieron cargar los nombres del personal. Asegúrate de que la API de personal esté funcionando en " + API_ENDPOINT);
             } finally {
                 setLoadingStaff(false);
             }
