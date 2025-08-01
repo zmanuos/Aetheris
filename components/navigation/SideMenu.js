@@ -62,7 +62,7 @@ const employeeMenuItems = [
 // ***** MENÚ ÍTEMS PARA FAMILY *****
 const familyMenuItems = [
   { id: "FamilyResidentProfile", title: "Home", icon: "home-outline", type: "item" },
-  { id: "FamilyChat", title: "Chat Familiar", icon: "chatbubble-outline", type: "item", showUnreadBadge: true }, // Añadir propiedad para la insignia
+  { id: "FamilyChatContainer", title: "Chat Familiar", icon: "chatbubble-outline", type: "item", showUnreadBadge: true }, // Añadir propiedad para la insignia
   { id: "AsylumInfo", title: "Info del Asilo", icon: "information-circle-outline", type: "item" },
 ]
 

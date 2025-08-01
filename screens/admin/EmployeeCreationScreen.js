@@ -1,16 +1,16 @@
 // screens/admin/EmployeeCreationScreen.js
-import React, { useState } from 'react'; // Eliminamos 'useRef' de aquí
+import React, { useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     ScrollView,
-    // Alert, // Puedes comentar o eliminar Alert si la notificación la reemplaza
     Platform,
     TextInput,
     ActivityIndicator,
     Dimensions,
+    Pressable,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -31,8 +31,7 @@ import {
     doPasswordsMatch
 } from '../../components/shared/Validations';
 
-// IMPORTAR EL HOOK DE NOTIFICACIÓN GLOBAL
-import { useNotification } from '../../src/context/NotificationContext'; // ¡AJUSTA ESTA RUTA SI ES NECESARIO!
+import { useNotification } from '../../src/context/NotificationContext';
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -57,13 +56,15 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
     const [employeeConfirmPassword, setEmployeeConfirmPassword] = useState('');
     const [employeePhone, setEmployeePhone] = useState('');
     const [employeeGender, setEmployeeGender] = useState('Masculino');
-    const [employeeBirthDate, setEmployeeBirthDate] = useState('');
+    const [employeeBirthDate, setEmployeeBirthDate] = useState(''); // String YYYY-MM-DD
+    const [selectedDateObject, setSelectedDateObject] = useState(new Date()); // Date object for picker
     const [formError, setFormError] = useState('');
     const [isCreating, setIsCreating] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showGenderPicker, setShowGenderPicker] = useState(false);
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // USAR EL HOOK PARA OBTENER LA FUNCIÓN DE NOTIFICACIÓN GLOBAL
-    const { showNotification } = useNotification(); // <- CAMBIO CLAVE
+    const { showNotification } = useNotification();
 
     const [nameError, setNameError] = useState('');
     const [lastNameError, setLastNameError] = useState('');
@@ -162,11 +163,21 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
         }
     };
 
-    const handleBirthDateChange = (text) => {
-        setEmployeeBirthDate(text);
-        if (birthDateError && isValidDateFormat(text) && isAdult(text)) {
-             setBirthDateError('');
+    const handleDateSelect = (event, date) => {
+        if (Platform.OS === 'web') {
+            const formattedDate = event.target.value;
+            setEmployeeBirthDate(formattedDate);
+            setSelectedDateObject(new Date(formattedDate));
+        } else {
+            const tempDate = date || selectedDateObject;
+            setSelectedDateObject(tempDate);
+            const year = tempDate.getFullYear();
+            const month = String(tempDate.getMonth() + 1).padStart(2, '0');
+            const day = String(tempDate.getDate()).padStart(2, '0');
+            setEmployeeBirthDate(`${year}-${month}-${day}`);
         }
+        setShowDatePicker(false);
+        handleBirthDateBlur();
     };
 
     const handleBirthDateBlur = () => {
@@ -264,12 +275,9 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
 
             console.log("Datos personales de empleado guardados en SQL a través del backend.");
 
-            // LLAMAR A LA NOTIFICACIÓN GLOBAL AQUÍ CON EL MENSAJE REDUCIDO
-            showNotification('Empleado creado exitosamente!', 'success'); // <- MENSAJE MODIFICADO
+            showNotification('Empleado creado exitosamente!', 'success');
             
-            // Alert.alert("Éxito", "Empleado registrado y datos personales guardados correctamente."); // Puedes eliminar esta línea
-
-            onEmployeeCreated(); // Esto disparará la navegación
+            onEmployeeCreated();
         } catch (error) {
             console.error("Error al registrar empleado:", error.message);
             let errorMessage = "Ocurrió un error inesperado al registrar el empleado.";
@@ -291,20 +299,46 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
             } else {
                 errorMessage = error.message;
             }
-            // LLAMAR A LA NOTIFICACIÓN GLOBAL PARA ERRORES
             showNotification(errorMessage, 'error');
-            // Alert.alert("Error", errorMessage); // Puedes eliminar esta línea
             setFormError(errorMessage);
         } finally {
             setIsCreating(false);
         }
     };
 
+    const getYears = () => {
+        const currentYear = new Date().getFullYear();
+        const years = [];
+        for (let i = currentYear; i >= currentYear - 100; i--) {
+            years.push(i);
+        }
+        return years;
+    };
+
+    const getMonths = () => {
+        return [
+            { label: 'Enero', value: 0 }, { label: 'Febrero', value: 1 },
+            { label: 'Marzo', value: 2 }, { label: 'Abril', value: 3 },
+            { label: 'Mayo', value: 4 }, { label: 'Junio', value: 5 },
+            { label: 'Julio', value: 6 }, { label: 'Agosto', value: 7 },
+            { label: 'Septiembre', value: 8 }, { label: 'Octubre', value: 9 },
+            { label: 'Noviembre', value: 10 }, { label: 'Diciembre', value: 11 },
+        ];
+    };
+
+    const getDaysInMonth = (year, month) => {
+        if (!year || month === undefined) return [];
+        const date = new Date(year, month + 1, 0);
+        const days = [];
+        for (let i = 1; i <= date.getDate(); i++) {
+            days.push(String(i).padStart(2, '0'));
+        }
+        return days;
+    };
+
+
     return (
         <ScrollView contentContainerStyle={styles.formContainer}>
-            {/* ELIMINAR ESTA LÍNEA: Ya no se renderiza el componente Notification aquí */}
-            {/* <Notification ref={notificationRef} /> */}
-
             <Text style={styles.formTitle}>Nuevo Empleado</Text>
             {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
 
@@ -363,18 +397,46 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
 
             <View style={styles.fieldWrapper}>
                 <Text style={styles.inputLabel}>Género</Text>
-                <View style={styles.pickerInputContainer}>
-                    <Ionicons name="person-circle-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
-                    <Picker
-                        selectedValue={employeeGender}
-                        onValueChange={(itemValue) => setEmployeeGender(itemValue)}
-                        style={styles.picker}
-                        itemStyle={styles.pickerItem}
-                    >
-                        <Picker.Item label="Masculino" value="Masculino" />
-                        <Picker.Item label="Femenino" value="Femenino" />
-                    </Picker>
-                </View>
+                {Platform.OS === 'ios' ? (
+                    <>
+                        <Pressable onPress={() => setShowGenderPicker(true)} style={styles.pickerInputContainer}>
+                            <Ionicons name="person-circle-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                            <Text style={styles.pickerDisplayValue}>{employeeGender}</Text>
+                            <Ionicons name="caret-down" size={16} color={MEDIUM_GRAY} style={styles.dropdownIcon} />
+                        </Pressable>
+                        {showGenderPicker && (
+                            <View style={styles.iosPickerOverlay}>
+                                <View style={styles.iosPickerHeader}>
+                                    <Text style={styles.iosPickerTitle}>Selecciona Género</Text>
+                                    <TouchableOpacity onPress={() => setShowGenderPicker(false)}>
+                                        <Text style={styles.iosPickerDone}>Hecho</Text>
+                                    </TouchableOpacity>
+                                </View>
+                                <Picker
+                                    selectedValue={employeeGender}
+                                    onValueChange={(itemValue) => setEmployeeGender(itemValue)}
+                                    style={styles.picker}
+                                >
+                                    <Picker.Item label="Masculino" value="Masculino" />
+                                    <Picker.Item label="Femenino" value="Femenino" />
+                                </Picker>
+                            </View>
+                        )}
+                    </>
+                ) : (
+                    <View style={styles.pickerInputContainer}>
+                        <Ionicons name="person-circle-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                        <Picker
+                            selectedValue={employeeGender}
+                            onValueChange={(itemValue) => setEmployeeGender(itemValue)}
+                            style={styles.picker}
+                            itemStyle={styles.pickerItem}
+                        >
+                            <Picker.Item label="Masculino" value="Masculino" />
+                            <Picker.Item label="Femenino" value="Femenino" />
+                        </Picker>
+                    </View>
+                )}
             </View>
 
             <View style={styles.fieldWrapper}>
@@ -385,22 +447,65 @@ export default function EmployeeCreationForm({ onEmployeeCreated, onCancel }) {
                         <input
                             type="date"
                             value={employeeBirthDate}
-                            onChange={(e) => handleBirthDateChange(e.target.value)}
+                            onChange={handleDateSelect}
                             onBlur={handleBirthDateBlur}
                             style={styles.datePickerWeb}
                         />
                     ) : (
-                        <TextInput
-                            style={styles.input}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={LIGHT_GRAY}
-                            value={employeeBirthDate}
-                            onChangeText={handleBirthDateChange}
-                            onBlur={handleBirthDateBlur}
-                            keyboardType="numeric"
-                        />
+                        <Pressable onPress={() => setShowDatePicker(true)} style={styles.datePickerMobileInput}>
+                            <Text style={employeeBirthDate ? styles.pickerDisplayValue : styles.placeholderText}>
+                                {employeeBirthDate || "YYYY-MM-DD"}
+                            </Text>
+                            <Ionicons name="caret-down" size={16} color={MEDIUM_GRAY} style={styles.dropdownIcon} />
+                        </Pressable>
                     )}
                 </View>
+                {/* Simulated Date Picker for Mobile */}
+                {Platform.OS !== 'web' && showDatePicker && (
+                    <View style={styles.iosPickerOverlay}>
+                        <View style={styles.iosPickerHeader}>
+                            <Text style={styles.iosPickerTitle}>Selecciona Fecha</Text>
+                            <TouchableOpacity onPress={() => handleDateSelect(null, selectedDateObject)}>
+                                <Text style={styles.iosPickerDone}>Hecho</Text>
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.datePickerWheelContainer}>
+                            <Picker
+                                selectedValue={selectedDateObject.getFullYear()}
+                                onValueChange={(itemValue) => setSelectedDateObject(new Date(itemValue, selectedDateObject.getMonth(), selectedDateObject.getDate()))}
+                                style={styles.datePickerWheel}
+                                itemStyle={styles.pickerItem}
+                            >
+                                {getYears().map(year => (
+                                    <Picker.Item key={year} label={String(year)} value={year} />
+                                ))}
+                            </Picker>
+                            <Picker
+                                selectedValue={selectedDateObject.getMonth()}
+                                onValueChange={(itemValue) => setSelectedDateObject(new Date(selectedDateObject.getFullYear(), itemValue, selectedDateObject.getDate()))}
+                                style={styles.datePickerWheel}
+                                itemStyle={styles.pickerItem}
+                            >
+                                {getMonths().map(month => (
+                                    <Picker.Item key={month.value} label={month.label} value={month.value} />
+                                ))}
+                            </Picker>
+                            <Picker
+                                selectedValue={selectedDateObject.getDate()}
+                                onValueChange={(itemValue) => setSelectedDateObject(new Date(selectedDateObject.getFullYear(), selectedDateObject.getMonth(), itemValue))}
+                                style={styles.datePickerWheel}
+                                itemStyle={styles.pickerItem}
+                            >
+                                {getDaysInMonth(selectedDateObject.getFullYear(), selectedDateObject.getMonth()).map(day => (
+                                    <Picker.Item key={day} label={day} value={parseInt(day)} />
+                                ))}
+                            </Picker>
+                        </View>
+                        <Text style={styles.mockDatePickerText}>
+                            (Use an external library like @react-native-community/datetimepicker for a native date picker experience.)
+                        </Text>
+                    </View>
+                )}
                 {birthDateError ? <Text style={styles.fieldErrorText}>{birthDateError}</Text> : null}
             </View>
 
@@ -498,12 +603,13 @@ const styles = StyleSheet.create({
     formContainer: {
         ...containerBaseStyles,
         alignSelf: 'center',
-        marginTop: IS_LARGE_SCREEN ? height * 0.05 : 15,
+        marginTop: Platform.OS === 'web' ? height * 0.05 : 125,
         marginBottom: 20,
+        // Increased paddingHorizontal and width/maxWidth for web
+        paddingHorizontal: IS_LARGE_SCREEN ? 30 : 12,
         paddingVertical: 25,
-        paddingHorizontal: IS_LARGE_SCREEN ? 25 : 12,
-        width: IS_LARGE_SCREEN ? '50%' : '90%',
-        maxWidth: IS_LARGE_SCREEN ? 650 : '95%',
+        width: IS_LARGE_SCREEN ? '65%' : '90%', // Increased width for large screens
+        maxWidth: IS_LARGE_SCREEN ? 600 : 380, // Increased max-width for large screens
     },
     formTitle: {
         fontSize: IS_LARGE_SCREEN ? 26 : 22,
@@ -561,10 +667,11 @@ const styles = StyleSheet.create({
         fontSize: 18,
     },
     passwordToggle: {
-        paddingLeft: 10,
+        // Removed paddingLeft: 10 to adjust icon position
         height: '100%',
         justifyContent: 'center',
         alignItems: 'center',
+        paddingRight: 5, // Small padding to keep it from the very edge
     },
     picker: {
         flex: 1,
@@ -578,6 +685,11 @@ const styles = StyleSheet.create({
             web: {
                 outline: 'none',
             },
+            ios: {
+                // For iOS, the picker itself should not have borders/background
+                // as it's typically rendered in a modal or separate view.
+                // We'll manage the visual input via the Pressable.
+            }
         }),
     },
     pickerItem: {
@@ -586,10 +698,27 @@ const styles = StyleSheet.create({
     pickerInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        borderColor: VERY_LIGHT_GRAY,
+        borderWidth: 1.5,
         borderRadius: 8,
         paddingHorizontal: 12,
         backgroundColor: BACKGROUND_LIGHT,
         height: 45,
+    },
+    pickerDisplayValue: {
+        flex: 1,
+        color: MEDIUM_GRAY,
+        fontSize: 15,
+        paddingLeft: 8,
+    },
+    placeholderText: {
+        flex: 1,
+        color: LIGHT_GRAY,
+        fontSize: 15,
+        paddingLeft: 8,
+    },
+    dropdownIcon: {
+        marginLeft: 8,
     },
     datePickerWeb: {
         flex: 1,
@@ -605,6 +734,12 @@ const styles = StyleSheet.create({
         outline: 'none',
         cursor: 'pointer',
         paddingRight: Platform.OS === 'web' ? 10 : 0,
+    },
+    datePickerMobileInput: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: '100%',
     },
     primaryButton: {
         backgroundColor: PRIMARY_GREEN,
@@ -654,4 +789,58 @@ const styles = StyleSheet.create({
         color: LIGHT_GRAY,
         marginLeft: 8,
     },
+    iosPickerOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        zIndex: 10,
+        borderTopLeftRadius: 10,
+        borderTopRightRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -3,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+        elevation: 10,
+    },
+    iosPickerHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: VERY_LIGHT_GRAY,
+        backgroundColor: '#F9F9F9',
+    },
+    iosPickerTitle: {
+        fontSize: 17,
+        fontWeight: '600',
+        color: DARK_GRAY,
+    },
+    iosPickerDone: {
+        fontSize: 17,
+        color: PRIMARY_GREEN,
+        fontWeight: '600',
+    },
+    datePickerWheelContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: 200,
+    },
+    datePickerWheel: {
+        width: '33%',
+        height: '100%',
+    },
+    mockDatePickerText: {
+        textAlign: 'center',
+        paddingVertical: 10,
+        color: LIGHT_GRAY,
+        fontSize: 12,
+    }
 });

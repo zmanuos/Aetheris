@@ -1,8 +1,10 @@
+// AETHERIS/screens/family/CheckupsHistoryContainer.js
 "use client"
 
-// CHANGE THIS LINE: Import Platform from "react-native"
-import { Platform, View, Text, StyleSheet, Pressable } from "react-native"
+import { Platform, View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { useState } from 'react';
+
 
 const COLORS = {
   darkText: "#111827",
@@ -14,7 +16,7 @@ const COLORS = {
   primaryGreen: "#10B981",
 }
 
-const IS_WEB = Platform.OS === "web" // This line will now work correctly
+const IS_WEB = Platform.OS === "web"
 
 const CheckupsHistoryContainer = ({
   weeklyCheckups,
@@ -23,6 +25,17 @@ const CheckupsHistoryContainer = ({
   navigation,
   resident,
 }) => {
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+
+  const handleMobileDropdownPress = () => {
+    setIsDropdownVisible(!isDropdownVisible);
+  };
+
+  const handleOptionSelect = (checkupId) => {
+    setSelectedCheckupId(checkupId);
+    setIsDropdownVisible(false);
+  };
+
   return (
     <View style={styles.checkupsHistoryCard}>
       <View style={styles.modernCardHeader}>
@@ -39,7 +52,7 @@ const CheckupsHistoryContainer = ({
           <View style={styles.checkupDropdownContainer}>
             <Text style={styles.dropdownLabel}>Seleccionar consulta:</Text>
             <View style={styles.modernDropdownWrapper}>
-              {Platform.OS === "web" ? ( // This condition will now work
+              {IS_WEB ? (
                 <select
                   value={selectedCheckupId || ""}
                   onChange={(e) => setSelectedCheckupId(e.target.value)}
@@ -68,17 +81,51 @@ const CheckupsHistoryContainer = ({
                   ))}
                 </select>
               ) : (
-                <Text style={styles.modernCheckupDropdown}>
-                  {selectedCheckupId
-                    ? weeklyCheckups.find((c) => c.id === selectedCheckupId)?.fechaChequeo
-                    : "Seleccionar fecha de consulta"}
-                </Text>
+                <TouchableOpacity
+                  onPress={handleMobileDropdownPress}
+                  style={styles.modernCheckupDropdownTouchable}
+                >
+                  <Text style={styles.modernCheckupDropdownText}>
+                    {selectedCheckupId
+                      ? new Date(weeklyCheckups.find((c) => c.id === selectedCheckupId)?.fechaChequeo).toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Seleccionar fecha de consulta"}
+                  </Text>
+                </TouchableOpacity>
               )}
               <Ionicons name="chevron-down" size={16} color={COLORS.lightText} style={styles.dropdownIcon} />
             </View>
+
+            {/* Custom Dropdown List for Mobile */}
+            {!IS_WEB && isDropdownVisible && (
+              <View style={styles.dropdownListContainer}>
+                <ScrollView style={styles.dropdownScrollView}>
+                  {weeklyCheckups.map((checkup) => (
+                    <TouchableOpacity
+                      key={checkup.id}
+                      style={styles.dropdownListItem}
+                      onPress={() => handleOptionSelect(checkup.id)}
+                    >
+                      <Text style={styles.dropdownListItemText}>
+                        {new Date(checkup.fechaChequeo).toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
           </View>
 
-          <Pressable
+          <TouchableOpacity
             style={[styles.modernViewButton, { alignSelf: "center", marginTop: 16 }]}
             onPress={() => {
               if (selectedCheckupId) {
@@ -92,7 +139,7 @@ const CheckupsHistoryContainer = ({
           >
             <Text style={styles.modernViewButtonText}>Ver Consulta</Text>
             <Ionicons name="arrow-forward" size={12} color="#fff" />
-          </Pressable>
+          </TouchableOpacity>
         </>
       ) : (
         <View style={styles.noCheckupsContainer}>
@@ -118,7 +165,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
-    height: IS_WEB ? 220 : 240,
+    height: IS_WEB ? 220 : 240, // Reverted to original height
   },
   modernCardHeader: {
     flexDirection: "row",
@@ -146,6 +193,7 @@ const styles = StyleSheet.create({
   },
   checkupDropdownContainer: {
     marginBottom: 16,
+    zIndex: 1,
   },
   dropdownLabel: {
     fontSize: 13,
@@ -160,15 +208,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: COLORS.pageBackground,
   },
-  modernCheckupDropdown: {
-    fontSize: 13,
-    color: COLORS.darkText,
-    backgroundColor: COLORS.pageBackground,
+  modernCheckupDropdownTouchable: {
     paddingHorizontal: 12,
     paddingVertical: 12,
     width: "100%",
     minHeight: 44,
-    borderWidth: 0,
+    justifyContent: 'center',
+  },
+  modernCheckupDropdownText: {
+    fontSize: 13,
+    color: COLORS.darkText,
   },
   dropdownIcon: {
     position: "absolute",
@@ -176,6 +225,37 @@ const styles = StyleSheet.create({
     top: "50%",
     transform: [{ translateY: -8 }],
     pointerEvents: "none",
+  },
+  dropdownListContainer: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.borderLight,
+    maxHeight: 150,
+    marginTop: 4,
+    zIndex: 1000,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  dropdownScrollView: {
+    flexGrow: 1,
+  },
+  dropdownListItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.borderLight,
+  },
+  dropdownListItemText: {
+    fontSize: 13,
+    color: COLORS.darkText,
   },
   modernViewButton: {
     backgroundColor: COLORS.accentBlue,

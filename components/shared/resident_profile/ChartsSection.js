@@ -21,7 +21,10 @@ const ModernChart = ({ data, title, color, unit, height = 160 }) => {
   const [activePoint, setActivePoint] = useState(null)
   const timeoutRef = useRef(null)
 
-  if (!data || data.length === 0) {
+  // Take only the last 10 items from the data array
+  const recentData = data ? data.slice(Math.max(data.length - 10, 0)) : [];
+
+  if (!recentData || recentData.length === 0) { // Use recentData here
     return (
       <View style={[styles.modernChartContainer, { height }]}>
         <View style={styles.chartHeader}>
@@ -41,8 +44,8 @@ const ModernChart = ({ data, title, color, unit, height = 160 }) => {
     )
   }
 
-  const values = data.map((item) => item.value).filter((val) => val != null)
-  const dates = data.map((item) => item.date)
+  const values = recentData.map((item) => item.value).filter((val) => val != null) // Use recentData here
+  const dates = recentData.map((item) => item.date) // Use recentData here
 
   if (values.length === 0) {
     return (

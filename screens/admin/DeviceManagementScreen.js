@@ -461,7 +461,8 @@ export default function DeviceManagementScreen() {
                                         <View style={styles.table}>
                                             <View style={styles.tableRowHeader}>
                                                 <Text style={styles.tableHeaderCell}>Nombre</Text>
-                                                <Text style={styles.tableHeaderCell}>Dirección MAC</Text>
+                                                {/* CONDITIONAL STYLE FOR MAC ADDRESS HEADER */}
+                                                <Text style={[styles.tableHeaderCell, !IS_LARGE_SCREEN && { display: 'none' }]}>Dirección MAC</Text>
                                                 <Text style={styles.tableHeaderCell}>Residente Asignado</Text>
                                                 <Text style={[styles.tableHeaderCell, styles.estadoCell]}>Estado</Text>
                                             </View>
@@ -479,7 +480,8 @@ export default function DeviceManagementScreen() {
                                                             ]}
                                                         >
                                                             <Text style={styles.tableCell}>{device.nombre}</Text>
-                                                            <Text style={styles.tableCell}>{device.direccion_MAC}</Text>
+                                                            {/* CONDITIONAL STYLE FOR MAC ADDRESS CELL */}
+                                                            <Text style={[styles.tableCell, !IS_LARGE_SCREEN && { display: 'none' }]}>{device.direccion_MAC}</Text>
                                                             <TouchableOpacity
                                                                 style={[styles.tableCell, styles.residentNameCell]}
                                                                 onPress={() => handleOpenAssignModal(device)}

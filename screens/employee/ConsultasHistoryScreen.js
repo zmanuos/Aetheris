@@ -16,9 +16,12 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
 
-const API_URL = 'http://localhost:5214/api';
-const IMAGE_BASE_URL = 'http://localhost:5214/images/residents/';
+import Config from '../../config/config';
+
+const API_URL = Config.API_BASE_URL;
+const IMAGE_BASE_URL = `${API_URL.replace("/api", "")}/images/residents/`;
 
 const PRIMARY_GREEN = '#6BB240';
 const LIGHT_GREEN = '#9CD275';
@@ -27,7 +30,6 @@ const DARK_GRAY = '#2C3E50';
 const MEDIUM_GRAY = '#5D6D7E';
 const LIGHT_GRAY = '#85929E';
 const VERY_LIGHT_GRAY = '#F8F9FA';
-const BACKGROUND_LIGHT = '#FFFFFF';
 const WHITE = '#FFFFFF';
 const ERROR_RED = '#E74C3C';
 const WARNING_ORANGE = '#F39C12';
@@ -55,11 +57,12 @@ const ConsultasHistory = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [showDatePicker, setShowDatePicker] = useState(false); // State for date picker visibility
 
     const fetchAllData = useCallback(async () => {
         try {
             setError(null);
-            
+
             const consultasResponse = await fetch(`${API_URL}/ChequeoSemanal`);
             if (!consultasResponse.ok) {
                 throw new Error(`Error al cargar consultas: ${consultasResponse.status}`);
@@ -144,6 +147,19 @@ const ConsultasHistory = () => {
         fetchAllData();
     }, [fetchAllData]);
 
+    const handleDateChange = (event, selectedDateValue) => {
+        // This 'event.type' check is crucial for handling dismissals (e.g., tapping outside on Android,
+        // or cancelling on iOS, or pressing back button on Android).
+        // 'set' means a date was selected. 'dismissed' (Android) or 'neutralButton' (iOS, if configured)
+        // means the picker was closed without a new date selection.
+        if (event.type === 'set') {
+            setSelectedDate(selectedDateValue.toISOString().split('T')[0]); // Format to YYYY-MM-DD
+        }
+        // Always hide the picker after any interaction (selection or dismissal)
+        setShowDatePicker(false);
+    };
+
+
     const filteredConsultas = useMemo(() => {
         const normalizedSearchName = normalizeString(searchName);
 
@@ -182,15 +198,17 @@ const ConsultasHistory = () => {
     const renderConsultaCard = ({ item, index }) => {
         const residentInfo = residentsDataMap[item.residenteId];
         let residentName = `Residente ${item.residenteId}`;
-        let residentPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(residentName)}&background=6BB240&color=fff&size=128&rounded=true`;
+        let residentPhoto = null;
 
         if (residentInfo) {
             residentName = `${residentInfo.nombre || ''} ${residentInfo.apellido || ''}`.trim();
-            if (residentInfo.foto) {
+            if (residentInfo.foto && residentInfo.foto !== "default") {
                 residentPhoto = `${IMAGE_BASE_URL}${residentInfo.foto}`;
             } else {
                 residentPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(residentName)}&background=6BB240&color=fff&size=128&rounded=true`;
             }
+        } else {
+            residentPhoto = `https://ui-avatars.com/api/?name=${encodeURIComponent(residentName)}&background=6BB240&color=fff&size=128&rounded=true`;
         }
 
         const employeeInfo = employeesDataMap[item.personalId];
@@ -215,7 +233,7 @@ const ConsultasHistory = () => {
                     </TouchableOpacity>
                     <View style={styles.dateContainerCard}>
                         <Text style={styles.dateText}>
-                            {new Date(item.fechaChequeo).toLocaleDateString('es-ES', { 
+                            {new Date(item.fechaChequeo).toLocaleDateString('es-ES', {
                                 day: '2-digit',
                                 month: 'short',
                                 year: 'numeric'
@@ -331,31 +349,47 @@ const ConsultasHistory = () => {
                             )}
                         </View>
 
-                        <View style={styles.dateFilterContainer}>
-                            <Ionicons name="calendar" size={20} color={MEDIUM_GRAY} style={styles.dateIcon} />
-                            {Platform.OS === 'web' ? (
+                        {Platform.OS === 'web' ? (
+                            <View style={styles.dateFilterContainer}>
+                                <Ionicons name="calendar" size={20} color={MEDIUM_GRAY} style={styles.dateIcon} />
                                 <input
                                     type="date"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
                                     style={styles.dateInputWeb}
                                 />
-                            ) : (
-                                <TextInput
-                                    style={styles.dateInput}
-                                    placeholder="Fecha (YYYY-MM-DD)"
-                                    placeholderTextColor={LIGHT_GRAY}
-                                    value={selectedDate}
-                                    onChangeText={setSelectedDate}
-                                    keyboardType="numeric"
-                                />
-                            )}
-                            {selectedDate.length > 0 && (
-                                <TouchableOpacity onPress={() => setSelectedDate('')} style={styles.clearButton}>
-                                    <Ionicons name="close-circle" size={20} color={LIGHT_GRAY} />
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                                {selectedDate.length > 0 && (
+                                    <TouchableOpacity onPress={() => setSelectedDate('')} style={styles.clearButton}>
+                                        <Ionicons name="close-circle" size={20} color={LIGHT_GRAY} />
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        ) : (
+                            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateFilterContainer}>
+                                <Ionicons name="calendar" size={20} color={MEDIUM_GRAY} style={styles.dateIcon} />
+                                <Text style={styles.dateInputText}>
+                                    {selectedDate ? new Date(selectedDate).toLocaleDateString('es-ES') : "Fecha (DD/MM/YYYY)"}
+                                </Text>
+                                {selectedDate.length > 0 && (
+                                    <TouchableOpacity onPress={() => setSelectedDate('')} style={styles.clearButton}>
+                                        <Ionicons name="close-circle" size={20} color={LIGHT_GRAY} />
+                                    </TouchableOpacity>
+                                )}
+                            </TouchableOpacity>
+                        )}
+
+
+                        {showDatePicker && (
+                            <DateTimePicker
+                                testID="dateTimePicker"
+                                value={selectedDate ? new Date(selectedDate) : new Date()}
+                                mode="date"
+                                // iOS uses 'spinner' for an inline picker, 'default' for a modal.
+                                // Android uses 'default' for a modal calendar, 'spinner' for a scrolling spinner.
+                                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                onChange={handleDateChange}
+                            />
+                        )}
                     </View>
 
                     {(searchName || selectedDate) ? (
@@ -388,7 +422,7 @@ const ConsultasHistory = () => {
                             <Ionicons name="document-text-outline" size={80} color={LIGHT_GRAY} />
                             <Text style={styles.emptyTitle}>No hay consultas</Text>
                             <Text style={styles.emptyText}>
-                                {searchName || selectedDate 
+                                {searchName || selectedDate
                                     ? 'No se encontraron consultas con los filtros aplicados'
                                     : 'Aún no hay consultas registradas'
                                 }
@@ -400,8 +434,6 @@ const ConsultasHistory = () => {
         </SafeAreaView>
     );
 };
-
-
 
 const styles = StyleSheet.create({
     container: {
@@ -424,16 +456,33 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: VERY_LIGHT_GRAY,
         gap: 12,
+        ...Platform.select({
+            ios: {
+                marginTop: 60,
+            },
+            android: {
+                marginTop: 60,
+            },
+            default: {
+                marginTop: 0,
+            },
+        }),
     },
     searchAndDateRow: {
-        flexDirection: 'row',
         alignItems: 'center',
-        // Removed flexWrap: 'wrap' to keep them on one line unless forced by small screen
         gap: 12,
-        // Added justifyContent for web to spread them out
         ...Platform.select({
+            ios: {
+                flexDirection: 'column',
+                width: '100%',
+            },
+            android: {
+                flexDirection: 'column',
+                width: '100%',
+            },
             web: {
-                justifyContent: 'space-between', 
+                flexDirection: 'row',
+                justifyContent: 'space-between',
             },
         }),
     },
@@ -445,14 +494,16 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         height: 48,
         minWidth: 200,
-        // Adjusted flex for web to control width
         ...Platform.select({
             web: {
-                flex: 2, // Gives more space to search bar
-                maxWidth: '60%', // Limit its width on larger screens
+                flex: 2,
+                maxWidth: '60%',
             },
-            default: {
-                flex: 1, // Keep original flex for smaller screens/mobile
+            ios: {
+                width: '100%',
+            },
+            android: {
+                width: '100%',
             }
         }),
     },
@@ -476,19 +527,22 @@ const styles = StyleSheet.create({
         height: 48,
         ...Platform.select({
             web: {
-                width: 180, // Fixed width for date filter on web
-                flexShrink: 0, // Prevent it from shrinking
-                flex: 1, // Allow it to take up available space if needed on smaller web views
+                width: 180,
+                flexShrink: 0,
+                flex: 1,
             },
-            default: {
-                flex: 1, // Keep original flex for smaller screens/mobile
+            ios: {
+                width: '100%',
+            },
+            android: {
+                width: '100%',
             }
         })
     },
     dateIcon: {
         marginRight: 12,
     },
-    dateInput: {
+    dateInputText: {
         flex: 1,
         fontSize: 16,
         color: DARK_GRAY,
@@ -502,6 +556,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0,
         paddingHorizontal: 0,
         cursor: 'pointer',
+        fontFamily: Platform.select({ web: 'sans-serif', default: undefined }), // Ensures proper font rendering on web
         ...Platform.select({
             web: { outlineStyle: 'none' },
         }),
@@ -537,7 +592,7 @@ const styles = StyleSheet.create({
         elevation: 3,
         ...Platform.select({
             web: {
-                width: '90%', // Still makes it wide
+                width: '90%',
                 alignSelf: 'center',
                 marginHorizontal: 'auto',
             },
