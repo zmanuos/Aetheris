@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import {
   View,
   Text,
@@ -10,12 +10,16 @@ import {
   TouchableOpacity,
   Platform,
   Dimensions,
-  Alert, // Import Alert for showing messages
+  Alert,
+  Modal,
 } from "react-native"
 import { Picker } from "@react-native-picker/picker"
 import DateTimePicker from "@react-native-community/datetimepicker"
-import { LineChart } from "react-native-chart-kit" // Simplified imports for requested charts
-import RNHTMLtoPDF from "react-native-html-to-pdf" // For React Native PDF generation
+import { LineChart } from "react-native-chart-kit"
+import RNHTMLtoPDF from "react-native-html-to-pdf"
+
+// IMPORTO EL ARCHIVO DE CONFIGURACIÓN
+import Config from '../../config/config';
 
 // Using the same color scheme as HomeScreen
 const PRIMARY_ACCENT = "#4A90E2"
@@ -47,7 +51,7 @@ const COLORS = {
   darkText: NEUTRAL_DARK,
 }
 
-const API_BASE_URL = "http://localhost:5214/api"
+const API_BASE_URL = Config.API_BASE_URL;
 
 const screenWidth = Dimensions.get("window").width
 
@@ -117,17 +121,67 @@ const Badge = ({ children, variant = "default", style = {} }) => {
   )
 }
 
-const Select = ({ selectedValue, onValueChange, children, style = {} }) => {
+const Select = ({ selectedValue, onValueChange, children, style = {}, placeholder = "Seleccionar una opción" }) => {
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const selectedItemLabel = useMemo(() => {
+    const foundChild = React.Children.toArray(children).find(child => child.props.value === selectedValue);
+    return foundChild ? foundChild.props.label : placeholder;
+  }, [selectedValue, children, placeholder]);
+
+  if (Platform.OS === 'web') {
+    return (
+      <Picker
+        selectedValue={selectedValue}
+        onValueChange={onValueChange}
+        style={[styles.select, style]}
+      >
+        {children}
+      </Picker>
+    );
+  }
+
+  // Mobile (iOS/Android) implementation
   return (
-    <Picker
-      selectedValue={selectedValue}
-      onValueChange={(itemValue) => onValueChange(itemValue)}
-      style={[styles.select, style]}
-    >
-      {children}
-    </Picker>
-  )
-}
+    <View>
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={[styles.input, style]}
+      >
+        <Text style={selectedValue ? styles.inputText : styles.inputPlaceholder}>
+          {selectedItemLabel}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Seleccione una opción</Text>
+            <Picker
+              selectedValue={selectedValue}
+              onValueChange={(itemValue) => {
+                onValueChange(itemValue);
+                setModalVisible(false);
+              }}
+              style={styles.pickerInsideModal}
+              itemStyle={Platform.OS === 'ios' ? styles.pickerItemStyle : {}}
+            >
+              {children}
+            </Picker>
+            <Button onPress={() => setModalVisible(false)} variant="outline" style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </Button>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
+};
 
 const SelectItem = ({ label, value }) => <Picker.Item label={label} value={value} />
 
@@ -137,9 +191,9 @@ const Input = ({ type = "text", value, onChangeText, style = {}, ...props }) => 
   const [showDatePicker, setShowDatePicker] = useState(false)
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(Platform.OS === "ios") // For iOS, keep it open if not confirmed
+    setShowDatePicker(Platform.OS === "ios")
     if (event.type === "set" && selectedDate) {
-      onChangeText(selectedDate.toISOString().split("T")[0]) // Format YYYY-MM-DD
+      onChangeText(selectedDate.toISOString().split("T")[0])
     }
   }
 
@@ -178,9 +232,7 @@ const CheckupReportsScreen = () => {
   const [chequeos, setChequeos] = useState([])
   const [selectedResidente, setSelectedResidente] = useState(null)
   const [selectedResidenteId, setSelectedResidenteId] = useState("all")
-  const [dateRange, setDateRange] = useState("semanal")
-  const [customStartDate, setCustomStartDate] = useState("")
-  const [customEndDate, setCustomEndDate] = useState("")
+  const [dateRange, setDateRange] = useState("mensual") // Default to mensual
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -237,28 +289,14 @@ const CheckupReportsScreen = () => {
     let endDate = now
 
     switch (dateRange) {
-      case "semanal":
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-        break
       case "mensual":
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
         break
       case "trimestral":
         startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
         break
-      case "personalizado":
-        if (customStartDate && customEndDate) {
-          startDate = new Date(customStartDate)
-          endDate = new Date(customEndDate)
-          // Adjust end date to include the whole day
-          endDate.setHours(23, 59, 59, 999)
-        } else {
-          // If custom dates are not set, return all if personalizado is selected but dates aren't
-          return filtered
-        }
-        break
-      default:
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      default: // Fallback, e.g., if dateRange is initially not 'mensual' or 'trimestral'
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // Default to monthly
         break
     }
 
@@ -266,7 +304,7 @@ const CheckupReportsScreen = () => {
       const checkDate = new Date(c.fechaChequeo)
       return checkDate >= startDate && checkDate <= endDate
     })
-  }, [chequeos, selectedResidenteId, dateRange, customStartDate, customEndDate])
+  }, [chequeos, selectedResidenteId, dateRange])
 
   const timeSeriesData = useMemo(() => {
     return filteredChequeos
@@ -321,7 +359,6 @@ const CheckupReportsScreen = () => {
     setSelectedResidente(residente || null)
   }
 
-  // Helper function to create individual SVG line charts with shading
   const createIndividualLineChart = (data, labels, title, color, unit, minValue = null, maxValue = null) => {
     if (!data || data.length === 0) return ""
 
@@ -335,7 +372,6 @@ const CheckupReportsScreen = () => {
     const min = minValue !== null ? minValue : Math.min(...data)
     const range = max - min || 1
 
-    // Create points for the line
     const points = data
       .map((value, index) => {
         const x = padding + (index * chartWidth) / (data.length - 1)
@@ -344,7 +380,6 @@ const CheckupReportsScreen = () => {
       })
       .join(" ")
 
-    // Create points for the filled area (including bottom line)
     const areaPoints =
       `${padding},${padding + chartHeight} ` + points + ` ${padding + chartWidth},${padding + chartHeight}`
 
@@ -358,22 +393,18 @@ const CheckupReportsScreen = () => {
               <stop offset="100%" style="stop-color:${color};stop-opacity:0.05" />
             </linearGradient>
           </defs>
-          
-          <!-- Grid lines -->
+
           <defs>
             <pattern id="grid-${title.replace(/\s+/g, "")}" width="10" height="10" patternUnits="userSpaceOnUse">
               <path d="M 10 0 L 0 0 0 10" fill="none" stroke="${NEUTRAL_LIGHT}" stroke-width="0.5"/>
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid-${title.replace(/\s+/g, "")})" opacity="0.3"/>
-          
-          <!-- Filled area under the line -->
+
           <polygon points="${areaPoints}" fill="url(#gradient-${title.replace(/\s+/g, "").replace(/[()]/g, "")})" />
-          
-          <!-- Main line -->
+
           <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          
-          <!-- Data points -->
+
           ${data
             .map((value, index) => {
               const x = padding + (index * chartWidth) / (data.length - 1)
@@ -381,12 +412,10 @@ const CheckupReportsScreen = () => {
               return `<circle cx="${x}" cy="${y}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`
             })
             .join("")}
-          
-          <!-- Y-axis labels -->
+
           <text x="5" y="${padding + 5}" text-anchor="start" font-size="9" fill="${NEUTRAL_MEDIUM}">${max.toFixed(1)}${unit}</text>
           <text x="5" y="${padding + chartHeight}" text-anchor="start" font-size="9" fill="${NEUTRAL_MEDIUM}">${min.toFixed(1)}${unit}</text>
-          
-          <!-- X-axis labels -->
+
           ${labels
             .map((label, index) => {
               if (index === 0 || index === labels.length - 1) {
@@ -405,7 +434,6 @@ const CheckupReportsScreen = () => {
     `
   }
 
-  // Helper function to create simple bar charts for stat cards
   const createSimpleChart = (data, label, color = PRIMARY_ACCENT) => {
     if (!data || data.length === 0) return ""
 
@@ -415,7 +443,7 @@ const CheckupReportsScreen = () => {
 
     return data
       .map((value, index) => {
-        const height = Math.round(((value - min) / range) * 20) + 5 // Scale to 5-25px height
+        const height = Math.round(((value - min) / range) * 20) + 5
         return `<div class="chart-bar" style="height: ${height}px; background-color: ${color}; width: 20px; display: inline-block; margin: 0 2px; vertical-align: bottom;"></div>`
       })
       .join("")
@@ -423,9 +451,7 @@ const CheckupReportsScreen = () => {
 
   const generatePdfContent = useCallback(() => {
     const rangeText =
-      dateRange === "personalizado" && customStartDate && customEndDate
-        ? `del ${customStartDate} al ${customEndDate}`
-        : ` (${dateRange === "semanal" ? "Última semana" : dateRange === "mensual" ? "Último mes" : "Último trimestre"})`
+        dateRange === "mensual" ? "Último mes" : "Último trimestre"
 
     const residentHeaderText = selectedResidente
       ? `${selectedResidente.nombre} ${selectedResidente.apellido}`
@@ -506,7 +532,6 @@ const CheckupReportsScreen = () => {
     `
       : '<div class="no-data"><p>No hay promedios disponibles para el período seleccionado.</p></div>'
 
-    // Create individual trend visualizations for each indicator
     const trendVisualization =
       timeSeriesData.length > 0
         ? `
@@ -564,8 +589,8 @@ const CheckupReportsScreen = () => {
     const tableRows =
       timeSeriesData.length > 0
         ? timeSeriesData
-            .slice() // Create a shallow copy
-            .reverse() // Display most recent first
+            .slice()
+            .reverse()
             .map(
               (item) => `
       <tr>
@@ -595,7 +620,7 @@ const CheckupReportsScreen = () => {
                   margin: 40px;
                   size: A4;
               }
-              
+
               body {
                   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
                   margin: 0;
@@ -605,13 +630,13 @@ const CheckupReportsScreen = () => {
                   line-height: 1.6;
                   font-size: 14px;
               }
-              
+
               .container {
                   max-width: 100%;
                   margin: 0 auto;
                   padding: 20px;
               }
-              
+
               .header {
                   text-align: center;
                   margin-bottom: 40px;
@@ -621,7 +646,7 @@ const CheckupReportsScreen = () => {
                   border: 2px solid ${PRIMARY_ACCENT}30;
                   position: relative;
               }
-              
+
               .logo {
                   max-width: 350px;
                   max-height: 150px;
@@ -630,7 +655,7 @@ const CheckupReportsScreen = () => {
                   margin-left: auto;
                   margin-right: auto;
               }
-              
+
               h1 {
                   font-size: 32px;
                   color: ${PRIMARY_ACCENT};
@@ -638,14 +663,14 @@ const CheckupReportsScreen = () => {
                   font-weight: 700;
                   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
               }
-              
+
               .subtitle {
                   font-size: 18px;
                   color: ${NEUTRAL_MEDIUM};
                   margin: 0;
                   font-weight: 500;
               }
-              
+
               h2 {
                   font-size: 24px;
                   color: ${PRIMARY_ACCENT};
@@ -654,14 +679,14 @@ const CheckupReportsScreen = () => {
                   border-bottom: 3px solid ${PRIMARY_ACCENT}50;
                   font-weight: 600;
               }
-              
+
               h3 {
                   font-size: 20px;
                   color: ${NEUTRAL_DARK};
                   margin: 25px 0 15px 0;
                   font-weight: 600;
               }
-              
+
               h4 {
                   font-size: 14px;
                   color: ${NEUTRAL_DARK};
@@ -669,7 +694,7 @@ const CheckupReportsScreen = () => {
                   font-weight: 600;
                   text-align: center;
               }
-              
+
               .section {
                   background-color: ${CARD_BACKGROUND};
                   border-radius: 12px;
@@ -678,7 +703,7 @@ const CheckupReportsScreen = () => {
                   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
                   border: 1px solid ${NEUTRAL_LIGHT};
               }
-              
+
               .header-info {
                   background: linear-gradient(135deg, ${BACKGROUND_LIGHT}, ${CARD_BACKGROUND});
                   border-radius: 12px;
@@ -686,19 +711,19 @@ const CheckupReportsScreen = () => {
                   margin-bottom: 30px;
                   border-left: 5px solid ${PRIMARY_ACCENT};
               }
-              
+
               .header-info p {
                   margin: 8px 0;
                   font-size: 16px;
                   color: ${NEUTRAL_DARK};
                   font-weight: 500;
               }
-              
+
               .header-info strong {
                   color: ${PRIMARY_ACCENT};
                   font-weight: 600;
               }
-              
+
               .alert-notice {
                   background-color: ${DANGER_COLOR}10;
                   color: ${DANGER_COLOR};
@@ -708,14 +733,14 @@ const CheckupReportsScreen = () => {
                   font-weight: 600;
                   margin-top: 15px;
               }
-              
+
               .stats-grid {
                   display: grid;
                   grid-template-columns: repeat(2, 1fr);
                   gap: 20px;
                   margin: 25px 0;
               }
-              
+
               .stat-card {
                   background: linear-gradient(135deg, ${CARD_BACKGROUND}, ${BACKGROUND_LIGHT});
                   border-radius: 12px;
@@ -723,14 +748,14 @@ const CheckupReportsScreen = () => {
                   border: 1px solid ${NEUTRAL_LIGHT};
                   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
               }
-              
+
               .stat-header {
                   display: flex;
                   align-items: flex-start;
                   gap: 15px;
                   margin-bottom: 15px;
               }
-              
+
               .stat-icon {
                   font-size: 28px;
                   font-weight: bold;
@@ -739,11 +764,11 @@ const CheckupReportsScreen = () => {
                   min-width: 40px;
                   text-align: center;
               }
-              
+
               .stat-info {
                   flex: 1;
               }
-              
+
               .stat-label {
                   font-size: 14px;
                   color: ${NEUTRAL_MEDIUM};
@@ -752,7 +777,7 @@ const CheckupReportsScreen = () => {
                   text-transform: uppercase;
                   letter-spacing: 0.5px;
               }
-              
+
               .stat-value {
                   font-size: 28px;
                   font-weight: 700;
@@ -760,14 +785,14 @@ const CheckupReportsScreen = () => {
                   margin: 0 0 5px 0;
                   line-height: 1;
               }
-              
+
               .stat-trend {
                   font-size: 12px;
                   color: ${NEUTRAL_MEDIUM};
                   margin: 0;
                   font-style: italic;
               }
-              
+
               .mini-chart {
                   margin-top: 15px;
                   padding: 10px;
@@ -779,24 +804,24 @@ const CheckupReportsScreen = () => {
                   align-items: end;
                   justify-content: center;
               }
-              
+
               .chart-bar {
                   border-radius: 2px 2px 0 0;
                   transition: all 0.3s ease;
               }
-              
+
               .trend-section {
                   margin: 30px 0;
                   page-break-inside: avoid;
               }
-              
+
               .individual-charts-grid {
                   display: grid;
                   grid-template-columns: repeat(3, 1fr);
                   gap: 20px;
                   margin-top: 25px;
               }
-              
+
               .individual-chart {
                   background-color: ${CARD_BACKGROUND};
                   border: 1px solid ${NEUTRAL_LIGHT};
@@ -805,14 +830,14 @@ const CheckupReportsScreen = () => {
                   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
                   page-break-inside: avoid;
               }
-              
+
               .individual-chart h4 {
                   margin: 0 0 12px 0;
                   color: ${PRIMARY_ACCENT};
                   font-size: 13px;
                   font-weight: 600;
               }
-              
+
               .chart-stats {
                   display: flex;
                   justify-content: space-between;
@@ -820,11 +845,11 @@ const CheckupReportsScreen = () => {
                   font-size: 10px;
                   color: ${NEUTRAL_MEDIUM};
               }
-              
+
               .chart-stats strong {
                   color: ${PRIMARY_ACCENT};
               }
-              
+
               table {
                   width: 100%;
                   border-collapse: collapse;
@@ -835,13 +860,13 @@ const CheckupReportsScreen = () => {
                   overflow: hidden;
                   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
               }
-              
+
               th, td {
                   border: 1px solid ${NEUTRAL_LIGHT};
                   padding: 12px 10px;
                   text-align: left;
               }
-              
+
               th {
                   background: linear-gradient(135deg, ${PRIMARY_ACCENT}, ${PRIMARY_ACCENT}dd);
                   color: #ffffff;
@@ -850,20 +875,20 @@ const CheckupReportsScreen = () => {
                   font-size: 12px;
                   letter-spacing: 0.5px;
               }
-              
+
               tr:nth-child(even) {
                   background-color: ${BACKGROUND_LIGHT};
               }
-              
+
               tr:hover {
                   background-color: ${PRIMARY_ACCENT}08;
               }
-              
+
               .resident-name {
                   font-weight: 600;
                   color: ${PRIMARY_ACCENT};
               }
-              
+
               td.normal {
                   background-color: ${SECONDARY_ACCENT}20;
                   color: ${SECONDARY_ACCENT};
@@ -871,7 +896,7 @@ const CheckupReportsScreen = () => {
                   border-radius: 4px;
                   text-align: center;
               }
-              
+
               td.alert {
                   background-color: ${DANGER_COLOR}20;
                   color: ${DANGER_COLOR};
@@ -879,7 +904,7 @@ const CheckupReportsScreen = () => {
                   border-radius: 4px;
                   text-align: center;
               }
-              
+
               td.observations {
                   font-size: 11px;
                   color: ${NEUTRAL_MEDIUM};
@@ -887,7 +912,7 @@ const CheckupReportsScreen = () => {
                   max-width: 150px;
                   word-wrap: break-word;
               }
-              
+
               .no-data {
                   text-align: center;
                   padding: 40px;
@@ -897,7 +922,7 @@ const CheckupReportsScreen = () => {
                   border-radius: 8px;
                   border: 2px dashed ${NEUTRAL_LIGHT};
               }
-              
+
               .no-data-cell {
                   text-align: center;
                   padding: 30px;
@@ -905,7 +930,7 @@ const CheckupReportsScreen = () => {
                   font-size: 14px;
                   font-style: italic;
               }
-              
+
               .footer {
                   text-align: center;
                   margin-top: 50px;
@@ -914,34 +939,28 @@ const CheckupReportsScreen = () => {
                   font-size: 12px;
                   color: ${NEUTRAL_MEDIUM};
               }
-              
+
               .footer strong {
                   color: ${PRIMARY_ACCENT};
               }
-              
-              /* Print optimizations */
+
               @media print {
                   .section {
                       break-inside: avoid;
                       page-break-inside: avoid;
                   }
-                  
                   .stats-grid {
                       break-inside: avoid;
                   }
-                  
                   .trend-section {
                       break-inside: avoid;
                   }
-                  
                   .individual-chart {
                       break-inside: avoid;
                   }
-                  
                   table {
                       break-inside: auto;
                   }
-                  
                   tr {
                       break-inside: avoid;
                       break-after: auto;
@@ -956,31 +975,18 @@ const CheckupReportsScreen = () => {
                   <h1>Reporte de Chequeos de Salud</h1>
                   <p class="subtitle">Sistema de Monitoreo Integral de Residentes</p>
               </div>
-              
               <div class="header-info">
                   <p><strong>👤 Residente:</strong> ${residentHeaderText}</p>
-                  <p><strong>📅 Periodo:</strong> ${
-                    dateRange === "personalizado" && customStartDate && customEndDate
-                      ? `Del ${customStartDate} al ${customEndDate}`
-                      : `Última ${dateRange === "semanal" ? "semana" : dateRange === "mensual" ? "mes" : "trimestre"}`
-                  }</p>
+                  <p><strong>📅 Periodo:</strong> Último ${dateRange === "mensual" ? "mes" : "trimestre"}</p>
                   <p><strong>📋 Total de Chequeos:</strong> ${timeSeriesData.length}</p>
-                  <p><strong>🏥 Fecha de Generación:</strong> ${new Date().toLocaleDateString("es-ES", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })} a las ${new Date().toLocaleTimeString("es-ES")}</p>
+                  <p><strong>🏥 Fecha de Generación:</strong> ${new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric", })} a las ${new Date().toLocaleTimeString("es-ES")}</p>
                   ${stats && stats.alertas > 0 ? `<div class="alert-notice">⚠ ${stats.alertas} Alertas registradas que requieren atención médica</div>` : ""}
               </div>
-
               <div class="section">
                   <h2>Resumen de Indicadores Promedio</h2>
                   ${statsHtml}
               </div>
-
               ${trendVisualization ? `<div class="section">${trendVisualization}</div>` : ""}
-
               <div class="section">
                   <h2>Historial Detallado de Chequeos</h2>
                   <table>
@@ -1002,7 +1008,6 @@ const CheckupReportsScreen = () => {
                       </tbody>
                   </table>
               </div>
-              
               <div class="footer">
                   <p><strong>Sistema de Salud Digital</strong> | Reporte generado automáticamente</p>
                   <p>Este documento contiene información médica confidencial</p>
@@ -1011,7 +1016,7 @@ const CheckupReportsScreen = () => {
       </body>
       </html>
     `
-  }, [timeSeriesData, selectedResidente, dateRange, customStartDate, customEndDate, stats])
+  }, [timeSeriesData, selectedResidente, dateRange, stats])
 
   const exportReport = useCallback(async () => {
     if (Platform.OS === "web") {
@@ -1023,25 +1028,33 @@ const CheckupReportsScreen = () => {
       const newWindow = window.open()
       newWindow.document.write(generatePdfContent())
       newWindow.document.close()
-      newWindow.print() // Immediately trigger print dialog
+      newWindow.print()
     } else {
-      // For React Native (iOS/Android)
-      try {
-        const htmlContent = generatePdfContent()
-
-        const options = {
-          html: htmlContent,
-          fileName: `ReporteChequeos_${
-            selectedResidenteId !== "all" ? selectedResidente?.nombre + "_" + selectedResidente?.apellido : "Todos"
-          }_${dateRange}_${new Date().toISOString().split("T")[0]}.pdf`,
-          directory: "Documents", // iOS and Android directory for saving
+      // Check if RNHTMLtoPDF is available and has the convert method
+      if (RNHTMLtoPDF && typeof RNHTMLtoPDF.convert === 'function') {
+        try {
+          const htmlContent = generatePdfContent()
+          const options = {
+            html: htmlContent,
+            fileName: `ReporteChequeos_${
+              selectedResidenteId !== "all" ? selectedResidente?.nombre + "_" + selectedResidente?.apellido : "Todos"
+            }_${dateRange}_${new Date().toISOString().split("T")[0]}.pdf`,
+            directory: "Documents",
+          }
+          const file = await RNHTMLtoPDF.convert(options)
+          Alert.alert("✅ Éxito", `PDF generado exitosamente y guardado en: ${file.filePath}`)
+        } catch (error) {
+          console.error("Error generating PDF:", error)
+          Alert.alert("❌ Error", `No se pudo generar el PDF: ${error.message}`)
         }
-
-        const file = await RNHTMLtoPDF.convert(options)
-        Alert.alert("✅ Éxito", `PDF generado exitosamente y guardado en: ${file.filePath}`)
-      } catch (error) {
-        console.error("Error generating PDF:", error)
-        Alert.alert("❌ Error", `No se pudo generar el PDF: ${error.message}`)
+      } else {
+        // Fallback for when RNHTMLtoPDF is not available (e.g., native module not linked)
+        Alert.alert(
+          "❌ Error de PDF",
+          "La funcionalidad de generación de PDF no está disponible en este dispositivo. Por favor, asegúrate de que la aplicación esté correctamente instalada o contacta a soporte.",
+          [{ text: "OK" }]
+        );
+        console.error("RNHTMLtoPDF or RNHTMLtoPDF.convert is not available on this platform.");
       }
     }
   }, [generatePdfContent, selectedResidenteId, selectedResidente, dateRange])
@@ -1061,330 +1074,282 @@ const CheckupReportsScreen = () => {
         <Card style={styles.errorCard}>
           <CardContent style={styles.errorCardContent}>
             <Text style={styles.errorEmoji}>⚠️</Text>
-            <CardTitle style={styles.errorTitle}>Error al cargar los datos</CardTitle>
-            <Text style={styles.errorMessage}>{error}</Text>
-            <Button onPress={fetchData}>Reintentar</Button>
+            <CardTitle>Error al cargar datos</CardTitle>
+            <CardDescription>
+              Hubo un problema al intentar obtener la información. Por favor, verifica tu conexión a Internet e inténtalo de nuevo.
+              {error && `\nDetalles: ${error}`}
+            </CardDescription>
+            <Button onPress={fetchData} style={{ marginTop: 20 }}>
+              Reintentar
+            </Button>
           </CardContent>
         </Card>
       </View>
     )
   }
 
-  // Chart data preparation for react-native-chart-kit
-  const chartConfig = {
-    backgroundGradientFrom: COLORS.card,
-    backgroundGradientTo: COLORS.card,
-    decimalPlaces: 1,
-    color: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
-    strokeWidth: 2,
-    barPercentage: 0.5,
-    useShadowColorFromDataset: false,
-    propsForDots: {
-      r: "4",
-      strokeWidth: "1",
-      stroke: COLORS.primary,
-    },
-  }
-
-  const combinedVitalSignsLineData = {
-    labels: timeSeriesData.map((d) => d.fecha),
-    datasets: [
-      { data: timeSeriesData.map((d) => d.spo2), color: (opacity = 1) => COLORS.primary, legend: "SpO2 (%)" },
-      { data: timeSeriesData.map((d) => d.pulso), color: (opacity = 1) => COLORS.danger, legend: "Pulso (lpm)" },
-      {
-        data: timeSeriesData.map((d) => d.temperatura),
-        color: (opacity = 1) => COLORS.warning,
-        legend: "Temperatura (°C)",
-      },
-    ],
-  }
-
-  const pesoImcLineData = {
-    labels: timeSeriesData.map((d) => d.fecha),
-    datasets: [
-      { data: timeSeriesData.map((d) => d.peso), color: (opacity = 1) => COLORS.success, legend: "Peso (kg)" },
-      { data: timeSeriesData.map((d) => d.imc), color: (opacity = 1) => COLORS.purple, legend: "IMC" },
-    ],
-  }
-
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.headerCard}>
-        <View style={styles.headerContent}>
-          <Text style={styles.dashboardTitle}>Dashboard de Salud</Text>
-          <Text style={styles.dashboardSubtitle}>
-            {stats?.total || 0} chequeos • {residentes.length} residentes
-            {stats?.alertas > 0 && (
-              <Badge variant="destructive" style={styles.alertBadge}>
-                {stats.alertas} alertas
-              </Badge>
-            )}
-          </Text>
-        </View>
-        <Button variant="outline" style={styles.exportButton} onPress={exportReport}>
-          <Text style={styles.exportButtonText}>📥 Exportar Reporte</Text>
-        </Button>
-      </View>
-
-      <View style={styles.filterContainer}>
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>👤 Residente</Text>
-          <Select selectedValue={selectedResidenteId} onValueChange={handleResidenteChange}>
-            <SelectItem label="Todos los residentes" value="all" />
-            {residentes.map((r) => (
-              <SelectItem key={r.id_residente} label={`${r.nombre} ${r.apellido}`} value={r.id_residente.toString()} />
+      <Card>
+        <CardHeader>
+          <CardTitle>Generar Reporte de Chequeos</CardTitle>
+          <CardDescription>Selecciona los filtros para generar el reporte de salud de tus residentes.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Text style={styles.label}>Residente:</Text>
+          <Select
+            selectedValue={selectedResidenteId}
+            onValueChange={(itemValue) => handleResidenteChange(itemValue)}
+          >
+            <SelectItem label="Todos los Residentes" value="all" />
+            {residentes.map((residente) => (
+              <SelectItem
+                key={residente.id_residente}
+                label={`${residente.nombre} ${residente.apellido}`}
+                value={residente.id_residente.toString()}
+              />
             ))}
           </Select>
-        </View>
 
-        <View style={styles.filterGroup}>
-          <Text style={styles.filterLabel}>📅 Período</Text>
-          <Select selectedValue={dateRange} onValueChange={setDateRange}>
-            <SelectItem label="Última semana" value="semanal" />
+          <Text style={[styles.label, { marginTop: 16 }]}>Período:</Text>
+          <Select selectedValue={dateRange} onValueChange={(itemValue) => setDateRange(itemValue)}>
             <SelectItem label="Último mes" value="mensual" />
             <SelectItem label="Último trimestre" value="trimestral" />
-            <SelectItem label="Rango personalizado" value="personalizado" />
           </Select>
-        </View>
 
-        {dateRange === "personalizado" && (
-          <>
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Fecha inicio</Text>
-              <Input type="date" value={customStartDate} onChangeText={setCustomStartDate} />
-            </View>
-            <View style={styles.filterGroup}>
-              <Text style={styles.filterLabel}>Fecha fin</Text>
-              <Input type="date" value={customEndDate} onChangeText={setCustomEndDate} />
-            </View>
-          </>
-        )}
-      </View>
+          <Button onPress={exportReport} style={styles.generateButton}>
+            Generar Reporte PDF
+          </Button>
+        </CardContent>
+      </Card>
 
-      {selectedResidenteId !== "all" && selectedResidente && (
-        <Card style={styles.residentInfoCard}>
-          <CardHeader>
-            <CardTitle style={styles.cardTitleWithIcon}>👤 Información del Residente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <View style={styles.residentInfoGrid}>
-              <View style={styles.residentInfoColumn}>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Nombre completo</Text>
-                  <Text style={styles.infoValue}>
-                    {selectedResidente.nombre} {selectedResidente.apellido}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Género</Text>
-                  <Text style={styles.infoValue}>{selectedResidente.genero}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Teléfono</Text>
-                  <Text style={styles.infoValue}>{selectedResidente.telefono}</Text>
-                </View>
-              </View>
-              <View style={styles.residentInfoColumn}>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Fecha de nacimiento</Text>
-                  <Text style={styles.infoValue}>
-                    {new Date(selectedResidente.fecha_nacimiento).toLocaleDateString("es-ES")}
-                  </Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Dispositivo</Text>
-                  <Text style={styles.infoValue}>{selectedResidente.dispositivo.nombre}</Text>
-                  <Text style={styles.infoSubValue}>{selectedResidente.dispositivo.direccion_MAC}</Text>
-                </View>
-                <View style={styles.infoItem}>
-                  <Text style={styles.infoLabel}>Estado</Text>
-                  <Badge variant={selectedResidente.activo ? "default" : "secondary"}>
-                    {selectedResidente.activo ? "Activo" : "Inactivo"}
-                  </Badge>
-                </View>
-              </View>
-              <View style={styles.residentInfoColumn}>
-                <View style={styles.activityGrid}>
-                  <View style={styles.activityBox}>
-                    <Text style={styles.activityLabel}>Reposo</Text>
-                    <Text style={styles.activityValue}>{selectedResidente.promedioReposo}%</Text>
-                  </View>
-                  <View style={styles.activityBox}>
-                    <Text style={styles.activityLabel}>Activo</Text>
-                    <Text style={styles.activityValue}>{selectedResidente.promedioActivo}%</Text>
-                  </View>
-                  <View style={styles.activityBox}>
-                    <Text style={styles.activityLabel}>Agitado</Text>
-                    <Text style={styles.activityValue}>{selectedResidente.promedioAgitado}%</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Promedios (stats) - Manteniéndose como solicitaste */}
-      {stats && (
-        <View style={styles.statsGrid}>
-          <Card style={styles.statCard}>
-            <CardHeader style={styles.statCardHeader}>
-              <CardTitle style={styles.statCardTitle}>SpO2 Promedio</CardTitle>
-              <Text style={styles.statIcon}>🫁</Text>
-            </CardHeader>
-            <CardContent>
-              <Text style={styles.statValue}>{stats.avg.spo2}%</Text>
-              <Text style={styles.statSubValue}>Último: {stats.latest.spo2}%</Text>
-            </CardContent>
-          </Card>
-
-          <Card style={styles.statCard}>
-            <CardHeader style={styles.statCardHeader}>
-              <CardTitle style={styles.statCardTitle}>Pulso Promedio</CardTitle>
-              <Text style={styles.statIcon}>❤️</Text>
-            </CardHeader>
-            <CardContent>
-              <Text style={styles.statValue}>{stats.avg.pulso} lpm</Text>
-              <Text style={styles.statSubValue}>Último: {stats.latest.pulso} lpm</Text>
-            </CardContent>
-          </Card>
-
-          <Card style={styles.statCard}>
-            <CardHeader style={styles.statCardHeader}>
-              <CardTitle style={styles.statCardTitle}>Temperatura Promedio</CardTitle>
-              <Text style={styles.statIcon}>🌡️</Text>
-            </CardHeader>
-            <CardContent>
-              <Text style={styles.statValue}>{stats.avg.temperatura}°C</Text>
-              <Text style={styles.statSubValue}>Última: {stats.latest.temperaturaCorporal}°C</Text>
-            </CardContent>
-          </Card>
-
-          <Card style={styles.statCard}>
-            <CardHeader style={styles.statCardHeader}>
-              <CardTitle style={styles.statCardTitle}>IMC Promedio</CardTitle>
-              <Text style={styles.statIcon}>⚖️</Text>
-            </CardHeader>
-            <CardContent>
-              <Text style={styles.statValue}>{stats.avg.imc}</Text>
-              <Text style={styles.statSubValue}>Último: {stats.latest.imc.toFixed(1)}</Text>
-            </CardContent>
-          </Card>
-        </View>
-      )}
-
-      <View style={styles.chartsGrid}>
-        {/* Gráfica 1: Tendencia de ritmo cardíaco, oxígeno en la sangre, temperatura */}
-        <Card style={styles.chartCard}>
-          <CardHeader>
-            <CardTitle style={styles.cardTitleWithIcon}>📈 Tendencias de Signos Vitales</CardTitle>
-            <CardDescription>Evolución temporal de SpO2, pulso y temperatura en sus últimas consultas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {timeSeriesData.length > 0 ? (
-              <LineChart
-                data={{
-                  labels: combinedVitalSignsLineData.labels,
-                  datasets: combinedVitalSignsLineData.datasets,
-                  legend: combinedVitalSignsLineData.datasets.map((d) => d.legend),
-                }}
-                width={screenWidth - 48} // Padding for the card
-                height={300}
-                chartConfig={chartConfig}
-                bezier
-                style={styles.chart}
-              />
-            ) : (
-              <Text style={styles.noDataText}>No hay datos para mostrar la tendencia de signos vitales.</Text>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Gráfica 2: Tendencia de peso e IMC */}
-        <Card style={styles.chartCard}>
-          <CardHeader>
-            <CardTitle>📊 Evolución de Peso e IMC</CardTitle>
-            <CardDescription>Monitoreo de composición corporal en sus últimas consultas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {timeSeriesData.length > 0 ? (
-              <LineChart
-                data={{
-                  labels: pesoImcLineData.labels,
-                  datasets: pesoImcLineData.datasets,
-                  legend: pesoImcLineData.datasets.map((d) => d.legend),
-                }}
-                width={screenWidth - 48}
-                height={300}
-                chartConfig={chartConfig}
-                bezier
-                style={styles.chart}
-              />
-            ) : (
-              <Text style={styles.noDataText}>No hay datos para mostrar la evolución de peso e IMC.</Text>
-            )}
-          </CardContent>
-        </Card>
-      </View>
-
-      {/* Historial Detallado de Chequeos - Ahora dinámico con el rango de fechas y sin slice(-10) */}
       <Card style={styles.historyCard}>
         <CardHeader>
-          <CardTitle>📋 Historial Detallado de Chequeos</CardTitle>
-          <CardDescription>Todos los chequeos registrados en el rango de fechas seleccionado</CardDescription>
+          <CardTitle>Historial de Chequeos Recientes</CardTitle>
+          <CardDescription>
+            Visualización de los chequeos de salud de los residentes seleccionados.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {timeSeriesData.length > 0 ? (
-            <ScrollView horizontal style={styles.tableScrollView}>
-              <View>
-                <View style={styles.tableHeaderRow}>
-                  <Text style={styles.tableHeaderCell}>Fecha</Text>
-                  <Text style={styles.tableHeaderCell}>Residente</Text>
-                  <Text style={styles.tableHeaderCell}>SpO2</Text>
-                  <Text style={styles.tableHeaderCell}>Pulso</Text>
-                  <Text style={styles.tableHeaderCell}>Temperatura</Text>
-                  <Text style={styles.tableHeaderCell}>Peso</Text>
-                  <Text style={styles.tableHeaderCell}>IMC</Text>
-                  <Text style={styles.tableHeaderCell}>Estado</Text>
-                  <Text style={styles.tableHeaderCell}>Observaciones</Text>
+            <View>
+              <Text style={styles.sectionTitle}>Resumen de Estadísticas</Text>
+              {stats && (
+                <View style={styles.statsContainer}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Último SpO2:</Text>
+                    <Text style={styles.statValue}>{stats.latest.spo2}%</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Promedio Pulso:</Text>
+                    <Text style={styles.statValue}>{stats.avg.pulso} lpm</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Alertas:</Text>
+                    <Text style={[styles.statValue, stats.alertas > 0 ? styles.alertText : {}]}>
+                      {stats.alertas}
+                    </Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Total Chequeos:</Text>
+                    <Text style={styles.statValue}>{stats.total}</Text>
+                  </View>
                 </View>
-                {timeSeriesData
-                  .slice() // Create a shallow copy to reverse without modifying original
-                  .reverse() // Display most recent first
-                  .map((item, index) => (
-                    <View key={index} style={styles.tableRow}>
-                      <Text style={styles.tableCell}>{item.fechaCompleta}</Text>
-                      <Text style={[styles.tableCell, styles.tableCellFontMedium]}>{item.residente}</Text>
-                      <View style={styles.tableCellContent}>
-                        <Badge variant={item.spo2 >= 95 ? "default" : "destructive"}>{item.spo2}%</Badge>
-                      </View>
-                      <View style={styles.tableCellContent}>
-                        <Badge variant={item.pulso >= 60 && item.pulso <= 100 ? "default" : "destructive"}>
+              )}
+
+              <Text style={styles.sectionTitle}>Gráficas de Tendencia</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>SPO2 (%)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.spo2) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(74, 144, 226, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.primary,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Pulso (lpm)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.pulso) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 0,
+                      color: (opacity = 1) => `rgba(208, 2, 27, ${opacity})`, // Danger color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.danger,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Temperatura (°C)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.temperatura) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(245, 166, 35, ${opacity})`, // Warning color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.warning,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Peso (kg)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.peso) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(126, 211, 33, ${opacity})`, // Success color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.success,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>IMC</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.imc) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`, // Purple color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.purple,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+              </ScrollView>
+
+              <Text style={styles.sectionTitle}>Detalles del Historial</Text>
+              <ScrollView style={styles.tableScrollView}>
+                <View>
+                  <View style={styles.tableHeaderRow}>
+                    <Text style={styles.tableHeaderCell}>Fecha</Text>
+                    <Text style={styles.tableHeaderCell}>Residente</Text>
+                    <Text style={styles.tableHeaderCell}>SpO2</Text>
+                    <Text style={styles.tableHeaderCell}>Pulso</Text>
+                    <Text style={styles.tableHeaderCell}>Temp. Corporal</Text>
+                    <Text style={styles.tableHeaderCell}>Peso</Text>
+                    <Text style={styles.tableHeaderCell}>IMC</Text>
+                    <Text style={styles.tableHeaderCell}>Estado</Text>
+                    <Text style={styles.tableHeaderCell}>Observaciones</Text>
+                  </View>
+                  {timeSeriesData
+                    .slice()
+                    .reverse()
+                    .map((item, index) => (
+                      <View key={index} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{item.fechaCompleta}</Text>
+                        <Text style={[styles.tableCell, styles.residentName]}>{item.residente}</Text>
+                        <Text style={[styles.tableCell, item.spo2 >= 95 ? styles.normalText : styles.alertText]}>
+                          {item.spo2}%
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            item.pulso >= 60 && item.pulso <= 100 ? styles.normalText : styles.alertText,
+                          ]}
+                        >
                           {item.pulso} lpm
-                        </Badge>
-                      </View>
-                      <View style={styles.tableCellContent}>
-                        <Badge
-                          variant={item.temperatura >= 36.1 && item.temperatura <= 37.2 ? "default" : "destructive"}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            item.temperatura >= 36.1 && item.temperatura <= 37.2 ? styles.normalText : styles.alertText,
+                          ]}
                         >
                           {item.temperatura}°C
-                        </Badge>
+                        </Text>
+                        <Text style={styles.tableCell}>{item.peso} kg</Text>
+                        <Text style={styles.tableCell}>{item.imc.toFixed(1)}</Text>
+                        <View style={styles.tableCellContent}>
+                          <Badge variant={item.isNormal ? "success" : "destructive"}>
+                            {item.isNormal ? "Normal" : "Atención"}
+                          </Badge>
+                        </View>
+                        <Text style={styles.tableCell}>{item.observaciones || "N/A"}</Text>
                       </View>
-                      <Text style={styles.tableCell}>{item.peso} kg</Text>
-                      <Text style={styles.tableCell}>{item.imc}</Text>
-                      <View style={styles.tableCellContent}>
-                        <Badge variant={item.isNormal ? "default" : "destructive"}>
-                          {item.isNormal ? "Normal" : "Atención"}
-                        </Badge>
-                      </View>
-                      <Text style={styles.tableCellObservations}>{item.observaciones || "Sin observaciones"}</Text>
-                    </View>
-                  ))}
-              </View>
-            </ScrollView>
+                    ))}
+                </View>
+              </ScrollView>
+            </View>
           ) : (
-            <Text style={styles.noDataText}>No hay datos en el historial para el rango de fechas seleccionado.</Text>
+            <Text style={styles.noDataText}>No hay datos disponibles para los filtros seleccionados.</Text>
           )}
         </CardContent>
       </Card>
@@ -1398,284 +1363,182 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     padding: 16,
   },
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.background,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: COLORS.textLight,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.background,
-  },
-  errorCard: {
-    width: "90%",
-    maxWidth: 400,
-  },
-  errorCardContent: {
-    paddingVertical: 24,
-    alignItems: "center",
-  },
-  errorEmoji: {
-    fontSize: 40,
-    color: COLORS.danger,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.text,
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  errorMessage: {
-    color: COLORS.textLight,
-    marginBottom: 16,
-    textAlign: "center",
-  },
   card: {
     backgroundColor: COLORS.card,
     borderRadius: 12,
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 16,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   cardHeader: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "600",
     color: COLORS.text,
-  },
-  cardTitleWithIcon: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    marginBottom: 4,
   },
   cardDescription: {
     fontSize: 14,
     color: COLORS.textLight,
-    marginTop: 4,
   },
   cardContent: {
-    padding: 24,
+    padding: 16,
   },
-  buttonText: {
-    fontSize: 14,
+  label: {
+    fontSize: 16,
     fontWeight: "500",
+    color: COLORS.text,
+    marginBottom: 8,
   },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 9999, // Full pill shape
-    fontSize: 11,
-    fontWeight: "500",
-    alignSelf: "flex-start", // To make it wrap content
-    overflow: "hidden", // Ensure border radius works
+  input: {
+    height: 50,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    backgroundColor: COLORS.card,
+    color: COLORS.text,
+  },
+  inputText: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  inputPlaceholder: {
+    fontSize: 16,
+    color: COLORS.textLight,
   },
   select: {
     height: 50,
     width: "100%",
     borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 8,
     backgroundColor: COLORS.card,
     color: COLORS.text,
+    marginBottom: 12,
   },
-  input: {
-    height: 48,
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.card,
-    justifyContent: "center",
-  },
-  inputText: {
-    color: COLORS.text,
-    fontSize: 16,
-  },
-  inputPlaceholder: {
-    color: COLORS.textLight,
-    fontSize: 16,
-  },
-  headerCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 16,
-    padding: 24,
+  dateRangeContainer: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    marginTop: 16,
   },
-  headerContent: {},
-  dashboardTitle: {
-    fontSize: 28,
-    fontWeight: "700",
+  dateInputWrapper: {
+    width: "48%",
+  },
+  generateButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
     color: COLORS.text,
+    marginTop: 24,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 8,
   },
-  dashboardSubtitle: {
-    color: COLORS.textLight,
-    marginTop: 4,
-    fontSize: 14,
-  },
-  alertBadge: {
-    marginLeft: 8,
-  },
-  exportButton: {
-    backgroundColor: "transparent",
-    borderColor: COLORS.border,
-    borderWidth: 1,
+  statsContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
-  exportButtonText: {
-    color: COLORS.text,
+  statItem: {
+    width: "48%",
+    backgroundColor: COLORS.lightBlue,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: COLORS.primary,
     fontWeight: "500",
   },
-  filterContainer: {
-    backgroundColor: COLORS.background,
+  statValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.darkText,
+  },
+  alertText: {
+    color: COLORS.danger,
+    fontWeight: "700",
+  },
+  chartContainer: {
+    backgroundColor: COLORS.card,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minWidth: screenWidth * 0.9,
   },
-  filterGroup: {
-    width: "48%", // Approximately half width for two columns
-    marginBottom: 12,
-  },
-  filterLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: COLORS.textLight,
-    marginBottom: 6,
-  },
-  residentInfoCard: {
-    marginBottom: 16,
-  },
-  residentInfoGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 24, // Equivalent to gap-6
-  },
-  residentInfoColumn: {
-    width: "30%", // Approximately 1/3rd width
-    minWidth: 120, // Minimum width to avoid squishing on small screens
-    marginBottom: 16,
-  },
-  infoItem: {
-    marginBottom: 12,
-  },
-  infoLabel: {
-    fontSize: 13,
-    color: COLORS.textLight,
-  },
-  infoValue: {
+  chartTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: COLORS.text,
-    marginTop: 2,
-  },
-  infoSubValue: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginTop: 2,
-  },
-  activityGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  activityBox: {
-    backgroundColor: COLORS.primary + "0D", // Using lighter shades for background
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    width: "30%", // For 3 columns
-  },
-  activityLabel: {
-    fontSize: 12,
-    color: COLORS.textLight,
-    marginBottom: 4,
-  },
-  activityValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.primary, // Specific colors for each stat as per original
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  statCard: {
-    width: "48%", // For 2 columns, adjust for 4 columns on larger screens
-    marginBottom: 16,
-  },
-  statCardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingBottom: 8,
-  },
-  statCardTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: COLORS.textLight,
-  },
-  statIcon: {
-    fontSize: 20,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: COLORS.primary, // Dynamically set color based on stat in actual render
-  },
-  statSubValue: {
-    fontSize: 12,
-    color: COLORS.textLight,
-  },
-  chartsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  chartCard: {
-    width: "100%", // Full width by default
-    marginBottom: 16,
+    marginBottom: 8,
+    textAlign: "center",
   },
   chart: {
     marginVertical: 8,
     borderRadius: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: COLORS.textLight,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+    padding: 20,
+  },
+  errorCard: {
+    width: "90%",
+    padding: 20,
+    alignItems: "center",
+  },
+  errorCardContent: {
+    alignItems: "center",
+  },
+  errorEmoji: {
+    fontSize: 40,
+    marginBottom: 10,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
   },
   noDataText: {
     textAlign: "center",
@@ -1687,20 +1550,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   tableScrollView: {
-    maxHeight: 400, // Limit table height and enable scrolling
+    maxHeight: 400,
   },
   tableHeaderRow: {
     flexDirection: "row",
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     paddingVertical: 12,
-    backgroundColor: COLORS.background, // Slightly different background for header
+    backgroundColor: COLORS.background,
   },
   tableHeaderCell: {
     fontWeight: "600",
     color: COLORS.text,
     paddingHorizontal: 12,
-    width: 120, // Fixed width for each column, adjust as needed
+    width: 120,
   },
   tableRow: {
     flexDirection: "row",
@@ -1712,27 +1575,68 @@ const styles = StyleSheet.create({
   tableCell: {
     color: COLORS.text,
     paddingHorizontal: 12,
-    width: 120, // Fixed width for each column
+    width: 120,
     justifyContent: "center",
-    alignSelf: "center", // Vertically center text in cell
+    alignSelf: "center",
   },
   tableCellContent: {
-    // For cells containing badges
     width: 120,
     paddingHorizontal: 12,
     justifyContent: "center",
-    alignItems: "flex-start", // Align badge to start
+    alignItems: "flex-start",
   },
-  tableCellFontMedium: {
-    fontWeight: "500",
+  residentName: {
+    fontWeight: "600",
+    color: COLORS.primary,
   },
-  tableCellObservations: {
-    color: COLORS.textLight,
-    fontSize: 12,
-    maxWidth: 150, // Limit width for observations
-    paddingHorizontal: 12,
-    alignSelf: "center",
+  normalText: {
+    color: COLORS.success,
+    fontWeight: "bold",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: "80%",
+    maxHeight: "70%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 15,
+    color: COLORS.text,
+  },
+  pickerInsideModal: {
+    width: "100%",
+    height: 150,
+  },
+  pickerItemStyle: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  cancelButton: {
+    marginTop: 20,
+    width: "100%",
+  },
+  cancelButtonText: {
+    color: COLORS.primary,
   },
 })
 
-export default CheckupReportsScreen;
+export default CheckupReportsScreen
