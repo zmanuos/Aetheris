@@ -1,940 +1,1642 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions, Platform, TextInput, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import Config from '../../config/config'; // <-- ¡Aquí está la importación!
-// Importaciones para PDF (si estás en web o un entorno que lo soporte)
-// Estas librerías solo son para Web
-// import html2canvas from 'html2canvas'; // COMENTADO
-// import jsPDF from 'jspdf'; // COMENTADO
-// Esta librería es para Mobile (iOS/Android)
-import RNHTMLtoPDF from 'react-native-html-to-pdf';
+"use client"
 
+import React, { useState, useEffect, useMemo, useCallback } from "react"
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+  Dimensions,
+  Alert,
+  Modal,
+} from "react-native"
+import { Picker } from "@react-native-picker/picker"
+import DateTimePicker from "@react-native-community/datetimepicker"
+import { LineChart } from "react-native-chart-kit"
+import RNHTMLtoPDF from "react-native-html-to-pdf"
 
-// --- Constantes de Estilo ---
-const PRIMARY_GREEN = '#6BB240';
-const LIGHT_GREEN = '#9CD275';
-const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
-const DARK_GRAY = '#333';
-const MEDIUM_GRAY = '#555';
-const LIGHT_GRAY = '#888';
-const VERY_LIGHT_GRAY = '#eee';
-const BACKGROUND_LIGHT = '#fcfcfc';
-const WHITE = '#fff';
-const WARNING_ORANGE = '#fd7e14'; // For values slightly off
-const DANGER_RED = '#DC3545'; // For values significantly off
-const INFO_BLUE = '#0d6efd';
+// IMPORTO EL ARCHIVO DE CONFIGURACIÓN
+import Config from '../../config/config';
 
-const { width } = Dimensions.get('window');
-const IS_LARGE_SCREEN = width > 900; // Define si la pantalla es "grande" (ej. para web/tablet)
+// Using the same color scheme as HomeScreen
+const PRIMARY_ACCENT = "#4A90E2"
+const SECONDARY_ACCENT = "#7ED321"
+const WARNING_COLOR = "#F5A623"
+const DANGER_COLOR = "#D0021B"
+const NEUTRAL_DARK = "#3A4750"
+const NEUTRAL_MEDIUM = "#606C76"
+const NEUTRAL_LIGHT = "#B0BEC5"
+const BACKGROUND_LIGHT = "#F8F9FA"
+const CARD_BACKGROUND = "#FFFFFF"
+const PURPLE = "#8B5CF6"
 
-// --- Mapeo de Nombres de Residente (temporal, en una app real vendrían de otra API) ---
-const residentNames = {
-    "1": "Juan Pérez",
-    "2": "María López",
-    "3": "Carlos Ruiz",
-    "4": "Ana Torres",
-    // "8": "Residente Prueba 8" <-- Eliminado
-};
+const COLORS = {
+  primary: PRIMARY_ACCENT,
+  secondary: NEUTRAL_MEDIUM,
+  success: SECONDARY_ACCENT,
+  warning: WARNING_COLOR,
+  danger: DANGER_COLOR,
+  info: PRIMARY_ACCENT,
+  purple: PURPLE,
+  pink: "#EC4899",
+  background: BACKGROUND_LIGHT,
+  card: CARD_BACKGROUND,
+  text: NEUTRAL_DARK,
+  textLight: NEUTRAL_MEDIUM,
+  border: NEUTRAL_LIGHT,
+  lightBlue: "#DBEAFE",
+  darkText: NEUTRAL_DARK,
+}
 
-const API_ENDPOINT = `${Config.API_BASE_URL}`; // <-- ¡Cambiado aquí!
-const CheckupReportsScreen = () => {
-    // --- Refs para los componentes de reporte para la exportación a PDF (solo relevantes para web) ---
-    const staffReportRef = useRef(null);
-    const residentHistoryReportRef = useRef(null);
-    const imcReportRef = useRef(null);
+const API_BASE_URL = Config.API_BASE_URL;
 
-    // --- Estados para datos dinámicos ---
-    const [chequeosSemanales, setChequeosSemanales] = useState([]);
-    const [staffNames, setStaffNames] = useState({}); // Estado para nombres de personal
-    const [loadingChequeos, setLoadingChequeos] = useState(true);
-    const [loadingStaff, setLoadingStaff] = useState(true); // Inicialmente true, ya que ahora se carga al inicio
-    const [error, setError] = useState(null);
+const screenWidth = Dimensions.get("window").width
 
-    // --- Estados para filtros ---
-    const [selectedResidentId, setSelectedResidentId] = useState(null);
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+const Card = ({ children, style = {} }) => <View style={[styles.card, style]}>{children}</View>
 
-    // --- Fetching de datos de la API (Chequeos Semanales) ---
-    useEffect(() => {
-        const fetchChequeos = async () => {
-            try {
-                setLoadingChequeos(true);
-                setError(null);
-                const response = await fetch(`${API_ENDPOINT}/ChequeoSemanal`, {
-                    headers: {
-                        'accept': 'text/plain'
-                    }
-                });
+const CardHeader = ({ children, style = {} }) => <View style={[styles.cardHeader, style]}>{children}</View>
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setChequeosSemanales(data);
-            } catch (err) {
-                console.error("Error fetching chequeos semanales:", err);
-                setError("No se pudieron cargar los datos de chequeos semanales.");
-                Alert.alert("Error de Conexión", "No se pudieron cargar los datos de chequeos. Asegúrate de que la API de chequeos esté funcionando en " + API_ENDPOINT);
-            } finally {
-                setLoadingChequeos(false);
-            }
-        };
+const CardTitle = ({ children, style = {} }) => <Text style={[styles.cardTitle, style]}>{children}</Text>
 
-        fetchChequeos();
-    }, []); // Se ejecuta solo una vez al montar el componente
+const CardDescription = ({ children, style = {} }) => <Text style={[styles.cardDescription, style]}>{children}</Text>
 
-    // --- Fetching de Nombres de Personal (ahora desde el endpoint general) ---
-    useEffect(() => {
-        const fetchAllStaffNames = async () => {
-            try {
-                setLoadingStaff(true);
-                const response = await fetch(`${API_ENDPOINT}/Personal`, {
-                    headers: {
-                        'accept': '*/*'
-                    }
-                });
+const CardContent = ({ children, style = {} }) => <View style={[styles.cardContent, style]}>{children}</View>
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
+const Button = ({ children, onPress, variant = "default", style = {}, disabled = false }) => {
+  const baseClasses = {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  }
+  const variants = {
+    default: { backgroundColor: COLORS.primary },
+    outline: { borderWidth: 1, borderColor: COLORS.border, backgroundColor: "transparent" },
+    destructive: { backgroundColor: COLORS.danger },
+  }
 
-                const newStaffNames = {};
-                // Asegurarse de que 'personal' sea un array antes de mapear
-                if (data && Array.isArray(data.personal)) {
-                    data.personal.forEach(p => {
-                        if (p.id && p.nombre && p.apellido) {
-                            newStaffNames[p.id] = `${p.nombre} ${p.apellido}`;
-                        }
-                    });
-                }
-                setStaffNames(newStaffNames);
-            } catch (err) {
-                console.error("Error fetching all personal data:", err);
-                setError("No se pudieron cargar los nombres del personal.");
-                Alert.alert("Error de Conexión", "No se pudieron cargar los nombres del personal. Asegúrate de que la API de personal esté funcionando en " + API_ENDPOINT);
-            } finally {
-                setLoadingStaff(false);
-            }
-        };
+  const textVariants = {
+    default: { color: "#FFFFFF" },
+    outline: { color: COLORS.text },
+    destructive: { color: "#FFFFFF" },
+  }
 
-        fetchAllStaffNames();
-    }, []); // Se ejecuta solo una vez al montar el componente
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled}
+      style={[baseClasses, variants[variant], style, disabled && { opacity: 0.5 }]}
+    >
+      {typeof children === "string" ? (
+        <Text style={[styles.buttonText, textVariants[variant]]}>{children}</Text>
+      ) : (
+        children
+      )}
+    </TouchableOpacity>
+  )
+}
 
-    // --- Lógica de Reportes usando useMemo para optimización ---
+const Badge = ({ children, variant = "default", style = {} }) => {
+  const variants = {
+    default: { backgroundColor: COLORS.primary + "1A", color: COLORS.primary },
+    destructive: { backgroundColor: COLORS.danger + "1A", color: COLORS.danger },
+    secondary: { backgroundColor: COLORS.secondary + "1A", color: COLORS.secondary },
+    success: { backgroundColor: COLORS.success + "1A", color: COLORS.success },
+  }
 
-    // Reporte 1: Chequeos Completados por Personal
-    const staffActivityReport = useMemo(() => {
-        if (!chequeosSemanales.length) return [];
+  return (
+    <Text
+      style={[
+        styles.badge,
+        { backgroundColor: variants[variant].backgroundColor, color: variants[variant].color },
+        style,
+      ]}
+    >
+      {children}
+    </Text>
+  )
+}
 
-        const activity = {};
-        const start = startDate ? new Date(startDate).getTime() : 0;
-        const end = endDate ? new Date(endDate).getTime() : Date.now();
+const Select = ({ selectedValue, onValueChange, children, style = {}, placeholder = "Seleccionar una opción" }) => {
+  const [modalVisible, setModalVisible] = useState(false);
 
-        chequeosSemanales.forEach(chequeo => {
-            const chequeoDate = new Date(chequeo.fechaChequeo).getTime();
-            if (chequeoDate >= start && chequeoDate <= end) {
-                activity[chequeo.personalId] = (activity[chequeo.personalId] || 0) + 1;
-            }
-        });
-        return Object.entries(activity).map(([personalId, count]) => ({
-            personalId,
-            name: staffNames[personalId] || `Personal ${personalId}`, // Usar nombres dinámicos
-            count
-        })).sort((a, b) => b.count - a.count); // Ordenar de mayor a menor
-    }, [chequeosSemanales, startDate, endDate, staffNames]); // Añadir staffNames a las dependencias
+  const selectedItemLabel = useMemo(() => {
+    const foundChild = React.Children.toArray(children).find(child => child.props.value === selectedValue);
+    return foundChild ? foundChild.props.label : placeholder;
+  }, [selectedValue, children, placeholder]);
 
-    // Reporte 2: Historial de Chequeos Semanales por Residente
-    const residentCheckupHistory = useMemo(() => {
-        if (!selectedResidentId || !chequeosSemanales.length) return { history: [], chartData: null };
-
-        const history = chequeosSemanales
-            .filter(chequeo => String(chequeo.residenteId) === String(selectedResidentId))
-            .sort((a, b) => new Date(a.fechaChequeo) - new Date(b.fechaChequeo)); // Ordenar por fecha ascendente
-
-        if (history.length === 0) return { history: [], chartData: null };
-
-        // Preparar datos para gráficos
-        const labels = history.map(h => new Date(h.fechaChequeo).toLocaleDateString());
-        const spo2Data = history.map(h => h.spo2);
-        const pulsoData = history.map(h => h.pulso);
-        const tempCorpData = history.map(h => h.temperaturaCorporal);
-        const pesoData = history.map(h => h.peso);
-        const imcData = history.map(h => h.imc);
-
-        return {
-            history,
-            chartData: {
-                labels,
-                spo2Data,
-                pulsoData,
-                tempCorpData,
-                pesoData,
-                imcData
-            }
-        };
-    }, [chequeosSemanales, selectedResidentId]);
-
-    // Reporte 3: Resumen de IMC por Residente
-    const imcSummaryReport = useMemo(() => {
-        if (!chequeosSemanales.length) return [];
-
-        const latestCheckups = {};
-
-        // Encontrar el chequeo más reciente para cada residente
-        chequeosSemanales.forEach(chequeo => {
-            const currentLatest = latestCheckups[chequeo.residenteId];
-            if (!currentLatest || new Date(chequeo.fechaChequeo) > new Date(currentLatest.fechaChequeo)) {
-                latestCheckups[chequeo.residenteId] = chequeo;
-            }
-        });
-
-        const imcReport = Object.values(latestCheckups).map(chequeo => {
-            let classification = '';
-            // Rangos de IMC estándar de la OMS
-            if (chequeo.imc < 18.5) {
-                classification = 'Bajo Peso';
-            } else if (chequeo.imc >= 18.5 && chequeo.imc < 24.9) {
-                classification = 'Normal';
-            } else if (chequeo.imc >= 25 && chequeo.imc < 29.9) {
-                classification = 'Sobrepeso';
-            } else {
-                classification = 'Obesidad';
-            }
-            return {
-                residenteId: chequeo.residenteId,
-                residenteName: residentNames[chequeo.residenteId] || `Residente ${chequeo.residenteId}`,
-                imc: chequeo.imc?.toFixed(2) || 'N/A', // Manejar IMC nulo o indefinido
-                classification,
-                fechaChequeo: new Date(chequeo.fechaChequeo).toLocaleDateString()
-            };
-        }).sort((a, b) => a.residenteName.localeCompare(b.residenteName)); // Ordenar por nombre de residente
-
-        return imcReport;
-    }, [chequeosSemanales]);
-
-    // Función para determinar el color de la clasificación IMC
-    const getIMCColor = useCallback((classification) => {
-        switch (classification) {
-            case 'Bajo Peso':
-                return WARNING_ORANGE;
-            case 'Normal':
-                return PRIMARY_GREEN;
-            case 'Sobrepeso':
-                return WARNING_ORANGE;
-            case 'Obesidad':
-                return DANGER_RED;
-            default:
-                return MEDIUM_GRAY;
-        }
-    }, []);
-
-    // Obtener una lista única de residentes para el selector
-    const uniqueResidentIds = useMemo(() => {
-        const ids = new Set(chequeosSemanales.map(c => String(c.residenteId)));
-        // Solo incluir IDs que tienen un nombre definido en residentNames
-        return Array.from(ids)
-            .filter(id => residentNames[id]) // Filtra para solo incluir residentes que tienen un nombre
-            .sort((a, b) => {
-                const nameA = residentNames[a] || `Residente ${a}`;
-                const nameB = residentNames[b] || `Residente ${b}`;
-                return nameA.localeCompare(nameB);
-            });
-    }, [chequeosSemanales]);
-
-
-    // --- Funciones para exportar a PDF ---
-
-    // Helper para generar HTML de los reportes para mobile
-    const generateStaffReportHtml = useCallback(() => {
-        let html = `
-            <h1>Reporte de Chequeos Completados por Personal</h1>
-            <table style="width:100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color:#f2f2f2;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Personal</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Chequeos</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        staffActivityReport.forEach(item => {
-            html += `
-                <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${item.count}</td>
-                </tr>
-            `;
-        });
-        html += `
-                </tbody>
-            </table>
-        `;
-        return html;
-    }, [staffActivityReport]);
-
-    const generateResidentHistoryHtml = useCallback(() => {
-        if (!selectedResidentId || !residentCheckupHistory.history.length) return '';
-
-        const residentName = residentNames[selectedResidentId] || `Residente ${selectedResidentId}`;
-        let html = `
-            <h1>Historial de Chequeos Semanales para ${residentName}</h1>
-            <table style="width:100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color:#f2f2f2;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Fecha</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">SpO2 (%)</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Pulso (bpm)</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Temp (°C)</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Peso (kg)</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Altura (cm)</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">IMC</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Observaciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        residentCheckupHistory.history.forEach(record => {
-            html += `
-                <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${new Date(record.fechaChequeo).toLocaleDateString()}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.spo2}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.pulso}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.temperaturaCorporal}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.peso}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.altura}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${record.imc?.toFixed(2) || 'N/A'}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${record.observaciones || 'Sin observaciones.'}</td>
-                </tr>
-            `;
-        });
-        html += `
-                </tbody>
-            </table>
-        `;
-        return html;
-    }, [selectedResidentId, residentCheckupHistory]);
-
-    const generateImcReportHtml = useCallback(() => {
-        let html = `
-            <h1>Resumen de IMC por Residente</h1>
-            <table style="width:100%; border-collapse: collapse;">
-                <thead>
-                    <tr style="background-color:#f2f2f2;">
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Residente</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">IMC</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Clasificación</th>
-                        <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Último Chequeo</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-        imcSummaryReport.forEach(item => {
-            const imcColor = getIMCColor(item.classification);
-            html += `
-                <tr>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${item.residenteName}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${item.imc}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd; color: ${imcColor}; font-weight: bold;">${item.classification}</td>
-                    <td style="padding: 8px; border: 1px solid #ddd;">${item.fechaChequeo}</td>
-                </tr>
-            `;
-        });
-        html += `
-                </tbody>
-            </table>
-        `;
-        return html;
-    }, [imcSummaryReport, getIMCColor]);
-
-    const exportReportToPdf = useCallback(async (reportRef, fileName, getHtmlContentFunction) => {
-        if (Platform.OS === 'web') {
-            // alert("La exportación a PDF para Web ha sido temporalmente deshabilitada para depuración."); // Puedes descomentar esto para avisar al usuario
-            // return; // COMENTAR O ELIMINAR ESTO SI DESCOMENTAS html2canvas/jspdf
-            // if (reportRef.current) {
-            //     try {
-            //         const canvas = await html2canvas(reportRef.current, {
-            //             scale: 2,
-            //             useCORS: true,
-            //             allowTaint: true,
-            //         });
-            //         const imgData = canvas.toDataURL('image/png');
-            //         const pdf = new jsPDF('p', 'mm', 'a4');
-            //         const imgWidth = 210;
-            //         const pageHeight = 297;
-            //         const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            //         let heightLeft = imgHeight;
-            //         let position = 0;
-
-            //         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            //         heightLeft -= pageHeight;
-
-            //         while (heightLeft >= 0) {
-            //             position = heightLeft - imgHeight;
-            //             pdf.addPage();
-            //             pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            //             heightLeft -= pageHeight;
-            //         }
-            //         pdf.save(`${fileName}.pdf`);
-            //     } catch (error) {
-            //         console.error("Error al generar PDF en web:", error);
-            //         Alert.alert("Error al Exportar (Web)", "No se pudo generar el PDF. Asegúrate de que todo el contenido esté renderizado correctamente. " + error.message);
-            //     }
-            // } else {
-            //     Alert.alert("Error al Exportar (Web)", "El contenido del reporte no está disponible para exportar.");
-            // }
-            Alert.alert("Funcionalidad Deshabilitada", "La exportación a PDF para web está temporalmente deshabilitada para depuración.");
-        } else { // Mobile (iOS/Android)
-            try {
-                const htmlContent = getHtmlContentFunction();
-                if (!htmlContent) {
-                    Alert.alert("Error al Exportar (Móvil)", "No hay datos para generar el PDF.");
-                    return;
-                }
-                const options = {
-                    html: `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <meta charset="utf-8">
-                            <title>${fileName}</title>
-                            <style>
-                                body { font-family: sans-serif; margin: 20px; }
-                                h1 { color: ${PRIMARY_GREEN}; text-align: center; margin-bottom: 20px; }
-                                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                                th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
-                                th { background-color: #f2f2f2; }
-                                .warning { color: ${WARNING_ORANGE}; font-weight: bold; }
-                                .danger { color: ${DANGER_RED}; font-weight: bold; }
-                                .normal { color: ${PRIMARY_GREEN}; font-weight: bold; }
-                            </style>
-                        </head>
-                        <body>
-                            ${htmlContent}
-                        </body>
-                        </html>
-                    `,
-                    fileName: fileName,
-                    directory: 'Download', // Esto intentará guardar en la carpeta de Descargas del dispositivo
-                    base64: false, // No necesitamos la representación base64
-                };
-
-                const file = await RNHTMLtoPDF.convert(options);
-                if (file && file.filePath) {
-                    Alert.alert("PDF Guardado", `El PDF se ha guardado en: ${file.filePath}`);
-                    // En iOS, el archivo se abre o se ofrece para compartir automáticamente.
-                    // En Android, se guarda en el directorio especificado.
-                } else {
-                    Alert.alert("Error", "No se pudo obtener la ruta del archivo PDF.");
-                }
-            } catch (error) {
-                console.error("Error al generar PDF en móvil:", error);
-                Alert.alert("Error al Exportar (Móvil)", `No se pudo generar el PDF: ${error.message}. Asegúrate de que la librería esté correctamente instalada y vinculada.`);
-            }
-        }
-    }, [generateStaffReportHtml, generateResidentHistoryHtml, generateImcReportHtml, getIMCColor, staffActivityReport, residentCheckupHistory, imcSummaryReport, selectedResidentId, residentNames]);
-
-
-    // --- Renderizado Condicional ---
-    const overallLoading = loadingChequeos || loadingStaff;
-
-    if (overallLoading) {
-        return (
-            <View style={styles.centeredContainer}>
-                <ActivityIndicator size="large" color={PRIMARY_GREEN} />
-                <Text style={styles.loadingText}>Cargando datos de chequeos y personal...</Text>
-            </View>
-        );
-    }
-
-    if (error) {
-        return (
-            <View style={styles.centeredContainer}>
-                <Ionicons name="alert-circle-outline" size={50} color={DANGER_RED} />
-                <Text style={styles.errorText}>{error}</Text>
-                <Text style={styles.errorDetail}>Por favor, revisa tu conexión y asegúrate de que la API esté activa.</Text>
-            </View>
-        );
-    }
-
+  if (Platform.OS === 'web') {
     return (
-        <ScrollView style={styles.container}>
-            <Text style={styles.header}>Reportes de Chequeos</Text>
-
-            {/* Sección de Filtros Globales (para actividad del personal) */}
-            <View style={styles.filterSection}>
-                <Text style={styles.filterTitle}>Filtrar Actividad del Personal por Fecha:</Text>
-                <View style={styles.dateInputContainer}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Fecha Inicio (YYYY-MM-DD)"
-                        value={startDate}
-                        onChangeText={setStartDate}
-                        keyboardType={Platform.OS === 'web' ? 'default' : 'numeric'}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Fecha Fin (YYYY-MM-DD)"
-                        value={endDate}
-                        onChangeText={setEndDate}
-                        keyboardType={Platform.OS === 'web' ? 'default' : 'numeric'}
-                    />
-                </View>
-            </View>
-
-
-            {/* --- Reporte 1: Chequeos Completados por Personal --- */}
-            <View style={styles.reportSection}>
-                <Text style={styles.reportTitle}>Chequeos Completados por Personal</Text>
-                {staffActivityReport.length > 0 ? (
-                    // El contenido del reporte que queremos exportar
-                    <View ref={staffReportRef}>
-                        {staffActivityReport.map(item => (
-                            <View key={item.personalId} style={styles.staffActivityItem}>
-                                <Text style={styles.staffName}>{item.name}</Text>
-                                <Text style={styles.staffCount}>{item.count} chequeos</Text>
-                            </View>
-                        ))}
-                    </View>
-                ) : (
-                    <Text style={styles.noDataText}>No hay datos de chequeos en el período seleccionado.</Text>
-                )}
-                {staffActivityReport.length > 0 && (
-                    <TouchableOpacity
-                        style={styles.exportButton}
-                        onPress={() => exportReportToPdf(staffReportRef, 'Reporte_Actividad_Personal', generateStaffReportHtml)}
-                    >
-                        <Ionicons name="download-outline" size={20} color={WHITE} />
-                        <Text style={styles.exportButtonText}>Exportar a PDF</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-
-            {/* --- Reporte 2: Historial de Chequeos Semanales por Residente --- */}
-            <View style={styles.reportSection}>
-                <Text style={styles.reportTitle}>Historial de Chequeos Semanales por Residente</Text>
-                <Text style={styles.filterTitle}>Seleccionar Residente:</Text>
-                <View style={styles.residentPickerContainer}>
-                    {uniqueResidentIds.length > 0 ? (
-                        uniqueResidentIds.map(resId => (
-                            <TouchableOpacity
-                                key={resId}
-                                style={[
-                                    styles.residentPickerItem,
-                                    selectedResidentId === resId && styles.residentPickerItemSelected
-                                ]}
-                                onPress={() => setSelectedResidentId(resId)}
-                            >
-                                <Text style={[
-                                    styles.residentPickerItemText,
-                                    selectedResidentId === resId && styles.residentPickerItemSelectedText
-                                ]}>
-                                    {residentNames[resId] || `Residente ${resId}`}
-                                </Text>
-                            </TouchableOpacity>
-                        ))
-                    ) : (
-                        <Text style={styles.noDataText}>No hay residentes con chequeos disponibles.</Text>
-                    )}
-                </View>
-
-                {selectedResidentId && residentCheckupHistory.history.length > 0 ? (
-                    <View>
-                        {/* El contenido del reporte que queremos exportar */}
-                        <View ref={residentHistoryReportRef}>
-                            <Text style={styles.subTitle}>Historial para {residentNames[selectedResidentId] || `Residente ${selectedResidentId}`}:</Text>
-                            <View style={styles.chartPlaceholder}>
-                                <Text style={styles.chartPlaceholderText}>
-                                    Gráfico de Tendencias (spo2, pulso, temperaturaCorporal, peso, imc)
-                                </Text>
-                                <Text style={styles.chartPlaceholderSubText}>
-                                    Últimos valores: SpO2 {residentCheckupHistory.chartData.spo2Data.slice(-1)[0]}%, Pulso {residentCheckupHistory.chartData.pulsoData.slice(-1)[0]} bpm, Temp {residentCheckupHistory.chartData.tempCorpData.slice(-1)[0]}°C
-                                </Text>
-                            </View>
-
-                            {residentCheckupHistory.history.map((record, index) => (
-                                <View key={record.id || index} style={styles.historyItem}>
-                                    <Text style={styles.historyDate}>Fecha: {new Date(record.fechaChequeo).toLocaleDateString()} {new Date(record.fechaChequeo).toLocaleTimeString()}</Text>
-                                    <Text style={styles.historyDetail}>SpO2: {record.spo2}%</Text>
-                                    <Text style={styles.historyDetail}>Pulso: {record.pulso} bpm</Text>
-                                    <Text style={styles.historyDetail}>Temp: {record.temperaturaCorporal}°C</Text>
-                                    <Text style={styles.historyDetail}>Peso: {record.peso} kg</Text>
-                                    <Text style={styles.historyDetail}>Altura: {record.altura} cm</Text>
-                                    <Text style={styles.historyDetail}>IMC: {record.imc?.toFixed(2) || 'N/A'}</Text>
-                                    <Text style={styles.historyObservation}>Obs: {record.observaciones || 'Sin observaciones.'}</Text>
-                                </View>
-                            ))}
-                        </View>
-                        <TouchableOpacity
-                            style={styles.exportButton}
-                            onPress={() => exportReportToPdf(residentHistoryReportRef, `Historial_${residentNames[selectedResidentId] || `Residente_${selectedResidentId}`}`, generateResidentHistoryHtml)}
-                        >
-                            <Ionicons name="download-outline" size={20} color={WHITE} />
-                            <Text style={styles.exportButtonText}>Exportar a PDF</Text>
-                        </TouchableOpacity>
-                    </View>
-                ) : (
-                    <Text style={styles.noDataText}>Selecciona un residente para ver su historial.</Text>
-                )}
-            </View>
-
-            {/* --- Reporte 3: Resumen de IMC por Residente --- */}
-            <View style={styles.reportSection}>
-                <Text style={styles.reportTitle}>Resumen de IMC por Residente</Text>
-                {imcSummaryReport.length > 0 ? (
-                    // El contenido del reporte que queremos exportar
-                    <View ref={imcReportRef}>
-                        {imcSummaryReport.map(item => (
-                            <View key={item.residenteId} style={styles.imcItem}>
-                                <Text style={styles.imcResidenteName}>{item.residenteName}</Text>
-                                <View style={styles.imcDetails}>
-                                    <Text style={styles.imcValue}>IMC: {item.imc}</Text>
-                                    <Text style={[styles.imcClassification, { color: getIMCColor(item.classification) }]}>
-                                        {item.classification}
-                                    </Text>
-                                </View>
-                                <Text style={styles.imcDate}>Último chequeo: {item.fechaChequeo}</Text>
-                            </View>
-                        ))}
-                    </View>
-                ) : (
-                    <Text style={styles.noDataText}>No hay datos de IMC para mostrar.</Text>
-                )}
-                {imcSummaryReport.length > 0 && (
-                    <TouchableOpacity
-                        style={styles.exportButton}
-                        onPress={() => exportReportToPdf(imcReportRef, 'Reporte_IMC_Residente', generateImcReportHtml)}
-                    >
-                        <Ionicons name="download-outline" size={20} color={WHITE} />
-                        <Text style={styles.exportButtonText}>Exportar a PDF</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-
-            <View style={{ height: 50 }} />
-        </ScrollView>
+      <Picker
+        selectedValue={selectedValue}
+        onValueChange={onValueChange}
+        style={[styles.select, style]}
+      >
+        {children}
+      </Picker>
     );
+  }
+
+  // Mobile (iOS/Android) implementation
+  return (
+    <View>
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        style={[styles.input, style]}
+      >
+        <Text style={selectedValue ? styles.inputText : styles.inputPlaceholder}>
+          {selectedItemLabel}
+        </Text>
+      </TouchableOpacity>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Seleccione una opción</Text>
+            <Picker
+              selectedValue={selectedValue}
+              onValueChange={(itemValue) => {
+                onValueChange(itemValue);
+                setModalVisible(false);
+              }}
+              style={styles.pickerInsideModal}
+              itemStyle={Platform.OS === 'ios' ? styles.pickerItemStyle : {}}
+            >
+              {children}
+            </Picker>
+            <Button onPress={() => setModalVisible(false)} variant="outline" style={styles.cancelButton}>
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </Button>
+          </View>
+        </View>
+      </Modal>
+    </View>
+  );
 };
+
+const SelectItem = ({ label, value }) => <Picker.Item label={label} value={value} />
+
+import { TextInput } from "react-native"
+
+const Input = ({ type = "text", value, onChangeText, style = {}, ...props }) => {
+  const [showDatePicker, setShowDatePicker] = useState(false)
+
+  const handleDateChange = (event, selectedDate) => {
+    setShowDatePicker(Platform.OS === "ios")
+    if (event.type === "set" && selectedDate) {
+      onChangeText(selectedDate.toISOString().split("T")[0])
+    }
+  }
+
+  if (type === "date") {
+    return (
+      <View>
+        <TouchableOpacity onPress={() => setShowDatePicker(true)} style={[styles.input, style]}>
+          <Text style={value ? styles.inputText : styles.inputPlaceholder}>{value ? value : "Seleccionar Fecha"}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={value ? new Date(value) : new Date()}
+            mode="date"
+            display="default"
+            onChange={handleDateChange}
+          />
+        )}
+      </View>
+    )
+  }
+
+  return (
+    <TextInput
+      style={[styles.input, style]}
+      value={value}
+      onChangeText={onChangeText}
+      keyboardType={type === "number" ? "numeric" : "default"}
+      {...props}
+    />
+  )
+}
+
+const CheckupReportsScreen = () => {
+  const [residentes, setResidentes] = useState([])
+  const [chequeos, setChequeos] = useState([])
+  const [selectedResidente, setSelectedResidente] = useState(null)
+  const [selectedResidenteId, setSelectedResidenteId] = useState("all")
+  const [dateRange, setDateRange] = useState("mensual") // Default to mensual
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const [residentesResponse, chequeosResponse] = await Promise.all([
+        fetch(`${API_BASE_URL}/Residente`, {
+          method: "GET",
+          headers: {
+            accept: "*/*",
+          },
+        }),
+        fetch(`${API_BASE_URL}/ChequeoSemanal`, {
+          method: "GET",
+          headers: {
+            accept: "text/plain",
+          },
+        }),
+      ])
+
+      if (!residentesResponse.ok || !chequeosResponse.ok) {
+        throw new Error("Error al obtener los datos del servidor")
+      }
+
+      const residentesData = await residentesResponse.json()
+      const chequeosData = await chequeosResponse.json()
+
+      setResidentes(residentesData.data || residentesData)
+      setChequeos(chequeosData)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredChequeos = useMemo(() => {
+    let filtered = chequeos
+
+    if (selectedResidenteId !== "all") {
+      filtered = filtered.filter((c) => c.residenteId === selectedResidenteId)
+    }
+
+    const now = new Date()
+    let startDate
+    let endDate = now
+
+    switch (dateRange) {
+      case "mensual":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+        break
+      case "trimestral":
+        startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+        break
+      default: // Fallback, e.g., if dateRange is initially not 'mensual' or 'trimestral'
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) // Default to monthly
+        break
+    }
+
+    return filtered.filter((c) => {
+      const checkDate = new Date(c.fechaChequeo)
+      return checkDate >= startDate && checkDate <= endDate
+    })
+  }, [chequeos, selectedResidenteId, dateRange])
+
+  const timeSeriesData = useMemo(() => {
+    return filteredChequeos
+      .sort((a, b) => new Date(a.fechaChequeo).getTime() - new Date(b.fechaChequeo).getTime())
+      .map((c) => {
+        const residente = residentes.find((r) => r.id_residente.toString() === c.residenteId)
+        return {
+          fecha: new Date(c.fechaChequeo).toLocaleDateString("es-ES", { month: "short", day: "numeric" }),
+          fechaCompleta: new Date(c.fechaChequeo).toLocaleDateString("es-ES"),
+          spo2: c.spo2,
+          pulso: c.pulso,
+          temperatura: c.temperaturaCorporal,
+          peso: c.peso,
+          imc: c.imc,
+          residente: residente ? `${residente.nombre} ${residente.apellido}` : `Residente ${c.residenteId}`,
+          residenteId: c.residenteId,
+          isNormal:
+            c.spo2 >= 95 &&
+            c.pulso >= 60 &&
+            c.pulso <= 100 &&
+            c.temperaturaCorporal >= 36.1 &&
+            c.temperaturaCorporal <= 37.2,
+          observaciones: c.observaciones,
+        }
+      })
+  }, [filteredChequeos, residentes])
+
+  const stats = useMemo(() => {
+    if (filteredChequeos.length === 0) return null
+
+    const latest = filteredChequeos[filteredChequeos.length - 1]
+    const avg = {
+      spo2: (filteredChequeos.reduce((sum, c) => sum + c.spo2, 0) / filteredChequeos.length).toFixed(1),
+      pulso: Math.round(filteredChequeos.reduce((sum, c) => sum + c.pulso, 0) / filteredChequeos.length),
+      temperatura: (
+        filteredChequeos.reduce((sum, c) => sum + c.temperaturaCorporal, 0) / filteredChequeos.length
+      ).toFixed(1),
+      imc: (filteredChequeos.reduce((sum, c) => sum + c.imc, 0) / filteredChequeos.length).toFixed(1),
+    }
+
+    const alertas = filteredChequeos.filter(
+      (c) =>
+        c.spo2 < 95 || c.pulso < 60 || c.pulso > 100 || c.temperaturaCorporal < 36.1 || c.temperaturaCorporal > 37.2,
+    ).length
+
+    return { latest, avg, alertas, total: filteredChequeos.length }
+  }, [filteredChequeos])
+
+  const handleResidenteChange = (residenteId) => {
+    setSelectedResidenteId(residenteId)
+    const residente = residentes.find((r) => r.id_residente.toString() === residenteId)
+    setSelectedResidente(residente || null)
+  }
+
+  const createIndividualLineChart = (data, labels, title, color, unit, minValue = null, maxValue = null) => {
+    if (!data || data.length === 0) return ""
+
+    const width = 220
+    const height = 120
+    const padding = 30
+    const chartWidth = width - padding * 2
+    const chartHeight = height - padding * 2
+
+    const max = maxValue !== null ? maxValue : Math.max(...data)
+    const min = minValue !== null ? minValue : Math.min(...data)
+    const range = max - min || 1
+
+    const points = data
+      .map((value, index) => {
+        const x = padding + (index * chartWidth) / (data.length - 1)
+        const y = padding + chartHeight - ((value - min) / range) * chartHeight
+        return `${x},${y}`
+      })
+      .join(" ")
+
+    const areaPoints =
+      `${padding},${padding + chartHeight} ` + points + ` ${padding + chartWidth},${padding + chartHeight}`
+
+    return `
+      <div class="individual-chart">
+        <h4>${title}</h4>
+        <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+          <defs>
+            <linearGradient id="gradient-${title.replace(/\s+/g, "").replace(/[()]/g, "")}" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:${color};stop-opacity:0.4" />
+              <stop offset="100%" style="stop-color:${color};stop-opacity:0.05" />
+            </linearGradient>
+          </defs>
+
+          <defs>
+            <pattern id="grid-${title.replace(/\s+/g, "")}" width="10" height="10" patternUnits="userSpaceOnUse">
+              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="${NEUTRAL_LIGHT}" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#grid-${title.replace(/\s+/g, "")})" opacity="0.3"/>
+
+          <polygon points="${areaPoints}" fill="url(#gradient-${title.replace(/\s+/g, "").replace(/[()]/g, "")})" />
+
+          <polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+          ${data
+            .map((value, index) => {
+              const x = padding + (index * chartWidth) / (data.length - 1)
+              const y = padding + chartHeight - ((value - min) / range) * chartHeight
+              return `<circle cx="${x}" cy="${y}" r="3" fill="${color}" stroke="white" stroke-width="1.5"/>`
+            })
+            .join("")}
+
+          <text x="5" y="${padding + 5}" text-anchor="start" font-size="9" fill="${NEUTRAL_MEDIUM}">${max.toFixed(1)}${unit}</text>
+          <text x="5" y="${padding + chartHeight}" text-anchor="start" font-size="9" fill="${NEUTRAL_MEDIUM}">${min.toFixed(1)}${unit}</text>
+
+          ${labels
+            .map((label, index) => {
+              if (index === 0 || index === labels.length - 1) {
+                const x = padding + (index * chartWidth) / (data.length - 1)
+                return `<text x="${x}" y="${height - 5}" text-anchor="middle" font-size="8" fill="${NEUTRAL_MEDIUM}">${label}</text>`
+              }
+              return ""
+            })
+            .join("")}
+        </svg>
+        <div class="chart-stats">
+          <span class="current-value">Actual: <strong>${data[data.length - 1]}${unit}</strong></span>
+          <span class="avg-value">Promedio: <strong>${(data.reduce((a, b) => a + b, 0) / data.length).toFixed(1)}${unit}</strong></span>
+        </div>
+      </div>
+    `
+  }
+
+  const createSimpleChart = (data, label, color = PRIMARY_ACCENT) => {
+    if (!data || data.length === 0) return ""
+
+    const max = Math.max(...data)
+    const min = Math.min(...data)
+    const range = max - min || 1
+
+    return data
+      .map((value, index) => {
+        const height = Math.round(((value - min) / range) * 20) + 5
+        return `<div class="chart-bar" style="height: ${height}px; background-color: ${color}; width: 20px; display: inline-block; margin: 0 2px; vertical-align: bottom;"></div>`
+      })
+      .join("")
+  }
+
+  const generatePdfContent = useCallback(() => {
+    const rangeText =
+        dateRange === "mensual" ? "Último mes" : "Último trimestre"
+
+    const residentHeaderText = selectedResidente
+      ? `${selectedResidente.nombre} ${selectedResidente.apellido}`
+      : `Todos los Residentes`
+
+    const statsHtml = stats
+      ? `
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">O₂</span>
+                    <div class="stat-info">
+                        <p class="stat-label">SpO2 Promedio</p>
+                        <p class="stat-value">${stats.avg.spo2}%</p>
+                        <p class="stat-trend">Último: ${stats.latest.spo2}%</p>
+                    </div>
+                </div>
+                <div class="mini-chart">
+                    ${createSimpleChart(
+                      timeSeriesData.map((d) => d.spo2),
+                      "SpO2",
+                      PRIMARY_ACCENT,
+                    )}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">♥</span>
+                    <div class="stat-info">
+                        <p class="stat-label">Pulso Promedio</p>
+                        <p class="stat-value">${stats.avg.pulso} lpm</p>
+                        <p class="stat-trend">Último: ${stats.latest.pulso} lpm</p>
+                    </div>
+                </div>
+                <div class="mini-chart">
+                    ${createSimpleChart(
+                      timeSeriesData.map((d) => d.pulso),
+                      "Pulso",
+                      DANGER_COLOR,
+                    )}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">°C</span>
+                    <div class="stat-info">
+                        <p class="stat-label">Temperatura Promedio</p>
+                        <p class="stat-value">${stats.avg.temperatura}°C</p>
+                        <p class="stat-trend">Última: ${stats.latest.temperaturaCorporal}°C</p>
+                    </div>
+                </div>
+                <div class="mini-chart">
+                    ${createSimpleChart(
+                      timeSeriesData.map((d) => d.temperatura),
+                      "Temperatura",
+                      WARNING_COLOR,
+                    )}
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span class="stat-icon">IMC</span>
+                    <div class="stat-info">
+                        <p class="stat-label">IMC Promedio</p>
+                        <p class="stat-value">${stats.avg.imc}</p>
+                        <p class="stat-trend">Último: ${stats.latest.imc.toFixed(1)}</p>
+                    </div>
+                </div>
+                <div class="mini-chart">
+                    ${createSimpleChart(
+                      timeSeriesData.map((d) => d.imc),
+                      "IMC",
+                      PURPLE,
+                    )}
+                </div>
+            </div>
+        </div>
+    `
+      : '<div class="no-data"><p>No hay promedios disponibles para el período seleccionado.</p></div>'
+
+    const trendVisualization =
+      timeSeriesData.length > 0
+        ? `
+        <div class="trend-section">
+            <h2>Análisis Individual de Signos Vitales</h2>
+            <div class="individual-charts-grid">
+                ${createIndividualLineChart(
+                  timeSeriesData.map((d) => d.spo2),
+                  timeSeriesData.map((d) => d.fecha),
+                  "Saturación de Oxígeno (SpO2)",
+                  PRIMARY_ACCENT,
+                  "%",
+                  90,
+                  100,
+                )}
+                ${createIndividualLineChart(
+                  timeSeriesData.map((d) => d.pulso),
+                  timeSeriesData.map((d) => d.fecha),
+                  "Frecuencia Cardíaca",
+                  DANGER_COLOR,
+                  " lpm",
+                  50,
+                  120,
+                )}
+                ${createIndividualLineChart(
+                  timeSeriesData.map((d) => d.temperatura),
+                  timeSeriesData.map((d) => d.fecha),
+                  "Temperatura Corporal",
+                  WARNING_COLOR,
+                  "°C",
+                  35,
+                  39,
+                )}
+                ${createIndividualLineChart(
+                  timeSeriesData.map((d) => d.peso),
+                  timeSeriesData.map((d) => d.fecha),
+                  "Peso Corporal",
+                  SECONDARY_ACCENT,
+                  " kg",
+                )}
+                ${createIndividualLineChart(
+                  timeSeriesData.map((d) => d.imc),
+                  timeSeriesData.map((d) => d.fecha),
+                  "Índice de Masa Corporal",
+                  PURPLE,
+                  "",
+                  15,
+                  35,
+                )}
+            </div>
+        </div>
+    `
+        : ""
+
+    const tableRows =
+      timeSeriesData.length > 0
+        ? timeSeriesData
+            .slice()
+            .reverse()
+            .map(
+              (item) => `
+      <tr>
+        <td>${item.fechaCompleta}</td>
+        <td class="resident-name">${item.residente}</td>
+        <td class="${item.spo2 >= 95 ? "normal" : "alert"}">${item.spo2}%</td>
+        <td class="${item.pulso >= 60 && item.pulso <= 100 ? "normal" : "alert"}">${item.pulso} lpm</td>
+        <td class="${item.temperatura >= 36.1 && item.temperatura <= 37.2 ? "normal" : "alert"}">${item.temperatura}°C</td>
+        <td>${item.peso} kg</td>
+        <td>${item.imc}</td>
+        <td class="${item.isNormal ? "normal" : "alert"}">${item.isNormal ? "Normal" : "Atención"}</td>
+        <td class="observations">${item.observaciones || "Sin observaciones"}</td>
+      </tr>
+    `,
+            )
+            .join("")
+        : `<tr><td colspan="9" class="no-data-cell">No hay datos en el historial para el rango de fechas seleccionado.</td></tr>`
+
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <meta charset="UTF-8">
+          <title>Reporte de Chequeos de Salud</title>
+          <style>
+              @page {
+                  margin: 40px;
+                  size: A4;
+              }
+
+              body {
+                  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                  margin: 0;
+                  padding: 0;
+                  color: ${NEUTRAL_DARK};
+                  background-color: #ffffff;
+                  line-height: 1.6;
+                  font-size: 14px;
+              }
+
+              .container {
+                  max-width: 100%;
+                  margin: 0 auto;
+                  padding: 20px;
+              }
+
+              .header {
+                  text-align: center;
+                  margin-bottom: 40px;
+                  padding: 40px 0;
+                  background: linear-gradient(135deg, ${PRIMARY_ACCENT}15, ${BACKGROUND_LIGHT});
+                  border-radius: 15px;
+                  border: 2px solid ${PRIMARY_ACCENT}30;
+                  position: relative;
+              }
+
+              .logo {
+                  max-width: 350px;
+                  max-height: 150px;
+                  margin-bottom: 20px;
+                  display: block;
+                  margin-left: auto;
+                  margin-right: auto;
+              }
+
+              h1 {
+                  font-size: 32px;
+                  color: ${PRIMARY_ACCENT};
+                  margin: 0 0 15px 0;
+                  font-weight: 700;
+                  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+              }
+
+              .subtitle {
+                  font-size: 18px;
+                  color: ${NEUTRAL_MEDIUM};
+                  margin: 0;
+                  font-weight: 500;
+              }
+
+              h2 {
+                  font-size: 24px;
+                  color: ${PRIMARY_ACCENT};
+                  margin: 35px 0 20px 0;
+                  padding-bottom: 10px;
+                  border-bottom: 3px solid ${PRIMARY_ACCENT}50;
+                  font-weight: 600;
+              }
+
+              h3 {
+                  font-size: 20px;
+                  color: ${NEUTRAL_DARK};
+                  margin: 25px 0 15px 0;
+                  font-weight: 600;
+              }
+
+              h4 {
+                  font-size: 14px;
+                  color: ${NEUTRAL_DARK};
+                  margin: 10px 0 8px 0;
+                  font-weight: 600;
+                  text-align: center;
+              }
+
+              .section {
+                  background-color: ${CARD_BACKGROUND};
+                  border-radius: 12px;
+                  padding: 30px;
+                  margin-bottom: 25px;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                  border: 1px solid ${NEUTRAL_LIGHT};
+              }
+
+              .header-info {
+                  background: linear-gradient(135deg, ${BACKGROUND_LIGHT}, ${CARD_BACKGROUND});
+                  border-radius: 12px;
+                  padding: 25px;
+                  margin-bottom: 30px;
+                  border-left: 5px solid ${PRIMARY_ACCENT};
+              }
+
+              .header-info p {
+                  margin: 8px 0;
+                  font-size: 16px;
+                  color: ${NEUTRAL_DARK};
+                  font-weight: 500;
+              }
+
+              .header-info strong {
+                  color: ${PRIMARY_ACCENT};
+                  font-weight: 600;
+              }
+
+              .alert-notice {
+                  background-color: ${DANGER_COLOR}10;
+                  color: ${DANGER_COLOR};
+                  padding: 15px;
+                  border-radius: 8px;
+                  border-left: 4px solid ${DANGER_COLOR};
+                  font-weight: 600;
+                  margin-top: 15px;
+              }
+
+              .stats-grid {
+                  display: grid;
+                  grid-template-columns: repeat(2, 1fr);
+                  gap: 20px;
+                  margin: 25px 0;
+              }
+
+              .stat-card {
+                  background: linear-gradient(135deg, ${CARD_BACKGROUND}, ${BACKGROUND_LIGHT});
+                  border-radius: 12px;
+                  padding: 20px;
+                  border: 1px solid ${NEUTRAL_LIGHT};
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+              }
+
+              .stat-header {
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 15px;
+                  margin-bottom: 15px;
+              }
+
+              .stat-icon {
+                  font-size: 28px;
+                  font-weight: bold;
+                  line-height: 1;
+                  color: ${PRIMARY_ACCENT};
+                  min-width: 40px;
+                  text-align: center;
+              }
+
+              .stat-info {
+                  flex: 1;
+              }
+
+              .stat-label {
+                  font-size: 14px;
+                  color: ${NEUTRAL_MEDIUM};
+                  font-weight: 600;
+                  margin: 0 0 5px 0;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+              }
+
+              .stat-value {
+                  font-size: 28px;
+                  font-weight: 700;
+                  color: ${PRIMARY_ACCENT};
+                  margin: 0 0 5px 0;
+                  line-height: 1;
+              }
+
+              .stat-trend {
+                  font-size: 12px;
+                  color: ${NEUTRAL_MEDIUM};
+                  margin: 0;
+                  font-style: italic;
+              }
+
+              .mini-chart {
+                  margin-top: 15px;
+                  padding: 10px;
+                  background-color: ${BACKGROUND_LIGHT};
+                  border-radius: 6px;
+                  text-align: center;
+                  min-height: 35px;
+                  display: flex;
+                  align-items: end;
+                  justify-content: center;
+              }
+
+              .chart-bar {
+                  border-radius: 2px 2px 0 0;
+                  transition: all 0.3s ease;
+              }
+
+              .trend-section {
+                  margin: 30px 0;
+                  page-break-inside: avoid;
+              }
+
+              .individual-charts-grid {
+                  display: grid;
+                  grid-template-columns: repeat(3, 1fr);
+                  gap: 20px;
+                  margin-top: 25px;
+              }
+
+              .individual-chart {
+                  background-color: ${CARD_BACKGROUND};
+                  border: 1px solid ${NEUTRAL_LIGHT};
+                  border-radius: 12px;
+                  padding: 15px;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                  page-break-inside: avoid;
+              }
+
+              .individual-chart h4 {
+                  margin: 0 0 12px 0;
+                  color: ${PRIMARY_ACCENT};
+                  font-size: 13px;
+                  font-weight: 600;
+              }
+
+              .chart-stats {
+                  display: flex;
+                  justify-content: space-between;
+                  margin-top: 8px;
+                  font-size: 10px;
+                  color: ${NEUTRAL_MEDIUM};
+              }
+
+              .chart-stats strong {
+                  color: ${PRIMARY_ACCENT};
+              }
+
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin-top: 20px;
+                  font-size: 13px;
+                  background-color: ${CARD_BACKGROUND};
+                  border-radius: 8px;
+                  overflow: hidden;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+              }
+
+              th, td {
+                  border: 1px solid ${NEUTRAL_LIGHT};
+                  padding: 12px 10px;
+                  text-align: left;
+              }
+
+              th {
+                  background: linear-gradient(135deg, ${PRIMARY_ACCENT}, ${PRIMARY_ACCENT}dd);
+                  color: #ffffff;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  font-size: 12px;
+                  letter-spacing: 0.5px;
+              }
+
+              tr:nth-child(even) {
+                  background-color: ${BACKGROUND_LIGHT};
+              }
+
+              tr:hover {
+                  background-color: ${PRIMARY_ACCENT}08;
+              }
+
+              .resident-name {
+                  font-weight: 600;
+                  color: ${PRIMARY_ACCENT};
+              }
+
+              td.normal {
+                  background-color: ${SECONDARY_ACCENT}20;
+                  color: ${SECONDARY_ACCENT};
+                  font-weight: 600;
+                  border-radius: 4px;
+                  text-align: center;
+              }
+
+              td.alert {
+                  background-color: ${DANGER_COLOR}20;
+                  color: ${DANGER_COLOR};
+                  font-weight: 600;
+                  border-radius: 4px;
+                  text-align: center;
+              }
+
+              td.observations {
+                  font-size: 11px;
+                  color: ${NEUTRAL_MEDIUM};
+                  font-style: italic;
+                  max-width: 150px;
+                  word-wrap: break-word;
+              }
+
+              .no-data {
+                  text-align: center;
+                  padding: 40px;
+                  color: ${NEUTRAL_MEDIUM};
+                  font-size: 16px;
+                  background-color: ${BACKGROUND_LIGHT};
+                  border-radius: 8px;
+                  border: 2px dashed ${NEUTRAL_LIGHT};
+              }
+
+              .no-data-cell {
+                  text-align: center;
+                  padding: 30px;
+                  color: ${NEUTRAL_MEDIUM};
+                  font-size: 14px;
+                  font-style: italic;
+              }
+
+              .footer {
+                  text-align: center;
+                  margin-top: 50px;
+                  padding-top: 20px;
+                  border-top: 2px solid ${NEUTRAL_LIGHT};
+                  font-size: 12px;
+                  color: ${NEUTRAL_MEDIUM};
+              }
+
+              .footer strong {
+                  color: ${PRIMARY_ACCENT};
+              }
+
+              @media print {
+                  .section {
+                      break-inside: avoid;
+                      page-break-inside: avoid;
+                  }
+                  .stats-grid {
+                      break-inside: avoid;
+                  }
+                  .trend-section {
+                      break-inside: avoid;
+                  }
+                  .individual-chart {
+                      break-inside: avoid;
+                  }
+                  table {
+                      break-inside: auto;
+                  }
+                  tr {
+                      break-inside: avoid;
+                      break-after: auto;
+                  }
+              }
+          </style>
+      </head>
+      <body>
+          <div class="container">
+              <div class="header">
+                  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" alt="Logo de la Empresa" class="logo" onerror="this.style.display='none'" />
+                  <h1>Reporte de Chequeos de Salud</h1>
+                  <p class="subtitle">Sistema de Monitoreo Integral de Residentes</p>
+              </div>
+              <div class="header-info">
+                  <p><strong>👤 Residente:</strong> ${residentHeaderText}</p>
+                  <p><strong>📅 Periodo:</strong> Último ${dateRange === "mensual" ? "mes" : "trimestre"}</p>
+                  <p><strong>📋 Total de Chequeos:</strong> ${timeSeriesData.length}</p>
+                  <p><strong>🏥 Fecha de Generación:</strong> ${new Date().toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric", })} a las ${new Date().toLocaleTimeString("es-ES")}</p>
+                  ${stats && stats.alertas > 0 ? `<div class="alert-notice">⚠ ${stats.alertas} Alertas registradas que requieren atención médica</div>` : ""}
+              </div>
+              <div class="section">
+                  <h2>Resumen de Indicadores Promedio</h2>
+                  ${statsHtml}
+              </div>
+              ${trendVisualization ? `<div class="section">${trendVisualization}</div>` : ""}
+              <div class="section">
+                  <h2>Historial Detallado de Chequeos</h2>
+                  <table>
+                      <thead>
+                          <tr>
+                              <th>📅 Fecha</th>
+                              <th>👤 Residente</th>
+                              <th>O₂ SpO2</th>
+                              <th>♥ Pulso</th>
+                              <th>°C Temp.</th>
+                              <th>⚖ Peso</th>
+                              <th>IMC</th>
+                              <th>🏥 Estado</th>
+                              <th>📝 Observaciones</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          ${tableRows}
+                      </tbody>
+                  </table>
+              </div>
+              <div class="footer">
+                  <p><strong>Sistema de Salud Digital</strong> | Reporte generado automáticamente</p>
+                  <p>Este documento contiene información médica confidencial</p>
+              </div>
+          </div>
+      </body>
+      </html>
+    `
+  }, [timeSeriesData, selectedResidente, dateRange, stats])
+
+  const exportReport = useCallback(async () => {
+    if (Platform.OS === "web") {
+      Alert.alert(
+        "Exportar Reporte (Web)",
+        "Para exportar a PDF en la web, puedes usar la función de impresión del navegador (Ctrl/Cmd + P). El reporte incluye gráficas individuales con sombreado y diseño mejorado.",
+        [{ text: "OK" }],
+      )
+      const newWindow = window.open()
+      newWindow.document.write(generatePdfContent())
+      newWindow.document.close()
+      newWindow.print()
+    } else {
+      // Check if RNHTMLtoPDF is available and has the convert method
+      if (RNHTMLtoPDF && typeof RNHTMLtoPDF.convert === 'function') {
+        try {
+          const htmlContent = generatePdfContent()
+          const options = {
+            html: htmlContent,
+            fileName: `ReporteChequeos_${
+              selectedResidenteId !== "all" ? selectedResidente?.nombre + "_" + selectedResidente?.apellido : "Todos"
+            }_${dateRange}_${new Date().toISOString().split("T")[0]}.pdf`,
+            directory: "Documents",
+          }
+          const file = await RNHTMLtoPDF.convert(options)
+          Alert.alert("✅ Éxito", `PDF generado exitosamente y guardado en: ${file.filePath}`)
+        } catch (error) {
+          console.error("Error generating PDF:", error)
+          Alert.alert("❌ Error", `No se pudo generar el PDF: ${error.message}`)
+        }
+      } else {
+        // Fallback for when RNHTMLtoPDF is not available (e.g., native module not linked)
+        Alert.alert(
+          "❌ Error de PDF",
+          "La funcionalidad de generación de PDF no está disponible en este dispositivo. Por favor, asegúrate de que la aplicación esté correctamente instalada o contacta a soporte.",
+          [{ text: "OK" }]
+        );
+        console.error("RNHTMLtoPDF or RNHTMLtoPDF.convert is not available on this platform.");
+      }
+    }
+  }, [generatePdfContent, selectedResidenteId, selectedResidente, dateRange])
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Cargando dashboard...</Text>
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Card style={styles.errorCard}>
+          <CardContent style={styles.errorCardContent}>
+            <Text style={styles.errorEmoji}>⚠️</Text>
+            <CardTitle>Error al cargar datos</CardTitle>
+            <CardDescription>
+              Hubo un problema al intentar obtener la información. Por favor, verifica tu conexión a Internet e inténtalo de nuevo.
+              {error && `\nDetalles: ${error}`}
+            </CardDescription>
+            <Button onPress={fetchData} style={{ marginTop: 20 }}>
+              Reintentar
+            </Button>
+          </CardContent>
+        </Card>
+      </View>
+    )
+  }
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Generar Reporte de Chequeos</CardTitle>
+          <CardDescription>Selecciona los filtros para generar el reporte de salud de tus residentes.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Text style={styles.label}>Residente:</Text>
+          <Select
+            selectedValue={selectedResidenteId}
+            onValueChange={(itemValue) => handleResidenteChange(itemValue)}
+          >
+            <SelectItem label="Todos los Residentes" value="all" />
+            {residentes.map((residente) => (
+              <SelectItem
+                key={residente.id_residente}
+                label={`${residente.nombre} ${residente.apellido}`}
+                value={residente.id_residente.toString()}
+              />
+            ))}
+          </Select>
+
+          <Text style={[styles.label, { marginTop: 16 }]}>Período:</Text>
+          <Select selectedValue={dateRange} onValueChange={(itemValue) => setDateRange(itemValue)}>
+            <SelectItem label="Último mes" value="mensual" />
+            <SelectItem label="Último trimestre" value="trimestral" />
+          </Select>
+
+          <Button onPress={exportReport} style={styles.generateButton}>
+            Generar Reporte PDF
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card style={styles.historyCard}>
+        <CardHeader>
+          <CardTitle>Historial de Chequeos Recientes</CardTitle>
+          <CardDescription>
+            Visualización de los chequeos de salud de los residentes seleccionados.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {timeSeriesData.length > 0 ? (
+            <View>
+              <Text style={styles.sectionTitle}>Resumen de Estadísticas</Text>
+              {stats && (
+                <View style={styles.statsContainer}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Último SpO2:</Text>
+                    <Text style={styles.statValue}>{stats.latest.spo2}%</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Promedio Pulso:</Text>
+                    <Text style={styles.statValue}>{stats.avg.pulso} lpm</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Alertas:</Text>
+                    <Text style={[styles.statValue, stats.alertas > 0 ? styles.alertText : {}]}>
+                      {stats.alertas}
+                    </Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statLabel}>Total Chequeos:</Text>
+                    <Text style={styles.statValue}>{stats.total}</Text>
+                  </View>
+                </View>
+              )}
+
+              <Text style={styles.sectionTitle}>Gráficas de Tendencia</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>SPO2 (%)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.spo2) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(74, 144, 226, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.primary,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Pulso (lpm)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.pulso) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 0,
+                      color: (opacity = 1) => `rgba(208, 2, 27, ${opacity})`, // Danger color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.danger,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Temperatura (°C)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.temperatura) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(245, 166, 35, ${opacity})`, // Warning color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.warning,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>Peso (kg)</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.peso) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(126, 211, 33, ${opacity})`, // Success color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.success,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+
+                <View style={styles.chartContainer}>
+                  <Text style={styles.chartTitle}>IMC</Text>
+                  <LineChart
+                    data={{
+                      labels: timeSeriesData.map((d) => d.fecha),
+                      datasets: [{ data: timeSeriesData.map((d) => d.imc) }],
+                    }}
+                    width={screenWidth * 1.5}
+                    height={220}
+                    chartConfig={{
+                      backgroundColor: COLORS.card,
+                      backgroundGradientFrom: COLORS.card,
+                      backgroundGradientTo: COLORS.card,
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(139, 92, 246, ${opacity})`, // Purple color
+                      labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: COLORS.purple,
+                      },
+                    }}
+                    bezier
+                    style={styles.chart}
+                  />
+                </View>
+              </ScrollView>
+
+              <Text style={styles.sectionTitle}>Detalles del Historial</Text>
+              <ScrollView style={styles.tableScrollView}>
+                <View>
+                  <View style={styles.tableHeaderRow}>
+                    <Text style={styles.tableHeaderCell}>Fecha</Text>
+                    <Text style={styles.tableHeaderCell}>Residente</Text>
+                    <Text style={styles.tableHeaderCell}>SpO2</Text>
+                    <Text style={styles.tableHeaderCell}>Pulso</Text>
+                    <Text style={styles.tableHeaderCell}>Temp. Corporal</Text>
+                    <Text style={styles.tableHeaderCell}>Peso</Text>
+                    <Text style={styles.tableHeaderCell}>IMC</Text>
+                    <Text style={styles.tableHeaderCell}>Estado</Text>
+                    <Text style={styles.tableHeaderCell}>Observaciones</Text>
+                  </View>
+                  {timeSeriesData
+                    .slice()
+                    .reverse()
+                    .map((item, index) => (
+                      <View key={index} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{item.fechaCompleta}</Text>
+                        <Text style={[styles.tableCell, styles.residentName]}>{item.residente}</Text>
+                        <Text style={[styles.tableCell, item.spo2 >= 95 ? styles.normalText : styles.alertText]}>
+                          {item.spo2}%
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            item.pulso >= 60 && item.pulso <= 100 ? styles.normalText : styles.alertText,
+                          ]}
+                        >
+                          {item.pulso} lpm
+                        </Text>
+                        <Text
+                          style={[
+                            styles.tableCell,
+                            item.temperatura >= 36.1 && item.temperatura <= 37.2 ? styles.normalText : styles.alertText,
+                          ]}
+                        >
+                          {item.temperatura}°C
+                        </Text>
+                        <Text style={styles.tableCell}>{item.peso} kg</Text>
+                        <Text style={styles.tableCell}>{item.imc.toFixed(1)}</Text>
+                        <View style={styles.tableCellContent}>
+                          <Badge variant={item.isNormal ? "success" : "destructive"}>
+                            {item.isNormal ? "Normal" : "Atención"}
+                          </Badge>
+                        </View>
+                        <Text style={styles.tableCell}>{item.observaciones || "N/A"}</Text>
+                      </View>
+                    ))}
+                </View>
+              </ScrollView>
+            </View>
+          ) : (
+            <Text style={styles.noDataText}>No hay datos disponibles para los filtros seleccionados.</Text>
+          )}
+        </CardContent>
+      </Card>
+    </ScrollView>
+  )
+}
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: BACKGROUND_LIGHT,
-        padding: IS_LARGE_SCREEN ? 30 : 20,
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    padding: 16,
+  },
+  card: {
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  cardHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  cardDescription: {
+    fontSize: 14,
+    color: COLORS.textLight,
+  },
+  cardContent: {
+    padding: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  input: {
+    height: 50,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    justifyContent: 'center',
+    backgroundColor: COLORS.card,
+    color: COLORS.text,
+  },
+  inputText: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  inputPlaceholder: {
+    fontSize: 16,
+    color: COLORS.textLight,
+  },
+  select: {
+    height: 50,
+    width: "100%",
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    backgroundColor: COLORS.card,
+    color: COLORS.text,
+    marginBottom: 12,
+  },
+  dateRangeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+  dateInputWrapper: {
+    width: "48%",
+  },
+  generateButton: {
+    marginTop: 20,
+    backgroundColor: COLORS.primary,
+  },
+  buttonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginTop: 24,
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 8,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  statItem: {
+    width: "48%",
+    backgroundColor: COLORS.lightBlue,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: COLORS.primary,
+    fontWeight: "500",
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.darkText,
+  },
+  alertText: {
+    color: COLORS.danger,
+    fontWeight: "700",
+  },
+  chartContainer: {
+    backgroundColor: COLORS.card,
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    minWidth: screenWidth * 0.9,
+  },
+  chartTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  chart: {
+    marginVertical: 8,
+    borderRadius: 8,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: COLORS.textLight,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+    padding: 20,
+  },
+  errorCard: {
+    width: "90%",
+    padding: 20,
+    alignItems: "center",
+  },
+  errorCardContent: {
+    alignItems: "center",
+  },
+  errorEmoji: {
+    fontSize: 40,
+    marginBottom: 10,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  noDataText: {
+    textAlign: "center",
+    color: COLORS.textLight,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  historyCard: {
+    marginBottom: 16,
+  },
+  tableScrollView: {
+    maxHeight: 400,
+  },
+  tableHeaderRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 12,
+    backgroundColor: COLORS.background,
+  },
+  tableHeaderCell: {
+    fontWeight: "600",
+    color: COLORS.text,
+    paddingHorizontal: 12,
+    width: 120,
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: 12,
+    backgroundColor: COLORS.card,
+  },
+  tableCell: {
+    color: COLORS.text,
+    paddingHorizontal: 12,
+    width: 120,
+    justifyContent: "center",
+    alignSelf: "center",
+  },
+  tableCellContent: {
+    width: 120,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "flex-start",
+  },
+  residentName: {
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+  normalText: {
+    color: COLORS.success,
+    fontWeight: "bold",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
     },
-    centeredContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: BACKGROUND_LIGHT,
-    },
-    loadingText: {
-        marginTop: 15,
-        fontSize: IS_LARGE_SCREEN ? 18 : 16,
-        color: PRIMARY_GREEN,
-    },
-    errorText: {
-        marginTop: 15,
-        fontSize: IS_LARGE_SCREEN ? 18 : 16,
-        color: DANGER_RED,
-        fontWeight: 'bold',
-        textAlign: 'center',
-    },
-    errorDetail: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 12,
-        color: MEDIUM_GRAY,
-        textAlign: 'center',
-        marginTop: 5,
-    },
-    header: {
-        fontSize: IS_LARGE_SCREEN ? 32 : 24,
-        fontWeight: '700',
-        color: DARK_GRAY,
-        marginBottom: IS_LARGE_SCREEN ? 30 : 20,
-        textAlign: 'center',
-        textTransform: 'uppercase',
-        letterSpacing: 0.5,
-    },
-    reportSection: {
-        backgroundColor: WHITE,
-        borderRadius: 12,
-        padding: IS_LARGE_SCREEN ? 25 : 15,
-        marginBottom: IS_LARGE_SCREEN ? 30 : 20,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 6,
-            },
-            web: {
-                boxShadow: '0px 4px 15px rgba(0,0,0,0.08)',
-            }
-        }),
-    },
-    reportTitle: {
-        fontSize: IS_LARGE_SCREEN ? 24 : 18,
-        fontWeight: '600',
-        color: PRIMARY_GREEN,
-        marginBottom: IS_LARGE_SCREEN ? 20 : 15,
-        borderBottomWidth: 1,
-        borderBottomColor: VERY_LIGHT_GRAY,
-        paddingBottom: IS_LARGE_SCREEN ? 12 : 10,
-        textAlign: 'center',
-    },
-    noDataText: {
-        color: LIGHT_GRAY,
-        fontStyle: 'italic',
-        textAlign: 'center',
-        paddingVertical: 15,
-        fontSize: IS_LARGE_SCREEN ? 16 : 14,
-    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    width: "80%",
+    maxHeight: "70%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    marginBottom: 15,
+    color: COLORS.text,
+  },
+  pickerInsideModal: {
+    width: "100%",
+    height: 150,
+  },
+  pickerItemStyle: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  cancelButton: {
+    marginTop: 20,
+    width: "100%",
+  },
+  cancelButtonText: {
+    color: COLORS.primary,
+  },
+})
 
-    // --- Estilos para Filtros ---
-    filterSection: {
-        backgroundColor: WHITE,
-        borderRadius: 12,
-        padding: IS_LARGE_SCREEN ? 25 : 15,
-        marginBottom: IS_LARGE_SCREEN ? 30 : 20,
-        ...Platform.select({
-            ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.1,
-                shadowRadius: 8,
-            },
-            android: {
-                elevation: 6,
-            },
-            web: {
-                boxShadow: '0px 4px 15px rgba(0,0,0,0.08)',
-            }
-        }),
-    },
-    filterTitle: {
-        fontSize: IS_LARGE_SCREEN ? 20 : 16,
-        fontWeight: '500',
-        color: DARK_GRAY,
-        marginBottom: 10,
-        textAlign: IS_LARGE_SCREEN ? 'left' : 'center',
-    },
-    dateInputContainer: {
-        flexDirection: IS_LARGE_SCREEN ? 'row' : 'column',
-        justifyContent: 'space-between',
-        gap: IS_LARGE_SCREEN ? 15 : 10,
-    },
-    input: {
-        flex: IS_LARGE_SCREEN ? 1 : undefined,
-        height: 45,
-        borderColor: LIGHT_GRAY,
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 15,
-        backgroundColor: VERY_LIGHT_GRAY,
-        color: DARK_GRAY,
-        fontSize: IS_LARGE_SCREEN ? 16 : 14,
-        // Mejoras para web:
-        outlineStyle: Platform.OS === 'web' ? 'none' : undefined,
-        cursor: Platform.OS === 'web' ? 'text' : undefined,
-        transition: Platform.OS === 'web' ? 'border-color 0.3s ease-in-out' : undefined,
-        ':focus': Platform.OS === 'web' ? { borderColor: PRIMARY_GREEN } : undefined,
-    },
-
-    // --- Estilos para Reporte 1: Actividad del Personal ---
-    staffActivityItem: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: ACCENT_GREEN_BACKGROUND,
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        borderLeftWidth: 5,
-        borderLeftColor: PRIMARY_GREEN,
-        ...Platform.select({
-            web: {
-                transition: 'transform 0.2s ease-in-out',
-                ':hover': { transform: 'scale(1.01)' },
-            }
-        }),
-    },
-    staffName: {
-        fontSize: IS_LARGE_SCREEN ? 17 : 15,
-        fontWeight: '600',
-        color: DARK_GRAY,
-    },
-    staffCount: {
-        fontSize: IS_LARGE_SCREEN ? 16 : 14,
-        color: MEDIUM_GRAY,
-        fontWeight: 'bold',
-    },
-
-    // --- Estilos para Reporte 2: Historial por Residente ---
-    residentPickerContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        marginBottom: 15,
-        gap: 10,
-        justifyContent: IS_LARGE_SCREEN ? 'flex-start' : 'center',
-    },
-    residentPickerItem: {
-        paddingVertical: IS_LARGE_SCREEN ? 10 : 8,
-        paddingHorizontal: IS_LARGE_SCREEN ? 18 : 15,
-        borderRadius: 25,
-        borderWidth: 1,
-        borderColor: LIGHT_GREEN,
-        backgroundColor: WHITE,
-        transition: Platform.OS === 'web' ? 'background-color 0.2s ease-in-out, border-color 0.2s ease-in-out' : undefined,
-        ':hover': Platform.OS === 'web' ? { backgroundColor: ACCENT_GREEN_BACKGROUND, borderColor: PRIMARY_GREEN } : undefined,
-    },
-    residentPickerItemSelected: {
-        backgroundColor: PRIMARY_GREEN,
-        borderColor: PRIMARY_GREEN,
-    },
-    residentPickerItemText: {
-        color: PRIMARY_GREEN,
-        fontSize: IS_LARGE_SCREEN ? 15 : 13,
-        fontWeight: '500',
-    },
-    residentPickerItemSelectedText: {
-        color: WHITE,
-    },
-    subTitle: {
-        fontSize: IS_LARGE_SCREEN ? 20 : 16,
-        fontWeight: '600',
-        color: DARK_GRAY,
-        marginTop: IS_LARGE_SCREEN ? 20 : 15,
-        marginBottom: 15,
-        textAlign: 'center',
-    },
-    chartPlaceholder: {
-        backgroundColor: VERY_LIGHT_GRAY,
-        minHeight: 250, // Ajustado para ser más flexible
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 10,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: LIGHT_GRAY,
-        borderStyle: 'dashed',
-        padding: 15, // Added padding
-    },
-    chartPlaceholderText: {
-        fontSize: IS_LARGE_SCREEN ? 17 : 15,
-        color: MEDIUM_GRAY,
-        marginBottom: 10,
-        fontWeight: 'bold',
-    },
-    chartPlaceholderSubText: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 12,
-        color: MEDIUM_GRAY,
-        textAlign: 'center',
-        marginHorizontal: 10,
-        lineHeight: 20,
-    },
-    historyItem: {
-        backgroundColor: ACCENT_GREEN_BACKGROUND,
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        borderLeftWidth: 5,
-        borderLeftColor: LIGHT_GREEN,
-        ...Platform.select({
-            web: {
-                transition: 'transform 0.2s ease-in-out',
-                ':hover': { transform: 'scale(1.01)' },
-            }
-        }),
-    },
-    historyDate: {
-        fontSize: IS_LARGE_SCREEN ? 15 : 14,
-        fontWeight: 'bold',
-        color: DARK_GRAY,
-        marginBottom: 5,
-    },
-    historyDetail: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 13,
-        color: MEDIUM_GRAY,
-        marginBottom: 3,
-    },
-    historyObservation: {
-        fontSize: IS_LARGE_SCREEN ? 14 : 13,
-        color: DARK_GRAY,
-        fontStyle: 'italic',
-        marginTop: 8,
-        borderTopWidth: 1,
-        borderTopColor: VERY_LIGHT_GRAY,
-        paddingTop: 8,
-    },
-
-    // --- Estilos para Reporte 3: Resumen de IMC ---
-    imcItem: {
-        backgroundColor: ACCENT_GREEN_BACKGROUND,
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 10,
-        borderLeftWidth: 5,
-        borderLeftColor: LIGHT_GREEN,
-        ...Platform.select({
-            web: {
-                transition: 'transform 0.2s ease-in-out',
-                ':hover': { transform: 'scale(1.01)' },
-            }
-        }),
-    },
-    imcResidenteName: {
-        fontSize: IS_LARGE_SCREEN ? 17 : 15,
-        fontWeight: '600',
-        color: DARK_GRAY,
-        marginBottom: 5,
-    },
-    imcDetails: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 5,
-    },
-    imcValue: {
-        fontSize: IS_LARGE_SCREEN ? 15 : 14,
-        color: MEDIUM_GRAY,
-        marginRight: 10,
-        fontWeight: 'bold',
-    },
-    imcClassification: {
-        fontSize: IS_LARGE_SCREEN ? 15 : 14,
-        fontWeight: 'bold',
-        // Color se aplica dinámicamente
-    },
-    imcDate: {
-        fontSize: IS_LARGE_SCREEN ? 13 : 12,
-        color: LIGHT_GRAY,
-        fontStyle: 'italic',
-        marginTop: 5,
-    },
-    // Estilos para el botón de exportar
-    exportButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: INFO_BLUE,
-        paddingVertical: 12,
-        borderRadius: 8,
-        marginTop: 20,
-        marginBottom: 10,
-        gap: 8,
-        ...Platform.select({
-            web: {
-                cursor: 'pointer',
-                transition: 'background-color 0.3s ease-in-out',
-                ':hover': {
-                    backgroundColor: '#0a58ca', // Un azul más oscuro al pasar el ratón
-                },
-            }
-        }),
-    }
-});
-
-export default CheckupReportsScreen;
+export default CheckupReportsScreen

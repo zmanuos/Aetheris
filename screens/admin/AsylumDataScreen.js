@@ -346,6 +346,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: IS_LARGE_SCREEN ? 25 : 20,
     padding: 10,
+    // Add this line for mobile-specific margin top
+    marginTop: IS_LARGE_SCREEN ? 0 : 70,
   },
   leftColumn: {
     ...Platform.select({

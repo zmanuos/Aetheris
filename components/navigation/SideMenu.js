@@ -1,128 +1,139 @@
+"use client"
+
 // AETHERIS/components/navigation/SideMenu.js
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Pressable, Image } from 'react-native';
-import { Ionicons, Feather } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigationState } from '@react-navigation/native';
-import { Platform } from 'react-native';
+import { useState, useEffect } from "react"
+import { View, Text, StyleSheet, FlatList, Pressable, Image } from "react-native"
+import { Ionicons, Feather } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
+import { useNavigationState } from "@react-navigation/native"
+import { useUnreadMessages } from "../../src/context/UnreadMessagesContext" // Importar el contexto de mensajes no leídos
 
-
-const PRIMARY_GREEN = '#6BB240';
-const LIGHT_GREEN = '#9CD275';
-const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
-const DARK_GRAY = '#333';
-const MEDIUM_GRAY = '#555';
-const LIGHT_GRAY = '#888';
-const VERY_LIGHT_GRAY = '#eee';
-const BACKGROUND_LIGHT = '#fcfcfc';
-const HOVER_EFFECT_COLOR = '#e6e6e6';
+const PRIMARY_GREEN = "#6BB240"
+const LIGHT_GREEN = "#9CD275"
+const ACCENT_GREEN_BACKGROUND = "#EEF7E8"
+const DARK_GRAY = "#333"
+const MEDIUM_GRAY = "#555"
+const LIGHT_GRAY = "#888"
+const VERY_LIGHT_GRAY = "#eee"
+const BACKGROUND_LIGHT = "#fcfcfc"
+const HOVER_EFFECT_COLOR = "#e6e6e6"
 
 // ***** MENÚ ÍTEMS PARA ADMIN *****
 const adminMenuItems = [
-  { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
-  { id: 'EmployeeManagement', title: 'Empleados', icon: 'person-add-outline', type: 'item' },
-  { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
-  { id: 'ChatGeneral', title: 'Mensajes', icon: 'chatbubble-outline', type: 'item' },
-  { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
-    { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
-    { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
-  ]},
-  { id: 'DeviceManagement', title: 'Gestión de Dispositivos', icon: 'hardware-chip-outline', type: 'item' },
-  { id: 'AsylumData', title: 'Datos del Asilo', icon: 'business-outline', type: 'item' },
-  { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
-  { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
-];
+  { id: "Home", title: "Inicio", icon: "home-outline", type: "item" },
+  { id: "EmployeeManagement", title: "Empleados", icon: "person-add-outline", type: "item" },
+  { id: "Residents", title: "Residentes", icon: "people-outline", type: "item" },
+  { id: "ChatGeneral", title: "Mensajes", icon: "chatbubble-outline", type: "item", showUnreadBadge: true }, // Añadir propiedad para la insignia
+  {
+    id: "ConsultasCategory",
+    title: "Consultas",
+    icon: "document-text-outline",
+    type: "category",
+    subItems: [
+      { id: "CreateConsultas", title: "Crear Consultas", icon: "add-circle-outline", type: "subitem" },
+      { id: "ConsultasHistory", title: "Historial de Consultas", icon: "time-outline", type: "subitem" },
+    ],
+  },
+  { id: "DeviceManagement", title: "Gestión de Dispositivos", icon: "hardware-chip-outline", type: "item" },
+  { id: "AsylumData", title: "Datos del Asilo", icon: "business-outline", type: "item" },
+  { id: "ReportsCategory", title: "Reportes", type: "section-header" },
+  { id: "CheckupReports", title: "Reportes de Chequeos", icon: "bar-chart-outline", type: "item" },
+]
 
 // ***** MENÚ ÍTEMS PARA EMPLOYEE *****
 const employeeMenuItems = [
-  { id: 'Home', title: 'Inicio', icon: 'home-outline', type: 'item' },
-  { id: 'Residents', title: 'Residentes', icon: 'people-outline', type: 'item' },
-  { id: 'ChatGeneral', title: 'Mensajes', icon: 'chatbubble-outline', type: 'item' },
-  { id: 'ConsultasCategory', title: 'Consultas', icon: 'document-text-outline', type: 'category', subItems: [
-    { id: 'CreateConsultas', title: 'Crear Consultas', icon: 'add-circle-outline', type: 'subitem' },
-    { id: 'ConsultasHistory', title: 'Historial de Consultas', icon: 'time-outline', type: 'subitem' },
-  ]},
-  { id: 'ReportsCategory', title: 'Reportes', type: 'section-header' },
-  { id: 'CheckupReports', title: 'Reportes de Chequeos', icon: 'bar-chart-outline', type: 'item' },
-];
+  { id: "Home", title: "Inicio", icon: "home-outline", type: "item" },
+  { id: "Residents", title: "Residentes", icon: "people-outline", type: "item" },
+  { id: "ChatGeneral", title: "Mensajes", icon: "chatbubble-outline", type: "item", showUnreadBadge: true }, // Añadir propiedad para la insignia
+  {
+    id: "ConsultasCategory",
+    title: "Consultas",
+    icon: "document-text-outline",
+    type: "category",
+    subItems: [
+      { id: "CreateConsultas", title: "Crear Consultas", icon: "add-circle-outline", type: "subitem" },
+      { id: "ConsultasHistory", title: "Historial de Consultas", icon: "time-outline", type: "subitem" },
+    ],
+  },
+  { id: "ReportsCategory", title: "Reportes", type: "section-header" },
+  { id: "CheckupReports", title: "Reportes de Chequeos", icon: "bar-chart-outline", type: "item" },
+]
 
 // ***** MENÚ ÍTEMS PARA FAMILY *****
 const familyMenuItems = [
-  { id: 'FamilyResidentProfile', title: 'Home', icon: 'home-outline', type: 'item' }, // CAMBIADO: 'id' ahora es 'FamilyResidentProfile'
-  { id: 'FamilyChat', title: 'Chat Familiar', icon: 'chatbubble-outline', type: 'item' },
-  { id: 'AsylumInfo', title: 'Info del Asilo', icon: 'information-circle-outline', type: 'item' },
-];
-
+  { id: "FamilyResidentProfile", title: "Home", icon: "home-outline", type: "item" },
+  { id: "FamilyChatContainer", title: "Chat Familiar", icon: "chatbubble-outline", type: "item", showUnreadBadge: true }, // Añadir propiedad para la insignia
+  { id: "AsylumInfo", title: "Info del Asilo", icon: "information-circle-outline", type: "item" },
+]
 
 // MODIFICACIÓN CLAVE: SideMenu ahora recibe 'userRole'
 const SideMenu = ({ navigation, onLogout, userRole }) => {
-  const [expandedCategory, setExpandedCategory] = useState(null);
-  const state = useNavigationState(state => state);
-  const currentRouteName = state ? state.routes[state.index].name : 'Home'; 
+  const [expandedCategory, setExpandedCategory] = useState(null)
+  const state = useNavigationState((state) => state)
+  const currentRouteName = state ? state.routes[state.index].name : "Home"
+  const { totalUnreadCount } = useUnreadMessages() // Obtener el total de mensajes no leídos del contexto
 
-  let currentMenuItems = [];
-  if (userRole === 'admin') {
-    currentMenuItems = adminMenuItems;
-  }
-  else if (userRole === 'employee') {
-    currentMenuItems = employeeMenuItems;
-  }
-  else if (userRole === 'family') {
-    currentMenuItems = familyMenuItems;
+  let currentMenuItems = []
+  if (userRole === "admin") {
+    currentMenuItems = adminMenuItems
+  } else if (userRole === "employee") {
+    currentMenuItems = employeeMenuItems
+  } else if (userRole === "family") {
+    currentMenuItems = familyMenuItems
   }
 
   const getIsCategoryActive = (categoryId, subItems) => {
-    return subItems.some(subItem => subItem.id === currentRouteName);
-  };
+    return subItems.some((subItem) => subItem.id === currentRouteName)
+  }
 
   useEffect(() => {
-    const parentOfActiveSubItem = currentMenuItems.find(item =>
-      item.type === 'category' && item.subItems.some(subItem => subItem.id === currentRouteName)
-    );
+    const parentOfActiveSubItem = currentMenuItems.find(
+      (item) => item.type === "category" && item.subItems.some((subItem) => subItem.id === currentRouteName),
+    )
 
     if (parentOfActiveSubItem) {
       if (expandedCategory !== parentOfActiveSubItem.id) {
-        setExpandedCategory(parentOfActiveSubItem.id);
+        setExpandedCategory(parentOfActiveSubItem.id)
       }
     } else {
-      const isCurrentRouteATopLevelItem = currentMenuItems.some(item =>
-        item.id === currentRouteName && item.type === 'item'
-      );
+      const isCurrentRouteATopLevelItem = currentMenuItems.some(
+        (item) => item.id === currentRouteName && item.type === "item",
+      )
       if (!isCurrentRouteATopLevelItem && expandedCategory !== null) {
-        setExpandedCategory(null);
+        setExpandedCategory(null)
       }
     }
-  }, [currentRouteName, userRole, currentMenuItems, expandedCategory]); // Agregado expandedCategory a dependencias
+  }, [currentRouteName, userRole, expandedCategory])
 
   const toggleCategory = (categoryId) => {
-    setExpandedCategory(expandedCategory === categoryId ? null : categoryId);
-  };
+    setExpandedCategory(expandedCategory === categoryId ? null : categoryId)
+  }
 
   const handleNavigation = (routeName) => {
-    navigation.navigate(routeName, { userRole: userRole });
-  };
+    navigation.navigate(routeName, { userRole: userRole })
+  }
 
   const handleLogoutPress = () => {
     if (onLogout) {
-      onLogout();
-      navigation.closeDrawer();
+      onLogout()
+      navigation.closeDrawer()
     }
-  };
+  }
 
   const renderItem = ({ item }) => {
-    if (item.type === 'section-header') {
+    if (item.type === "section-header") {
       return (
         <View style={styles.sectionHeaderContainer}>
           <Text style={styles.sectionHeaderText}>{item.title}</Text>
         </View>
-      );
+      )
     }
 
-    const isActiveItem = currentRouteName === item.id;
-    const isCategoryParentActive = item.type === 'category' && getIsCategoryActive(item.id, item.subItems);
+    const isActiveItem = currentRouteName === item.id
+    const isCategoryParentActive = item.type === "category" && getIsCategoryActive(item.id, item.subItems)
 
-    if (item.type === 'category') {
-      const isExpanded = expandedCategory === item.id;
+    if (item.type === "category") {
+      const isExpanded = expandedCategory === item.id
 
       return (
         <View key={item.id}>
@@ -131,7 +142,7 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
               styles.menuItem,
               styles.menuCategory,
               isCategoryParentActive && styles.activeMenuItem,
-              (pressed || hovered) && styles.hoverEffect
+              (pressed || hovered) && styles.hoverEffect,
             ]}
             onPress={() => toggleCategory(item.id)}
           >
@@ -142,32 +153,21 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
                 color={isCategoryParentActive ? PRIMARY_GREEN : MEDIUM_GRAY}
                 style={styles.menuIcon}
               />
-              <Text
-                style={[
-                  styles.menuText,
-                  isCategoryParentActive ? styles.activeMenuText : null,
-                ]}
-              >
-                {item.title}
-              </Text>
+              <Text style={[styles.menuText, isCategoryParentActive ? styles.activeMenuText : null]}>{item.title}</Text>
             </View>
-            <Feather
-              name={isExpanded ? 'chevron-up' : 'chevron-down'}
-              size={18}
-              color={MEDIUM_GRAY}
-            />
+            <Feather name={isExpanded ? "chevron-up" : "chevron-down"} size={18} color={MEDIUM_GRAY} />
           </Pressable>
           {isExpanded && (
             <View style={styles.subItemsContainer}>
-              {item.subItems.map(subItem => {
-                const isSubItemCurrentlyActive = currentRouteName === subItem.id;
+              {item.subItems.map((subItem) => {
+                const isSubItemCurrentlyActive = currentRouteName === subItem.id
                 return (
                   <Pressable
                     key={subItem.id}
                     style={({ pressed, hovered }) => [
                       styles.subMenuItem,
                       isSubItemCurrentlyActive && styles.activeSubMenuItem,
-                      (pressed || hovered) && styles.hoverEffect
+                      (pressed || hovered) && styles.hoverEffect,
                     ]}
                     onPress={() => handleNavigation(subItem.id)}
                   >
@@ -181,46 +181,49 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
                       {subItem.title}
                     </Text>
                   </Pressable>
-                );
+                )
               })}
             </View>
           )}
         </View>
-      );
-    } else if (item.type === 'item') {
+      )
+    } else if (item.type === "item") {
       return (
         <Pressable
           key={item.id}
           style={({ pressed, hovered }) => [
             styles.menuItem,
             isActiveItem && styles.activeMenuItem,
-            (pressed || hovered) && styles.hoverEffect
+            (pressed || hovered) && styles.hoverEffect,
           ]}
           onPress={() => handleNavigation(item.id)}
         >
-          <Ionicons
-            name={item.icon}
-            size={18}
-            color={isActiveItem ? PRIMARY_GREEN : MEDIUM_GRAY}
-            style={styles.menuIcon}
-          />
-          <Text style={[styles.menuText, isActiveItem && styles.activeMenuText]}>
-            {item.title}
-          </Text>
+          <View style={styles.menuItemContent}>
+            <Ionicons
+              name={item.icon}
+              size={18}
+              color={isActiveItem ? PRIMARY_GREEN : MEDIUM_GRAY}
+              style={styles.menuIcon}
+            />
+            <Text style={[styles.menuText, isActiveItem && styles.activeMenuText]}>{item.title}</Text>
+          </View>
+          {/* Insignia de mensajes no leídos */}
+          {item.showUnreadBadge && totalUnreadCount > 0 && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>{totalUnreadCount > 10 ? "10+" : totalUnreadCount}</Text>
+            </View>
+          )}
         </Pressable>
-      );
+      )
     }
-    return null;
-  };
+    return null
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.logoContainer}>
-          <Image
-            source={require('../../assets/images/SoloLogo1.png')}
-            style={styles.logo}
-          />
+          <Image source={require("../../assets/images/SoloLogo1.png")} style={styles.logo} />
           <View>
             <Text style={styles.companyName}>Aetheris</Text>
             <Text style={styles.tagline}>Conectando familias</Text>
@@ -230,7 +233,7 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
           <Text style={styles.menuHeaderText}>NAVEGACIÓN PRINCIPAL</Text>
         </View>
         <FlatList
-          data={currentMenuItems} 
+          data={currentMenuItems}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
@@ -244,10 +247,9 @@ const SideMenu = ({ navigation, onLogout, userRole }) => {
         </View>
       </View>
     </SafeAreaView>
-  );
-};
+  )
+}
 
-// ... (Los estilos de StyleSheet.create permanecen exactamente igual) ...
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -257,8 +259,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   logoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 20,
     paddingHorizontal: 20,
     borderBottomWidth: 0.5,
@@ -268,12 +270,12 @@ const styles = StyleSheet.create({
   logo: {
     width: 65,
     height: 65,
-    resizeMode: 'contain',
+    resizeMode: "contain",
     marginRight: 5,
   },
   companyName: {
     fontSize: 26,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DARK_GRAY,
   },
   tagline: {
@@ -288,8 +290,8 @@ const styles = StyleSheet.create({
   menuHeaderText: {
     fontSize: 11,
     color: LIGHT_GRAY,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
+    fontWeight: "bold",
+    textTransform: "uppercase",
     letterSpacing: 0.8,
   },
   sectionHeaderContainer: {
@@ -300,18 +302,19 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     fontSize: 11,
     color: LIGHT_GRAY,
-    fontWeight: 'bold',
-    textTransform: 'uppercase',
+    fontWeight: "bold",
+    textTransform: "uppercase",
     letterSpacing: 0.8,
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 8,
     marginHorizontal: 10,
     marginBottom: 4,
+    justifyContent: "space-between", // Añadir para alinear el badge a la derecha
   },
   activeMenuItem: {
     backgroundColor: ACCENT_GREEN_BACKGROUND,
@@ -328,26 +331,26 @@ const styles = StyleSheet.create({
     backgroundColor: HOVER_EFFECT_COLOR,
   },
   menuCategory: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   menuItemContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1, // Permitir que el contenido ocupe el espacio disponible
   },
   menuIcon: {
     marginRight: 12,
     width: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   menuText: {
     fontSize: 15,
     color: MEDIUM_GRAY,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   activeMenuText: {
     color: PRIMARY_GREEN,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   subItemsContainer: {
     backgroundColor: BACKGROUND_LIGHT,
@@ -357,8 +360,8 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   subMenuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 8,
     paddingLeft: 22,
     borderRadius: 6,
@@ -366,7 +369,7 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   activeSubMenuItem: {
-    backgroundColor: '#F3FBF0',
+    backgroundColor: "#F3FBF0",
     borderLeftWidth: 3,
     borderLeftColor: PRIMARY_GREEN,
     paddingLeft: 19,
@@ -374,7 +377,7 @@ const styles = StyleSheet.create({
   subMenuItemIcon: {
     marginRight: 10,
     width: 18,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subMenuItemText: {
     fontSize: 13,
@@ -382,7 +385,7 @@ const styles = StyleSheet.create({
   },
   activeSubMenuItemText: {
     color: PRIMARY_GREEN,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   logoutContainer: {
     padding: 20,
@@ -391,9 +394,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: PRIMARY_GREEN,
     borderRadius: 10,
     paddingVertical: 14,
@@ -404,16 +407,31 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   logoutText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 17,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginLeft: 12,
   },
   flatListContent: {
     flexGrow: 1,
     paddingRight: 5,
-  }
-});
+  },
+  // Nuevos estilos para la insignia de mensajes no leídos
+  unreadBadge: {
+    backgroundColor: PRIMARY_GREEN,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    marginLeft: 10, // Espacio entre el texto del menú y la insignia
+  },
+  unreadBadgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "bold",
+  },
+})
 
-
-export default SideMenu;
+export default SideMenu

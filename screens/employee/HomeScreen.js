@@ -31,7 +31,7 @@ const API_ENDPOINT = `${Config.API_BASE_URL}/Dashboard`; // <-- ¡Cambiado aquí
 const AREA_COORDINATES = {
     "comedor": { x: 350, y: 350 },     // Ej. Centro del comedor
     "sala medica": { x: 690, y: 410 }, // Ej. Centro de la sala médica
-    "patio": { x: 550, y: 550 },      // Ej. Centro del patio (el área verde grande)
+    "patio": { x: 550, y: 550 },       // Ej. Centro del patio (el área verde grande)
     "dormitorio": { x: 350, y: 740 },  // Ej. Centro del dormitorio
     // Agrega o ajusta más áreas según tu maqueta real y los datos de tu API
 };
@@ -200,7 +200,7 @@ const HomeScreen = () => {
 
     // --- Renderizado del Componente ---
     return (
-        <View style={styles.container}>
+        <ScrollView style={styles.container}>
             <View style={styles.mainContent}>
                 {/* --- KPI Cards --- */}
                 <View style={styles.kpiContainer}>
@@ -419,7 +419,7 @@ const HomeScreen = () => {
                     </View>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     );
 };
 

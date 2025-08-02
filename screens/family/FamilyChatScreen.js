@@ -2,14 +2,14 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { View, Text, StyleSheet, ActivityIndicator, ScrollView, Dimensions, Platform, Alert } from "react-native"
+import { View, Text, StyleSheet, ActivityIndicator, Dimensions, Platform, Alert } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import { Audio } from 'expo-av';
 
-// Importar el componente ChatContainer
-import ChatContainer from "../../components/shared/resident_profile/ChatContainer"
+// Importar el nuevo componente FamilyChatContainer
+import FamilyChatContainer from "../../components/shared/resident_profile/FamilyChatContainer" // <--- CAMBIAR RUTA E IMPORTACIÓN
 
 const API_URL = Config.API_BASE_URL
 const { width, height } = Dimensions.get("window")
@@ -27,53 +27,26 @@ const COLORS = {
   shadowColor: "rgba(0,0,0,0.05)",
 }
 
-// Esta pantalla recibirá el residentId del familiar, el ID del propio familiar (currentUserId)
-// y el rol, que siempre será 'family' aquí.
 export default function FamilyChatScreen({ navigation, currentUserRole, currentUserId, residentId }) {
   const [familiar, setFamiliar] = useState(null)
-  const [familiarEmail, setFamiliarEmail] = useState(null) // Puede ser útil para mostrar
-  const [notes, setNotes] = useState([])
-  const [newMessage, setNewMessage] = useState("")
-  const [isSendingMessage, setIsSendingMessage] = useState(false)
+  const [familiarEmail, setFamiliarEmail] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState("")
   const { showNotification } = useNotification()
-  const messageInputRef = useRef(null)
 
-  const [messageSentSound, setMessageSentSound] = useState(null);
+  // No longer needed here as ChatContainer handles its own state
+  // const [notes, setNotes] = useState([])
+  // const [newMessage, setNewMessage] = useState("")
+  // const [isSendingMessage, setIsSendingMessage] = useState(false)
+  // const messageInputRef = useRef(null)
+  // const [messageSentSound, setMessageSentSound] = useState(null);
 
-  useEffect(() => {
-    const loadSound = async () => {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/sent_message.mp3') // Asegúrate de que esta ruta sea correcta
-        );
-        setMessageSentSound(sound);
-      } catch (error) {
-        console.error("[FamilyChatScreen] Error loading sound:", error);
-      }
-    };
+  // The sound loading and playing logic can actually stay in ChatContainer or be managed by context
+  // For now, I'm removing it from here as FamilyChatContainer already has it.
+  // If you want FamilyChatScreen to *control* the sound, you'd re-add it here and pass playMessageSentSound
+  // as a prop to FamilyChatContainer. For simplicity, I'm letting FamilyChatContainer manage it.
 
-    loadSound();
 
-    return () => {
-      if (messageSentSound) {
-        messageSentSound.unloadAsync();
-      }
-    };
-  }, []);
-
-  const playMessageSentSound = async () => {
-    if (messageSentSound) {
-      try {
-        await messageSentSound.replayAsync();
-      } catch (error) {
-        console.error("[FamilyChatScreen] Error playing sound:", error);
-      }
-    }
-  };
-
-  // Función para obtener los datos del familiar asociado al residente
   const fetchFamiliarAndNotes = useCallback(async () => {
     console.log("------------------------------------------");
     console.log("[FamilyChatScreen] Iniciando fetchFamiliarAndNotes...");
@@ -90,7 +63,6 @@ export default function FamilyChatScreen({ navigation, currentUserRole, currentU
     setFetchError("");
 
     try {
-      // 1. Obtener datos del Familiar asociado al residente
       console.log(`[FamilyChatScreen] Intentando obtener familiar asociado al residente: ${API_URL}/Familiar/${residentId}`);
       const familiarResponse = await fetch(`${API_URL}/Familiar/${residentId}`);
       if (!familiarResponse.ok) {
@@ -125,39 +97,18 @@ export default function FamilyChatScreen({ navigation, currentUserRole, currentU
             setFamiliarEmail(null);
           }
         }
+        // Notes fetching logic is now primarily within FamilyChatContainer,
+        // so no need to setNotes here directly anymore from this fetch.
+        // FamilyChatContainer will manage its own internal notes state.
 
-        // 2. Obtener las notas (mensajes de chat) para este familiar
-        console.log(`[FamilyChatScreen] Intentando obtener notas del familiar con ID: ${fetchedFamiliarData.id}`);
-        try {
-          const noteResponse = await fetch(`${API_URL}/Nota/${fetchedFamiliarData.id}`);
-          if (noteResponse.ok) {
-            const apiNoteData = await noteResponse.json();
-            if (apiNoteData.notas && Array.isArray(apiNoteData.notas) && apiNoteData.notas.length > 0) {
-              const activeNotes = apiNoteData.notas.filter((note) => note.activo);
-              const sortedNotes = activeNotes.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
-              setNotes(sortedNotes);
-              console.log("[FamilyChatScreen] Notas del familiar obtenidas:", sortedNotes.length);
-            } else {
-              setNotes([]);
-              console.log("[FamilyChatScreen] No se encontraron notas activas para este familiar.");
-            }
-          } else {
-            console.warn("[FamilyChatScreen] Respuesta no OK al obtener notas del familiar:", noteResponse.status);
-            setNotes([]);
-          }
-        } catch (noteError) {
-          console.error(`[FamilyChatScreen] Error al obtener las notas:`, noteError);
-          setNotes([]);
-        }
       } else {
         console.warn("[FamilyChatScreen] No se encontró familiar asociado a este residente con un ID válido.");
         setFamiliar(null);
         setFamiliarEmail(null);
-        setNotes([]);
         setFetchError("No se encontró información del familiar asociado para el chat.");
       }
     } catch (error) {
-      console.error("[FamilyChatScreen] Error general al cargar datos del familiar y notas:", error);
+      console.error("[FamilyChatScreen] Error general al cargar datos del familiar:", error);
       setFetchError(`Error al cargar el chat: ${error.message}`);
       showNotification(`Error al cargar el chat: ${error.message}`, "error");
     } finally {
@@ -167,131 +118,63 @@ export default function FamilyChatScreen({ navigation, currentUserRole, currentU
     }
   }, [residentId, showNotification]);
 
-  // Función para enviar un nuevo mensaje (nota)
-  const sendMessage = async () => {
-    console.log("------------------------------------------");
-    console.log("[FamilyChatScreen] Iniciando sendMessage...");
-    if (!newMessage.trim()) {
-      console.warn("[FamilyChatScreen] Mensaje vacío, no se envía.");
-      Alert.alert("Error", "Por favor escribe un mensaje");
-      return;
-    }
+  // The sendMessage function is now managed within FamilyChatContainer.
+  // We don't need it here unless FamilyChatScreen needs to do something *after*
+  // a message is sent (e.g., update a global unread count, which is already done via context).
+  // The `onNewMessage` prop to FamilyChatContainer can handle such post-send actions.
 
-    if (!familiar || !familiar.id) {
-      console.error("[FamilyChatScreen] No se encontró información del familiar o su ID para enviar el mensaje.");
-      Alert.alert("Error", "No se pudo identificar al destinatario del mensaje.");
-      return;
-    }
-
-    setIsSendingMessage(true);
-    console.log("[FamilyChatScreen] Estado de envío: TRUE");
-
-    try {
-      const formData = new FormData();
-      formData.append("notaTexto", newMessage.trim());
-      formData.append("id_familiar", familiar.id.toString()); // El familiar es el destinatario de la nota
-      formData.append("id_personal", "null"); // Los mensajes de familiar no son de personal
-
-      // currentUserId es el id_familiar de la persona que envía el mensaje (si es el rol familiar)
-      // Opcionalmente, puedes añadir un campo que indique quién es el emisor de la nota si es necesario en el backend
-      // Si tu API necesita identificar al EMISOR de la nota (y no solo al RECEPTOR), lo harías aquí.
-      // Por ahora, solo usamos el ID del familiar como destinatario.
-
-      console.log(`[FamilyChatScreen] Enviando mensaje a: ${API_URL}/Nota`);
-      const response = await fetch(`${API_URL}/Nota`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "*/*",
-        },
-      });
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("[FamilyChatScreen] API response not OK:", response.status, errorBody);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
-      }
-
-      const result = await response.json();
-      console.log("[FamilyChatScreen] Respuesta de la API al enviar mensaje:", result);
-
-      if (result.type === "Success") {
-        const newNote = {
-          id: Date.now(), // ID temporal para la UI
-          nota: newMessage.trim(),
-          fecha: new Date().toISOString(),
-          activo: true,
-          // Propiedades adicionales para el frontend para mostrar quién envió el mensaje
-          // Aquí asumimos que si no hay id_personal, fue enviado por el familiar
-          id_familiar: familiar.id,
-          id_personal: null, // Confirmar que el backend lo guarda así para mensajes de familiar
-        };
-
-        setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)));
-        setNewMessage("");
-        playMessageSentSound();
-        console.log("[FamilyChatScreen] Mensaje enviado con éxito y notas actualizadas.");
-      } else {
-        throw new Error(result.message || "Error al enviar el mensaje");
-      }
-    } catch (error) {
-      console.error("[FamilyChatScreen] Error al enviar mensaje:", error);
-      showNotification(`Error al enviar mensaje: ${error.message}`, "error");
-    } finally {
-      setIsSendingMessage(false);
-      console.log("[FamilyChatScreen] Estado de envío: FALSE");
-      console.log("[FamilyChatScreen] Finalizando sendMessage.");
-      console.log("------------------------------------------");
-    }
-  };
-
-  // Cargar datos del familiar y notas cuando el componente se monta o el residentId cambia
   useEffect(() => {
     fetchFamiliarAndNotes();
   }, [fetchFamiliarAndNotes]);
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primaryGreen} />
-        <Text style={styles.loadingText}>Cargando su chat...</Text>
-      </View>
-    );
-  }
-
-  if (fetchError) {
-    return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="alert-circle-outline" size={48} color={COLORS.errorRed} />
-        <Text style={styles.errorText}>{fetchError}</Text>
-      </View>
-    );
-  }
-
-  if (!familiar) {
-    return (
-      <View style={styles.errorContainer}>
-        <Ionicons name="information-circle-outline" size={48} color={COLORS.accentBlue} />
-        <Text style={styles.errorText}>No se pudo encontrar al familiar asociado para el chat.</Text>
-      </View>
-    );
-  }
+  // Callback for when a new message is successfully sent from FamilyChatContainer
+  const handleNewMessageSent = useCallback((newNote) => {
+    // Optionally, you can add logic here if FamilyChatScreen needs to react to a new message
+    // For instance, if you were managing notes in FamilyChatScreen, you'd update them here.
+    // Since FamilyChatContainer now manages `allFetchedNotes` internally, this is less critical.
+    console.log("[FamilyChatScreen] New message sent from FamilyChatContainer:", newNote);
+  }, []);
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent} keyboardShouldPersistTaps="handled">
-        <ChatContainer
-          notes={notes}
-          newMessage={newMessage}
-          setNewMessage={setNewMessage}
-          isSendingMessage={isSendingMessage}
-          sendMessage={sendMessage}
-          messageInputRef={messageInputRef}
-          currentUserRole={currentUserRole} // Pasamos el rol 'family'
-          currentUserId={currentUserId} // El ID API del familiar
-          familiar={familiar} // El objeto completo del familiar
+      {isLoading && (
+        <View style={styles.overlayLoadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.primaryGreen} />
+          <Text style={styles.loadingText}>Cargando su chat...</Text>
+        </View>
+      )}
+
+      {fetchError && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={COLORS.errorRed} />
+          <Text style={styles.errorText}>{fetchError}</Text>
+        </View>
+      )}
+
+      {!isLoading && !fetchError && !familiar && (
+        <View style={styles.errorContainer}>
+          <Ionicons name="information-circle-outline" size={48} color={COLORS.accentBlue} />
+          <Text style={styles.errorText}>No se pudo encontrar al familiar asociado para el chat.</Text>
+        </View>
+      )}
+
+      {!isLoading && !fetchError && familiar && (
+        <FamilyChatContainer // <--- Usar el nuevo componente
+          familiar={familiar}
+          residentId={residentId} // Pass residentId to FamilyChatContainer if it needs it directly for fetching
+          onNewMessage={handleNewMessageSent}
+          // The following props are now managed internally by FamilyChatContainer
+          // notes={notes}
+          // newMessage={newMessage}
+          // setNewMessage={setNewMessage}
+          // isSendingMessage={isSendingMessage}
+          // sendMessage={sendMessage}
+          // messageInputRef={messageInputRef}
+          // currentUserRole={currentUserRole} // FamilyChatContainer assumes family role
+          // currentUserId={currentUserId} // Not strictly needed if familiar.id is passed
+          style={styles.chatContainerStyle}
         />
-      </ScrollView>
+      )}
     </View>
   );
 }
@@ -301,15 +184,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.pageBackground,
   },
-  scrollViewContent: {
-    flexGrow: 1, // Permite que el contenido crezca
-    justifyContent: 'flex-end', // Empuja el contenido hacia abajo
-  },
-  loadingContainer: {
+  chatContainerStyle: {
     flex: 1,
+  },
+  overlayLoadingContainer: {
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: COLORS.pageBackground,
+    zIndex: 100,
   },
   loadingText: {
     marginTop: 16,

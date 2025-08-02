@@ -7,11 +7,8 @@ import { Ionicons } from "@expo/vector-icons"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import BackButton from "../../components/shared/BackButton"
-import { Audio } from 'expo-av';
 
 import ResidentCard from "../../components/shared/resident_profile/ResidentCard"
-// import FamilyContactCard from "../../components/shared/resident_profile/FamilyContactCard" // ELIMINADO: Ya no es necesario
-import ChatContainer from "../../components/shared/resident_profile/ChatContainer"
 import CheckupsHistoryContainer from "../../components/shared/resident_profile/CheckupsHistoryContainer"
 import HealthStatsSection from "../../components/shared/resident_profile/HealthStatsSection"
 import ChartsSection from "../../components/shared/resident_profile/ChartsSection"
@@ -30,7 +27,6 @@ const COLORS = {
   lightText: "#6B7280",
 }
 
-// MODIFICACIÓN IMPORTANTE AQUÍ: Recibe residentId, currentUserRole, currentUserId directamente como props
 export default function FamilyResidentProfileScreen({ route, navigation, residentId, currentUserRole, currentUserId }) {
   const [resident, setResident] = useState(null)
   const [familiar, setFamiliar] = useState(null)
@@ -43,43 +39,8 @@ export default function FamilyResidentProfileScreen({ route, navigation, residen
   const [alertTimeFilter, setAlertTimeFilter] = useState("7days")
   const [isLoading, setIsLoading] = useState(true)
   const [fetchError, setFetchError] = useState("")
-  const [newMessage, setNewMessage] = useState("")
-  const [isSendingMessage, setIsSendingMessage] = useState(false)
   const { showNotification } = useNotification()
-  const messageInputRef = useRef(null)
 
-  const [messageSentSound, setMessageSentSound] = useState(null);
-
-  useEffect(() => {
-    const loadSound = async () => {
-      try {
-        const { sound } = await Audio.Sound.createAsync(
-          require('../../assets/sounds/sent_message.mp3')
-        );
-        setMessageSentSound(sound);
-      } catch (error) {
-        console.error("Error loading sound:", error);
-      }
-    };
-
-    loadSound();
-
-    return () => {
-      if (messageSentSound) {
-        messageSentSound.unloadAsync();
-      }
-    };
-  }, []);
-
-  const playMessageSentSound = async () => {
-    if (messageSentSound) {
-      try {
-        await messageSentSound.replayAsync();
-      } catch (error) {
-        console.error("Error playing sound:", error);
-      }
-    }
-  };
 
   const calculateAge = (birthDate) => {
     const today = new Date()
@@ -270,78 +231,6 @@ export default function FamilyResidentProfileScreen({ route, navigation, residen
   }, [residentId])
 
 
-  const sendMessage = async () => {
-    if (!newMessage.trim()) {
-      Alert.alert("Error", "Por favor escribe un mensaje")
-      return
-    }
-
-    if (!familiar) {
-      Alert.alert("Error", "No se encontró información del familiar")
-      return
-    }
-
-    setIsSendingMessage(true)
-
-    try {
-      const formData = new FormData()
-      formData.append("notaTexto", newMessage.trim())
-
-      // Para el Familiar, el senderIdForBackend siempre será currentUserId (del familiar)
-      if (currentUserId) {
-          formData.append("id_familiar", currentUserId.toString());
-      }
-      // No se agrega id_personal para familiares
-      
-      if (familiar && familiar.id) {
-          // Si el residente tiene un familiar asociado, el mensaje también se asocia a ese id_familiar
-          // Esto puede ser redundante si currentUserId es el mismo que familiar.id
-          // Pero se mantiene por si hubiera un caso en que el familiar que envía no es el familiar "principal" del residente
-          formData.append("id_familiar", familiar.id.toString());
-      }
-
-
-      const response = await fetch(`${API_URL}/Nota`, {
-        method: "POST",
-        body: formData,
-        headers: {
-          Accept: "*/*",
-        },
-      })
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-        console.error("API response not OK:", response.status, errorBody);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorBody}`);
-      }
-
-      const result = await response.json()
-
-      if (result.type === "Success") {
-        const newNote = {
-          id: Date.now(),
-          nota: newMessage.trim(),
-          fecha: new Date().toISOString(),
-          activo: true,
-          // Para el familiar, id_personal es null
-          id_personal: null,
-          id_familiar: currentUserId, // El id del familiar que envía la nota
-        };
-
-        setNotes((prevNotes) => [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha)))
-        setNewMessage("")
-        playMessageSentSound();
-      } else {
-        throw new Error(result.message || "Error al enviar el mensaje")
-      }
-    } catch (error) {
-      console.error("Error al enviar mensaje:", error)
-      showNotification(`Error al enviar mensaje: ${error.message}`, "error")
-    } finally {
-      setIsSendingMessage(false)
-    }
-  }
-
   useEffect(() => {
     fetchResidentDetails();
   }, [fetchResidentDetails]);
@@ -421,21 +310,7 @@ export default function FamilyResidentProfileScreen({ route, navigation, residen
                 calculateAge={calculateAge}
                 onObservationsUpdated={fetchObservations}
                 showNotification={showNotification}
-                canEditObservations={false} // Familiar nunca puede editar observaciones
-              />
-
-              {/* <FamilyContactCard familiar={familiar} familiarEmail={familiarEmail} /> ELIMINADO */}
-
-              <ChatContainer
-                notes={notes}
-                newMessage={newMessage}
-                setNewMessage={setNewMessage}
-                isSendingMessage={isSendingMessage}
-                sendMessage={sendMessage}
-                messageInputRef={messageInputRef}
-                currentUserRole={currentUserRole}
-                currentUserId={currentUserId}
-                familiar={familiar}
+                canEditObservations={false}
               />
 
               <CheckupsHistoryContainer
@@ -481,13 +356,14 @@ const styles = StyleSheet.create({
   },
   modernBackButton: {
     position: "absolute",
-    top: IS_WEB ? 2 : Platform.OS === "ios" ? 50 : 30,
+    top: IS_WEB ? 2 : Platform.OS === "ios" ? 50 : 30, // Existing platform-specific top
     left: 20,
     zIndex: 10,
   },
   modernScrollView: {
     flex: 1,
-    paddingTop: IS_WEB ? 20 : 30,
+    // Adjusted paddingTop to give more space below a potential header
+    paddingTop: IS_WEB ? 20 : (Platform.OS === "ios" ? 120 : 80), // Increased for mobile
   },
   modernMainContainer: {
     maxWidth: IS_WEB ? 1600 : "100%",

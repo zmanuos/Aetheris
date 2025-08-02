@@ -21,6 +21,7 @@ import { Audio } from "expo-av"
 import Config from "../../config/config"
 import { useNotification } from "../../src/context/NotificationContext"
 import { useSession } from "../../src/context/SessionContext"
+import { useUnreadMessages } from "../../src/context/UnreadMessagesContext" // Importar el nuevo contexto
 import MessageReceivedSound from "../../assets/sounds/MessageReceived.mp3"
 
 const API_URL = Config.API_BASE_URL
@@ -51,7 +52,6 @@ const COLORS = {
   WHITE: "#FFFFFF",
 }
 
-// Reintroducimos las constantes para la paginación de mensajes
 const INITIAL_MESSAGES_COUNT = 10
 const LOAD_MORE_MESSAGES_COUNT = 10
 const POLLING_INTERVAL = 5000 // 5 segundos
@@ -67,7 +67,6 @@ export default function ChatGeneralScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("")
   const [personalMap, setPersonalMap] = useState(new Map())
 
-  // Reintroducimos el estado para la paginación de mensajes
   const [currentConversationMessagesToShowCount, setCurrentConversationMessagesToShowCount] =
     useState(INITIAL_MESSAGES_COUNT)
   const [loadingMoreOldMessages, setLoadingMoreOldMessages] = useState(false)
@@ -78,12 +77,10 @@ export default function ChatGeneralScreen({ navigation }) {
   const soundObjectReceivedRef = useRef(new Audio.Sound())
   const conversationsRef = useRef([]) // Ref para almacenar el estado actual de conversations
 
-  // Eliminamos initialScrollDoneRef ya que no es necesario con inverted FlatList
-  // const initialScrollDoneRef = useRef(false)
-
   const { showNotification } = useNotification()
   const { session } = useSession()
   const { userRole, apiUserId } = session
+  const { setTotalUnreadCount } = useUnreadMessages() // Usar el contexto de mensajes no leídos
 
   // Actualiza el ref cada vez que 'conversations' cambia
   useEffect(() => {
@@ -176,7 +173,7 @@ export default function ChatGeneralScreen({ navigation }) {
 
       // Optimistically update frontend
       setConversations((prevConversations) => {
-        return prevConversations.map((conv) => {
+        const updatedConversations = prevConversations.map((conv) => {
           if (conv.familiarId === familiarIdToMark) {
             const updatedMessages = conv.messages.map((message) => {
               const shouldMarkAsRead = unreadMessagesForCurrentUser.some((um) => um.id === message.id)
@@ -193,6 +190,12 @@ export default function ChatGeneralScreen({ navigation }) {
           }
           return conv
         })
+
+        // Calcular el total de mensajes no leídos para el SideMenu
+        const totalUnread = updatedConversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
+        setTotalUnreadCount(totalUnread)
+
+        return updatedConversations
       })
 
       // Send updates to backend
@@ -215,7 +218,7 @@ export default function ChatGeneralScreen({ navigation }) {
         showNotification && showNotification("Error al actualizar estado de lectura.", "error")
       }
     },
-    [conversations, userRole, apiUserId, showNotification, isMessageSentByCurrentUser],
+    [conversations, userRole, apiUserId, showNotification, isMessageSentByCurrentUser, setTotalUnreadCount],
   )
 
   const fetchNotesAndFamilyData = useCallback(
@@ -370,6 +373,10 @@ export default function ChatGeneralScreen({ navigation }) {
         ) {
           setSelectedConversationId(enrichedConversations[0].familiarId)
         }
+
+        // Calcular el total de mensajes no leídos para el SideMenu
+        const totalUnread = enrichedConversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
+        setTotalUnreadCount(totalUnread)
       } catch (error) {
         console.error("Error fetching chat data:", error)
         setFetchError("No se pudieron cargar los mensajes. Por favor, inténtalo de nuevo más tarde.")
@@ -387,6 +394,7 @@ export default function ChatGeneralScreen({ navigation }) {
       setPersonalMap,
       playReceivedMessageSound,
       isMessageSentByCurrentUser,
+      setTotalUnreadCount, // Añadir al array de dependencias
     ],
   )
 
@@ -403,16 +411,9 @@ export default function ChatGeneralScreen({ navigation }) {
   // Cuando se selecciona una nueva conversación, reiniciamos el contador de mensajes a mostrar
   useEffect(() => {
     setCurrentConversationMessagesToShowCount(INITIAL_MESSAGES_COUNT)
-    // No necesitamos initialScrollDoneRef con FlatList invertido
   }, [selectedConversationId])
 
-  // Eliminamos los useEffects de desplazamiento automático, ya que FlatList invertido lo maneja
-  // useEffect para desplazar el chat al final al cargar o actualizar la conversación seleccionada
-  // useEffect adicional para mantener el scroll al final cuando lleguen nuevos mensajes
-
   // useEffect para mantener la posición de scroll al cargar más mensajes antiguos
-  // Este useEffect se activará cuando `loadingMoreOldMessages` cambie a `true` y luego cuando
-  // `messagesToDisplay` se actualice (después de que se carguen más mensajes).
   useEffect(() => {
     if (loadingMoreOldMessages && chatFlatListRef.current) {
       // Pequeña demora para asegurar que FlatList haya renderizado los nuevos elementos
@@ -434,12 +435,6 @@ export default function ChatGeneralScreen({ navigation }) {
   // onScroll handler para cargar más mensajes antiguos
   const onScroll = useCallback(
     ({ nativeEvent }) => {
-      // En una FlatList invertida, el scroll al "inicio" (mensajes más antiguos)
-      // significa que contentOffset.y se acerca al final del scroll.
-      // nativeEvent.contentOffset.y es 0 cuando estás en los mensajes más recientes.
-      // Cuando te desplazas hacia arriba (para ver mensajes antiguos), contentOffset.y aumenta.
-      // Para detectar que has llegado al "final" de la lista invertida (es decir, al principio de la conversación real),
-      // verificamos si contentOffset.y es lo suficientemente grande.
       const scrollThreshold = 10 // Distancia desde el "final" de la lista invertida para cargar más
 
       if (
@@ -539,17 +534,12 @@ export default function ChatGeneralScreen({ navigation }) {
           return dateB - dateA
         })
 
+        // Calcular el total de mensajes no leídos para el SideMenu
+        const totalUnread = updatedConversations.reduce((sum, conv) => sum + conv.unreadCount, 0)
+        setTotalUnreadCount(totalUnread)
+
         return updatedConversations
       })
-
-      // Con FlatList invertido, el nuevo mensaje aparecerá automáticamente al final (parte inferior)
-      // No necesitamos un scroll explícito aquí a menos que queramos una animación específica.
-      // Si se desea una animación, se puede usar:
-      // setTimeout(() => {
-      //   if (chatFlatListRef.current) {
-      //     chatFlatListRef.current.scrollToOffset({ offset: 0, animated: true }); // Scroll al inicio de la lista invertida (mensaje más reciente)
-      //   }
-      // }, 100);
     } catch (error) {
       console.error("Error sending message:", error)
       setFetchError("Error al enviar el mensaje. Por favor, inténtalo de nuevo.")
@@ -566,6 +556,7 @@ export default function ChatGeneralScreen({ navigation }) {
     playSentMessageSound,
     selectedConversation,
     isMessageSentByCurrentUser,
+    setTotalUnreadCount, // Añadir al array de dependencias
   ])
 
   // forceScrollToBottom ahora desplaza al inicio de la lista invertida (mensaje más reciente)

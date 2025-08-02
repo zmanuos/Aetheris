@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native"
+import { View, Text, StyleSheet, Platform } from "react-native" // Import Platform
 import { Ionicons } from "@expo/vector-icons"
 
 const COLORS = {
@@ -12,6 +12,8 @@ const COLORS = {
   successGreen: "#10B981",
   accentBlue: "#3B82F6",
 }
+
+const IS_WEB = Platform.OS === "web"; // Define IS_WEB
 
 const HealthStatCard = ({ title, value, unit, type, icon }) => {
   const getHealthStatus = (value, type) => {
@@ -173,12 +175,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     justifyContent: "space-between",
+    flexWrap: IS_WEB ? "nowrap" : "wrap", // Allow wrapping on mobile
   },
   healthStatCard: {
     backgroundColor: COLORS.pageBackground,
     borderRadius: 12,
     padding: 16,
-    flex: 1,
+    flex: IS_WEB ? 1 : undefined, // Flex 1 on web, undefined on mobile
+    width: IS_WEB ? "auto" : "48%", // Set width to 48% for mobile (allows 2 cards per row with gap)
     borderWidth: 1,
     borderColor: COLORS.borderLight,
   },

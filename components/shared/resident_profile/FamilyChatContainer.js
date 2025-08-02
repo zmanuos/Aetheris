@@ -1,3 +1,4 @@
+// AETHERIS/components/family/FamilyChatContainer.js
 "use client"
 
 import {
@@ -9,15 +10,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  Dimensions,
+  KeyboardAvoidingView,
+  Keyboard, // Import Keyboard from react-native
 } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
 import { useRef, useEffect, useState, useCallback } from "react"
 import Config from "../../../config/config"
 import { useSession } from "../../../src/context/SessionContext"
-import { useNotification } from "../../../src/context/NotificationContext"
+import { useNotification } from "../../../src/context/NotificationContext" // Corrected import path
 import { Audio } from 'expo-av';
 
 const API_URL = Config.API_BASE_URL
+const { width, height } = Dimensions.get("window");
 
 const COLORS = {
   PRIMARY_GREEN: "#6BB240",
@@ -44,13 +49,13 @@ const COLORS = {
 }
 
 const IS_WEB = Platform.OS === "web"
-const MESSAGES_PER_LOAD = 10; // Number of messages to load at once
+const MESSAGES_PER_LOAD = 10;
 
-const ChatContainer = ({ familiar, onNewMessage }) => {
+const FamilyChatContainer = ({ familiar, onNewMessage, residentId }) => {
   const scrollViewRef = useRef(null)
   const messageInputRef = useRef(null)
-  const [allFetchedNotes, setAllFetchedNotes] = useState([]) // Stores all notes for the familiar
-  const [visibleNotesCount, setVisibleNotesCount] = useState(MESSAGES_PER_LOAD) // How many notes are currently visible
+  const [allFetchedNotes, setAllFetchedNotes] = useState([])
+  const [visibleNotesCount, setVisibleNotesCount] = useState(MESSAGES_PER_LOAD)
   const [senderNames, setSenderNames] = useState({})
   const [isLoadingNotes, setIsLoadingNotes] = useState(false)
   const senderNamesRef = useRef(senderNames)
@@ -61,12 +66,17 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
   const [newMessage, setNewMessage] = useState("")
   const [isSendingMessage, setIsSendingMessage] = useState(false)
   const [messageSentSound, setMessageSentSound] = useState(null);
+  const hasScrolledInitially = useRef(false);
 
-  // Derived state: `notes` will be the subset of `allFetchedNotes` that are currently visible
   const notes = allFetchedNotes.slice(-visibleNotesCount);
 
+  // Function to scroll to the end of the chat
+  const scrollToBottom = useCallback(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollToEnd({ animated: true });
+    }
+  }, []);
 
-  // Effect to load and unload the sound
   useEffect(() => {
     const loadSound = async () => {
       try {
@@ -88,7 +98,6 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     };
   }, []);
 
-  // Function to play the sound
   const playMessageSentSound = useCallback(async () => {
     if (messageSentSound) {
       try {
@@ -103,40 +112,46 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     senderNamesRef.current = senderNames
   }, [senderNames])
 
-  // Scroll to end when a new message is sent (i.e., when `isSendingMessage` becomes false and `newMessage` is cleared)
+  // Initial scroll to bottom and subsequent scrolls for new messages
+  // Simplified to always scroll to bottom on new messages for mobile chat
   useEffect(() => {
-    // Only scroll to end if we are at the bottom or very close to it, or if a new message was just added.
-    if (!isSendingMessage && newMessage === "" && scrollViewRef.current) {
-        setTimeout(() => {
-            scrollViewRef.current.scrollToEnd({ animated: true })
-        }, 100);
+    if (scrollViewRef.current && allFetchedNotes.length > 0) {
+      setTimeout(() => {
+        scrollToBottom();
+        hasScrolledInitially.current = true; // Still useful for initial load
+      }, 100);
     }
-  }, [notes.length, isSendingMessage, newMessage]); // Depend on notes.length for new messages
+  }, [allFetchedNotes.length, familiar?.id, scrollToBottom]);
 
-  // Función para obtener las notas del familiar
+
   const fetchNotes = useCallback(async (showLoading = true) => {
-    if (!familiar?.id) return
+    if (!residentId) return
 
     if (showLoading) setIsLoadingNotes(true)
     try {
-      const response = await fetch(`${API_URL}/Nota`)
+      let familiarIdToFetchNotes = familiar?.id;
+
+      if (!familiarIdToFetchNotes && residentId) {
+          console.warn("[FamilyChatContainer] familiar.id not available, notes might not fetch correctly without it.");
+          setIsLoadingNotes(false);
+          return;
+      }
+
+      const response = await fetch(`${API_URL}/Nota/${familiarIdToFetchNotes}`)
       if (!response.ok) {
         throw new Error(`HTTP Error! status: ${response.status}`)
       }
 
       const data = await response.json()
-      // Filtrar las notas por el familiar actual y que estén activas o inactivas
       const familiarNotes = (data.notas || data || [])
-        .filter(note => 
-          (note.activo === true || note.activo === false || note.activo === undefined) && 
-          note.id_familiar === familiar.id
+        .filter(note =>
+          (note.activo === true || note.activo === false || note.activo === undefined) &&
+          note.id_familiar === familiarIdToFetchNotes
         )
-        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha)) // Ordenar por fecha
+        .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
 
       setAllFetchedNotes(familiarNotes)
-      
-      // On initial fetch, set visible notes count to the limit or total available if less
-      setVisibleNotesCount(prevCount => 
+      setVisibleNotesCount(prevCount =>
         Math.min(familiarNotes.length, Math.max(prevCount, MESSAGES_PER_LOAD))
       );
 
@@ -148,25 +163,18 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     } finally {
       if (showLoading) setIsLoadingNotes(false)
     }
-  }, [familiar?.id, showNotification])
+  }, [familiar?.id, residentId, showNotification])
 
-  // Iniciar polling para actualización en tiempo real
   const startPolling = useCallback(() => {
-    // Limpiar intervalo anterior si existe
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current)
     }
-
-    // Fetch inicial
     fetchNotes(true)
-
-    // Configurar polling cada 2 segundos
     pollingIntervalRef.current = setInterval(() => {
-      fetchNotes(false) // Sin mostrar loading para no interrumpir la UI
+      fetchNotes(false)
     }, 2000)
   }, [fetchNotes])
 
-  // Detener polling
   const stopPolling = useCallback(() => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current)
@@ -174,32 +182,30 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     }
   }, [])
 
-  // Cargar notas cuando cambie el familiar o se monte el componente
   useEffect(() => {
     if (familiar?.id) {
-      setAllFetchedNotes([]); // Clear notes when familiar changes
-      setVisibleNotesCount(MESSAGES_PER_LOAD); // Reset visible count
+      setAllFetchedNotes([]);
+      setVisibleNotesCount(MESSAGES_PER_LOAD);
+      hasScrolledInitially.current = false;
       startPolling();
     } else {
       stopPolling();
       setAllFetchedNotes([]);
       setVisibleNotesCount(MESSAGES_PER_LOAD);
+      hasScrolledInitially.current = false;
     }
 
-    // Cleanup al desmontar
     return () => {
       stopPolling();
     }
   }, [familiar?.id, startPolling, stopPolling])
 
-  // Cleanup al desmontar el componente
   useEffect(() => {
     return () => {
       stopPolling()
     }
   }, [stopPolling])
 
-  // Visibilidad de la página para pausar/reanudar polling
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -222,9 +228,8 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
       const newSenderNames = {}
       const uniqueSenderKeys = new Set()
 
-      // Use all fetched notes to gather sender IDs, not just visible ones
       allFetchedNotes.forEach((note) => {
-        if (note.id_personal === null || note.id_personal === 0) { // Assuming id_personal 0 or null is admin
+        if (note.id_personal === null || note.id_personal === 0) {
           uniqueSenderKeys.add("admin-0")
         } else if (note.id_personal !== null && note.id_personal !== undefined) {
           uniqueSenderKeys.add(`employee-${note.id_personal}`)
@@ -300,38 +305,21 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     }
   }
 
-  const isMessageSentByCurrentUser = (message) => {
-    const { userRole, apiUserId } = session
-
-    if (userRole === "admin") {
-      return message.id_personal === 0 // Admin messages have id_personal = 0
-    } else if (userRole === "employee") {
-      return message.id_personal === apiUserId
-    } else if (userRole === "family" && familiar) {
-      // Message is sent by current family if it has no id_personal and its id_familiar matches the current familiar's id
-      return message.id_personal === null && message.id_familiar === familiar.id
-    }
-    return false
-  }
-
   const getSenderDisplayName = (note) => {
-    if (isMessageSentByCurrentUser(note)) {
-      return "Tú"
+    // If the message is from the current familiar, return an empty string to hide the sender name
+    if (note.id_personal === null && note.id_familiar === familiar?.id) {
+      return "" // Changed from "Tú" to ""
     }
 
-    if (note.id_personal === 0) { // Admin messages
+    if (note.id_personal === 0) {
       return "Administrador"
-    } else if (note.id_personal !== null && note.id_personal !== undefined) { // Employee messages
+    } else if (note.id_personal !== null && note.id_personal !== undefined) {
       const senderKey = `employee-${note.id_personal}`
       return senderNames[senderKey] || "Personal Desconocido"
-    } else if (note.id_familiar !== null && note.id_familiar !== undefined) { // Family messages
-      const senderKey = `family-${note.id_familiar}`
-      return senderNames[senderKey] || "Familiar Desconocido"
     }
     return "Desconocido"
   }
 
-  // Función para manejar Enter key
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -345,23 +333,16 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
       return
     }
 
-    const { userRole, apiUserId } = session
-
-    if (!userRole || (userRole !== "family" && apiUserId === null && userRole !== "admin")) {
-      showNotification && showNotification("No se pudo identificar tu rol o ID para enviar el mensaje.", "error")
-      return
-    }
+    const { apiUserId } = session;
 
     setIsSendingMessage(true)
-    
+
     try {
       const formData = new FormData()
       formData.append("notaTexto", newMessage.trim())
       formData.append("id_familiar", familiar.id.toString())
-
-      const senderId = userRole === "employee" ? apiUserId : userRole === "admin" ? 0 : null
-      formData.append("id_personal", senderId !== null ? senderId.toString() : "")
-      formData.append("activo", "true")
+      // Eliminada la línea formData.append("id_personal", "null")
+      // Ya que el id_personal no es relevante para los mensajes de los familiares.
 
       const response = await fetch(`${API_URL}/Nota`, {
         method: "POST",
@@ -381,29 +362,28 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
 
       const responseData = await response.json()
       const newNote = responseData.nota || {
-        id: Math.random().toString(36).substring(7), // Fallback ID
+        id: Math.random().toString(36).substring(7),
         nota: newMessage.trim(),
         fecha: new Date().toISOString(),
         id_familiar: familiar.id,
-        id_personal: senderId,
+        id_personal: null,
         activo: true,
       }
 
       setNewMessage("")
-      
-      // Update allFetchedNotes immediately to show new message
+
       setAllFetchedNotes(prevNotes => {
         const updatedNotes = [...prevNotes, newNote].sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        setVisibleNotesCount(updatedNotes.length);
         return updatedNotes;
       });
 
-      // Ensure the new message is visible and scroll to it
-      setVisibleNotesCount(prevCount => prevCount + 1);
-
-      // Play sound after successful message send
       playMessageSentSound();
 
-      // Notificar al componente padre si existe el callback
+      setTimeout(() => {
+        scrollToBottom(); // Use the new scrollToBottom function
+      }, 100);
+
       if (onNewMessage) {
         onNewMessage(newNote)
       }
@@ -413,16 +393,43 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
     } finally {
       setIsSendingMessage(false)
     }
-  }, [newMessage, familiar, session, showNotification, onNewMessage, fetchNotes, playMessageSentSound])
+  }, [newMessage, familiar, session, showNotification, onNewMessage, playMessageSentSound, scrollToBottom])
 
-  const loadOlderMessages = useCallback(() => {
-    setVisibleNotesCount(prevCount => 
-      Math.min(prevCount + MESSAGES_PER_LOAD, allFetchedNotes.length)
+  const handleScroll = useCallback((event) => {
+    const { contentOffset } = event.nativeEvent;
+    if (contentOffset.y <= 20 && visibleNotesCount < allFetchedNotes.length && !isLoadingNotes) {
+      setIsLoadingNotes(true);
+      setVisibleNotesCount(prevCount => {
+        const newCount = Math.min(prevCount + MESSAGES_PER_LOAD, allFetchedNotes.length);
+        return newCount;
+      });
+      setTimeout(() => {
+        setIsLoadingNotes(false);
+      }, 300);
+    }
+  }, [visibleNotesCount, allFetchedNotes.length, isLoadingNotes]);
+
+  // Handle keyboard show/hide to adjust scroll
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        scrollToBottom();
+      }
     );
-  }, [allFetchedNotes.length]);
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        // Optional: you can scroll to bottom here too or do nothing
+      }
+    );
 
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, [scrollToBottom]);
 
-  const hasMoreNotes = visibleNotesCount < allFetchedNotes.length;
 
   return (
     <View style={styles.modernChatCard}>
@@ -438,19 +445,18 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
         )}
       </View>
 
-      <View style={styles.chatMessagesContainer}>
+      <View style={styles.chatContentWrapper}>
         {notes.length > 0 ? (
-          <ScrollView ref={scrollViewRef} style={styles.chatScrollView} showsVerticalScrollIndicator={true}>
-            {hasMoreNotes && (
-                <TouchableOpacity onPress={loadOlderMessages} style={styles.loadMoreButton}>
-                    <Text style={styles.loadMoreButtonText}>Cargar mensajes antiguos</Text>
-                </TouchableOpacity>
-            )}
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.chatScrollView}
+            showsVerticalScrollIndicator={true}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+          >
             {notes.map((note, index) => {
-              // Determine if the message should be aligned to the right
-              const messageAlignRight =
-                (note.id_personal !== null && note.id_personal !== undefined) || // If it's an employee/admin message, align right
-                (session.userRole === "family" && note.id_familiar === familiar.id && note.id_personal === null); // Or if it's the current family member's message
+              const messageAlignRight = note.id_personal === null && note.id_familiar === familiar?.id;
+              const senderDisplayName = getSenderDisplayName(note); // Get the display name
 
               return (
                 <View key={note.id || index} style={styles.messageContainer}>
@@ -460,15 +466,18 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
                       messageAlignRight ? styles.messageBubbleSent : styles.messageBubbleReceived,
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.messageSenderName,
-                        { color: messageAlignRight ? COLORS.WHITE : COLORS.DARK_GRAY }, // Adjust color for contrast
-                        messageAlignRight ? { textAlign: "right" } : { textAlign: "left" },
-                      ]}
-                    >
-                      {getSenderDisplayName(note)}
-                    </Text>
+                    {/* Conditionally render sender name only if it's not empty */}
+                    {senderDisplayName ? (
+                      <Text
+                        style={[
+                          styles.messageSenderName,
+                          { color: messageAlignRight ? COLORS.WHITE : COLORS.DARK_GRAY },
+                          messageAlignRight ? { textAlign: "right" } : { textAlign: "left" },
+                        ]}
+                      >
+                        {senderDisplayName}
+                      </Text>
+                    ) : null}
                     <Text style={[styles.messageText, messageAlignRight && styles.messageTextSent]}>{note.nota}</Text>
                     <Text style={[styles.messageDate, messageAlignRight && styles.messageDateSent]}>
                       {note.fecha && formatMessageDate(note.fecha)}
@@ -489,33 +498,44 @@ const ChatContainer = ({ familiar, onNewMessage }) => {
           </View>
         )}
 
-        <View style={styles.modernMessageInputContainer}>
-          <View style={styles.modernInputRow}>
-            <TextInput
-              ref={messageInputRef}
-              style={styles.modernMessageInput}
-              value={newMessage}
-              onChangeText={setNewMessage}
-              placeholder="Escribe un mensaje..."
-              multiline
-              maxLength={500}
-              editable={!isSendingMessage}
-              textAlignVertical="top"
-              onKeyPress={IS_WEB ? handleKeyPress : undefined}
-            />
-            <TouchableOpacity
-              style={[styles.modernSendButton, isSendingMessage && styles.sendButtonDisabled]}
-              onPress={sendMessage}
-              disabled={isSendingMessage}
-            >
-              {isSendingMessage ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <Ionicons name="send" size={14} color="#fff" />
-              )}
-            </TouchableOpacity>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.select({
+            ios: 70, // Adjust this offset as needed for iOS
+            android: 0,
+            web: 0,
+          })}
+          style={styles.keyboardAvoidingContainer}
+        >
+          <View style={styles.modernMessageInputContainer}>
+            <View style={styles.modernInputRow}>
+              <TextInput
+                ref={messageInputRef}
+                style={styles.modernMessageInput}
+                value={newMessage}
+                onChangeText={setNewMessage}
+                placeholder="Escribe un mensaje..."
+                multiline
+                maxLength={500}
+                editable={!isSendingMessage}
+                textAlignVertical="top"
+                onKeyPress={IS_WEB ? handleKeyPress : undefined}
+                onFocus={scrollToBottom} // Add onFocus to scroll when the input is clicked
+              />
+              <TouchableOpacity
+                style={[styles.modernSendButton, isSendingMessage && styles.sendButtonDisabled]}
+                onPress={sendMessage}
+                disabled={isSendingMessage}
+              >
+                {isSendingMessage ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Ionicons name="send" size={14} color="#fff" />
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </View>
   )
@@ -550,7 +570,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     borderWidth: 1,
     borderColor: COLORS.DIVIDER,
-    height: IS_WEB ? 300 : 320,
+    flex: 1,
   },
   modernCardHeader: {
     flexDirection: "row",
@@ -576,12 +596,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: COLORS.TEXT_PRIMARY,
   },
-  chatMessagesContainer: {
+  chatContentWrapper: {
     flex: 1,
   },
   chatScrollView: {
     flex: 1,
-    maxHeight: 180,
     backgroundColor: COLORS.VERY_LIGHT_GRAY,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -589,13 +608,13 @@ const styles = StyleSheet.create({
   },
   messageContainer: {
     marginBottom: 12,
-    paddingHorizontal: 4,
+    marginHorizontal: 10,
   },
   messageBubble: {
     borderRadius: 18,
     paddingVertical: 14,
     paddingHorizontal: 18,
-    maxWidth: "85%",
+    maxWidth: "80%",
     marginVertical: 2,
     position: 'relative',
     ...commonShadow,
@@ -604,12 +623,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.PRIMARY_GREEN,
     alignSelf: "flex-end",
     borderBottomRightRadius: 4,
-    marginLeft: 40,
-    ...Platform.select({
-      web: {
-        background: `linear-gradient(135deg, ${COLORS.PRIMARY_GREEN} 0%, ${COLORS.LIGHT_GREEN} 100%)`,
-      },
-    }),
   },
   messageTextSent: {
     color: COLORS.WHITE,
@@ -630,7 +643,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.DIVIDER,
-    marginRight: 40,
     ...Platform.select({
       web: {
         boxShadow: "0 2px 8px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)",
@@ -646,7 +658,7 @@ const styles = StyleSheet.create({
   messageSenderName: {
     fontSize: 11,
     fontWeight: "700",
-    color: COLORS.TEXT_SECONDARY, // Default to secondary for received
+    color: COLORS.TEXT_SECONDARY,
     marginBottom: 6,
     letterSpacing: 0.3,
     textTransform: 'uppercase',
@@ -657,6 +669,9 @@ const styles = StyleSheet.create({
     textAlign: "right",
     marginTop: 6,
     fontWeight: "300",
+  },
+  keyboardAvoidingContainer: {
+    width: '100%',
   },
   modernMessageInputContainer: {
     borderTopWidth: 1,
@@ -742,19 +757,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     textAlign: "center",
   },
-  loadMoreButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: COLORS.LIGHT_GRAY,
-    borderRadius: 10,
-    alignSelf: 'center',
-    marginBottom: 10,
-  },
-  loadMoreButtonText: {
-    color: COLORS.TEXT_PRIMARY,
-    fontSize: 12,
-    fontWeight: '500',
-  },
 })
 
-export default ChatContainer
+export default FamilyChatContainer

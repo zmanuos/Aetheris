@@ -1,3 +1,4 @@
+// screens/admin/EmployeeEditScreen.js
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -9,7 +10,8 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
-  Switch
+  Switch,
+  Pressable // Importar Pressable para iOS picker
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -57,6 +59,7 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
 
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [showGenderPicker, setShowGenderPicker] = useState(false); // New state for gender picker
 
   const [emailError, setEmailError] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
@@ -153,6 +156,10 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
       setGenderError('El género es obligatorio.');
     } else {
       setGenderError('');
+    }
+    // Close picker if it's iOS overlay
+    if (Platform.OS === 'ios') {
+      setShowGenderPicker(false);
     }
   };
 
@@ -467,20 +474,50 @@ export default function EmployeeEditScreen({ route, onEmployeeEdited, onCancel }
 
         <View style={styles.fieldWrapper}>
           <Text style={styles.inputLabel}>Género</Text>
-          <View style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
-            <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
-            <Picker
-              selectedValue={employeeGender}
-              onValueChange={handleGenderChange}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-              enabled={!isSaving}
-            >
-              <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
-              <Picker.Item label="Masculino" value="Masculino" />
-              <Picker.Item label="Femenino" value="Femenino" />
-            </Picker>
-          </View>
+          {Platform.OS === 'ios' ? (
+            <>
+              <Pressable onPress={() => setShowGenderPicker(true)} style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
+                <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+                <Text style={employeeGender ? styles.pickerDisplayValue : styles.placeholderText}>
+                  {employeeGender || "Seleccionar Género..."}
+                </Text>
+                <Ionicons name="caret-down" size={14} color={MEDIUM_GRAY} style={styles.dropdownIcon} />
+              </Pressable>
+              {showGenderPicker && (
+                <View style={styles.iosPickerOverlay}>
+                  <View style={styles.iosPickerHeader}>
+                    <Text style={styles.iosPickerTitle}>Selecciona Género</Text>
+                    <TouchableOpacity onPress={() => setShowGenderPicker(false)}>
+                      <Text style={styles.iosPickerDone}>Hecho</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Picker
+                    selectedValue={employeeGender}
+                    onValueChange={handleGenderChange}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="Masculino" value="Masculino" />
+                    <Picker.Item label="Femenino" value="Femenino" />
+                  </Picker>
+                </View>
+              )}
+            </>
+          ) : (
+            <View style={[styles.pickerInputContainer, genderError ? styles.inputError : null]}>
+              <Ionicons name="person-circle-outline" size={16} color={MEDIUM_GRAY} style={styles.inputIcon} />
+              <Picker
+                selectedValue={employeeGender}
+                onValueChange={handleGenderChange}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+                enabled={!isSaving}
+              >
+                <Picker.Item label="Seleccionar Género..." value="" enabled={true} color={LIGHT_GRAY} />
+                <Picker.Item label="Masculino" value="Masculino" />
+                <Picker.Item label="Femenino" value="Femenino" />
+              </Picker>
+            </View>
+          )}
           {genderError ? <Text style={styles.fieldErrorText}>{genderError}</Text> : null}
         </View>
 
@@ -653,12 +690,12 @@ const styles = StyleSheet.create({
   formContainer: {
     ...containerBaseStyles,
     alignSelf: 'center',
-    marginTop: IS_LARGE_SCREEN ? 0 : 10,
+    marginTop: IS_LARGE_SCREEN ? 0 : 120,
     marginBottom: IS_LARGE_SCREEN ? 0 : 10,
     paddingVertical: 18,
-    paddingHorizontal: IS_LARGE_SCREEN ? 18 : 10,
-    width: IS_LARGE_SCREEN ? '48%' : '95%',
-    maxWidth: IS_LARGE_SCREEN ? 500 : '98%',
+    paddingHorizontal: IS_LARGE_SCREEN ? 30 : 10,
+    width: IS_LARGE_SCREEN ? '65%' : '95%',
+    maxWidth: IS_LARGE_SCREEN ? 600 : '98%',
   },
   formTitle: {
     fontSize: IS_LARGE_SCREEN ? 22 : 18,
@@ -740,6 +777,11 @@ const styles = StyleSheet.create({
       web: {
         outline: 'none',
       },
+      ios: {
+        // For iOS, the picker itself should not have borders/background
+        // as it's typically rendered in a modal or separate view.
+        // We'll manage the visual input via the Pressable.
+      }
     }),
   },
   pickerItem: {
@@ -748,12 +790,28 @@ const styles = StyleSheet.create({
   pickerInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderColor: VERY_LIGHT_GRAY,
+    borderWidth: 1,
     borderRadius: 6,
     paddingHorizontal: 8,
     backgroundColor: BACKGROUND_LIGHT,
     height: 38,
-    borderWidth: 1,
-    borderColor: VERY_LIGHT_GRAY,
+  },
+  pickerDisplayValue: { // New style for displaying selected value in iOS picker
+    flex: 1,
+    color: MEDIUM_GRAY,
+    fontSize: 13,
+    paddingLeft: 6,
+  },
+  placeholderText: { // New style for placeholder in iOS picker
+    flex: 1,
+    color: LIGHT_GRAY,
+    fontSize: 13,
+    paddingLeft: 6,
+  },
+  dropdownIcon: { // New style for dropdown caret icon
+    marginLeft: 6,
+    fontSize: 14,
   },
   dateInputText: {
     flex: 1,
@@ -841,7 +899,45 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   eyeIconContainer: {
-    paddingLeft: 8,
     paddingRight: 4,
+  },
+  // Styles for iOS Picker overlay (copied from EmployeeCreationScreen)
+  iosPickerOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.9)', // Semi-transparent white background
+    zIndex: 10,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: -3,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 10,
+  },
+  iosPickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: VERY_LIGHT_GRAY,
+    backgroundColor: '#F9F9F9',
+  },
+  iosPickerTitle: {
+    fontSize: 15, // Adjusted slightly for EmployeeEditScreen's typical smaller font sizes
+    fontWeight: '600',
+    color: DARK_GRAY,
+  },
+  iosPickerDone: {
+    fontSize: 15, // Adjusted slightly
+    color: PRIMARY_GREEN,
+    fontWeight: '600',
   },
 });
