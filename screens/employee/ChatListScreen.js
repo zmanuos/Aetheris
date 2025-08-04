@@ -396,6 +396,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.VERY_LIGHT_GRAY,
+    marginTop: 20,
   },
   loadingContainer: {
     flex: 1,

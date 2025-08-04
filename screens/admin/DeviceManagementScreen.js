@@ -648,6 +648,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: BACKGROUND_LIGHT,
         position: 'relative',
+        marginTop: 40,
     },
     keyboardAvoidingView: {
         flex: 1,

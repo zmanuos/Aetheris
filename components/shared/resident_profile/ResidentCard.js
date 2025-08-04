@@ -338,6 +338,7 @@ const styles = StyleSheet.create({
     elevation: 4,
     borderWidth: 1,
     borderColor: COLORS.borderLight,
+    marginTop: 15,
   },
   modernResidentHeader: {
     flexDirection: "row",

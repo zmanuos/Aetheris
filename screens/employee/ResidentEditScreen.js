@@ -1062,6 +1062,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: BACKGROUND_LIGHT,
+    marginTop: IS_LARGE_SCREEN ? 0 : 80,
   },
   loadingContainer: {
     flex: 1,
@@ -1077,12 +1078,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 18,
+    padding: 5,
     backgroundColor: 'transparent',
     borderBottomWidth: 0,
     shadowColor: 'transparent',
     elevation: 0,
-    paddingTop: Platform.OS === 'android' ? 35 : 18,
+    paddingTop: Platform.OS === 'android' ? 60 : 18,
   },
   title: {
     fontSize: IS_LARGE_SCREEN ? 26 : 22,

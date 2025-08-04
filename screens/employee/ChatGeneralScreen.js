@@ -746,7 +746,7 @@ export default function ChatGeneralScreen({ navigation }) {
               IS_LARGE_SCREEN ? {} : selectedConversationId ? { display: "none" } : {},
             ]}
           >
-            <View style={styles.searchBarContainer}>
+            <View style={styles.searchBarContainer }>
               <Ionicons name="search" size={20} color={COLORS.MEDIUM_GRAY} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}

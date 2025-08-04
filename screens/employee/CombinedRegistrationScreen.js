@@ -967,6 +967,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: BACKGROUND_LIGHT,
+    marginTop: IS_LARGE_SCREEN ? 0 : 90,
   },
   header: {
     flexDirection: 'row',
@@ -983,6 +984,7 @@ const styles = StyleSheet.create({
     fontSize: IS_LARGE_SCREEN ? 26 : 22,
     fontWeight: '700',
     color: DARK_GRAY,
+    marginTop: 25,
   },
   scrollViewContent: {
     flexGrow: 1,

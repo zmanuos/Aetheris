@@ -251,7 +251,7 @@ export default function EmployeeManagementScreen() {
             style={[
               styles.backButton,
               IS_MOBILE && styles.backButtonMobile,
-              { top: insets.top + (IS_MOBILE ? 30 : 20) }
+              { top: insets.top + (IS_MOBILE ? 70 : 20) }
             ]}
           >
             <Ionicons name="arrow-back-outline" size={IS_MOBILE ? 18 : 20} color={WHITE} />
@@ -279,7 +279,7 @@ export default function EmployeeManagementScreen() {
                 <View style={[
                   styles.controlsContainer, 
                   styles.controlsContainerMobile,
-                  { width: '100%', marginTop: 70 } // Empujar el contenido hacia abajo
+                  { width: '100%', marginTop: 100 } // Empujar el contenido hacia abajo
                 ]}>
                   <View style={[styles.searchFilterGroup, styles.searchFilterGroupMobile]}>
                     <View style={[styles.searchInputContainer, styles.searchInputContainerMobile]}>
@@ -373,12 +373,6 @@ export default function EmployeeManagementScreen() {
                               Apellido
                             </Text>
                             <Text style={[styles.tableHeaderCell, styles.tableHeaderCellMobile]}>
-                              Nacimiento
-                            </Text>
-                            <Text style={[styles.tableHeaderCell, styles.tableHeaderCellMobile]}>
-                              Género
-                            </Text>
-                            <Text style={[styles.tableHeaderCell, styles.tableHeaderCellMobile]}>
                               Teléfono
                             </Text>
                             <Text style={[styles.tableHeaderCell, styles.activeCell, styles.tableHeaderCellMobile]}>
@@ -412,12 +406,6 @@ export default function EmployeeManagementScreen() {
                                   </Text>
                                   <Text style={[styles.tableCell, styles.tableCellMobile]}>
                                     {employee.apellido}
-                                  </Text>
-                                  <Text style={[styles.tableCell, styles.tableCellMobile]}>
-                                    {new Date(employee.fecha_nacimiento).toLocaleDateString()}
-                                  </Text>
-                                  <Text style={[styles.tableCell, styles.tableCellMobile]}>
-                                    {employee.genero}
                                   </Text>
                                   <Text style={[styles.tableCell, styles.tableCellMobile]}>
                                     {employee.telefono}
@@ -1008,7 +996,7 @@ const styles = StyleSheet.create({
     minWidth: "100%", // Ensures it doesn't shrink below 100% on larger mobile screens if it fits
   },
   tableMobile: {
-    width: 750, // Adjusted width for mobile table
+    width: 350, // Adjusted width for mobile table
   },
   tableRowHeader: {
     flexDirection: "row",
