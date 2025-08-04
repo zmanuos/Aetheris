@@ -13,6 +13,19 @@ import FamilyNavigator from './navigation/FamilyNavigator';
 import { NotificationProvider } from './src/context/NotificationContext';
 import { SessionProvider, useSession } from './src/context/SessionContext';
 
+const linking = {
+  prefixes: ['http://localhost:8081'], // tu entorno local
+  config: {
+    screens: {
+      // nombre de los screens en AuthNavigator
+      Login: 'login',
+      ForgotPassword: 'forgot-password',
+      ResetPassword: 'resetPassword', // manejará /resetPassword?oobCode=...&mode=resetPassword
+      // puedes agregar más si hace falta
+    },
+  },
+};
+
 function AppContent() {
   const { session, logout } = useSession(); 
   const { isAuthenticated, userRole, firebaseUid, apiUserId, residentId } = session;
@@ -30,11 +43,8 @@ function AppContent() {
 
   const renderAppNavigator = () => {
     if (!isAuthenticated) {
-      // Asumiendo que AuthNavigator tiene una prop onLoginSuccess si la necesitas
       return <AuthNavigator />; 
-    } else if (userRole === 'admin') {
-      return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} apiUserId={apiUserId} />; 
-    } else if (userRole === 'employee') {
+    } else if (userRole === 'admin' || userRole === 'employee') {
       return <AdminNavigator onLogout={handleLogout} userRole={userRole} firebaseUid={firebaseUid} apiUserId={apiUserId} />; 
     } else if (userRole === 'family') {
       return (
@@ -47,10 +57,10 @@ function AppContent() {
       );
     }
     return null;
-  };
+  };  
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking} fallback={<></>}>
       <StatusBar style="auto" />
       {renderAppNavigator()}
     </NavigationContainer>
