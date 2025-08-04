@@ -1,5 +1,7 @@
-﻿using MongoDB.Bson;
+﻿// ContinuaResidente.cs
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 public class ContinuaResidente
 {
@@ -17,4 +19,10 @@ public class ContinuaResidente
 
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; }
+
+    [BsonElement("estado")]
+    public string Estado { get; set; }
+
+    [BsonElement("promedioRitmoReferencia")] // **Asegúrate de que este campo exista**
+    public double PromedioRitmoReferencia { get; set; }
 }

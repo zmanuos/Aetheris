@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// LecturaResidenteController.cs
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using System;
+using System.Linq; // Necesario para .Average()
 
 [ApiController]
 [Route("api/[controller]")]
@@ -21,12 +24,12 @@ public class LecturaResidenteController : ControllerBase
         var lecturas = _lecturasCollection.Find(x => true)
             .SortByDescending(x => x.Timestamp)
             .Limit(200)
-            .ToList().ToList();
+            .ToList();
         return Ok(lecturas);
     }
 
     [HttpGet("{id_residente}")]
-    public ActionResult<ContinuaResidente> GetById(string id_residente)
+    public ActionResult<List<ContinuaResidente>> GetById(string id_residente)
     {
         var lectura = _lecturasCollection
             .Find(x => x.ResidenteId == id_residente)
@@ -34,7 +37,7 @@ public class LecturaResidenteController : ControllerBase
             .Limit(200)
             .ToList();
 
-        if (lectura == null) return NotFound();
+        if (lectura == null || !lectura.Any()) return NotFound();
         return Ok(lectura);
     }
 
@@ -55,7 +58,6 @@ public class LecturaResidenteController : ControllerBase
         return Ok(promedio);
     }
 
-
     [HttpPost]
     public ActionResult<ContinuaResidente> Post([FromForm] ContinuaResidentePost LecturaResidente)
     {
@@ -70,21 +72,19 @@ public class LecturaResidenteController : ControllerBase
             ResidenteId = LecturaResidente.ResidenteId,
             DispositivoId = LecturaResidente.DispositivoId,
             RitmoCardiaco = LecturaResidente.RitmoCardiaco,
-            Timestamp = DateTime.UtcNow
+            Timestamp = DateTime.UtcNow,
+            Estado = LecturaResidente.Estado, // **Asegúrate de que este campo se asigne**
+            PromedioRitmoReferencia = LecturaResidente.PromedioRitmoReferencia // **Asegúrate de que este campo se asigne**
         };
 
         try
         {
             _lecturasCollection.InsertOne(nuevaLectura);
-
             return Ok(MessageResponse.GetReponse(0, "lectura ingresada correctamente", MessageType.Success));
-        
         }
         catch (Exception ex)
         {
             return Ok(MessageResponse.GetReponse(999, ex.Message, MessageType.CriticalError));
         }
     }
-
-
 }

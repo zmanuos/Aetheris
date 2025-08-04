@@ -206,13 +206,13 @@ const HomeScreen = () => {
         dashboardData.tiposAlertaMasComunes.map(item => {
             let color;
             switch (item.tipoAlerta) {
-                case 'Crítica':
+                case 'Bradicardia':
                     color = DANGER_COLOR;
                     break;
-                case 'Media':
+                case 'Taquicardia':
                     color = WARNING_COLOR;
                     break;
-                case 'Baja':
+                case 'Arritmia':
                     color = PRIMARY_ACCENT;
                     break;
                 default:
@@ -328,7 +328,7 @@ const HomeScreen = () => {
                             </View>
                         </View>
                         <View style={[styles.chartCard, styles.pieChartCardHeight]} onLayout={onPieChartCardLayout}>
-                            <Text style={styles.chartTitle}>Tendencia de tipo de alerta (Últimos 30 dias)</Text>
+                            <Text style={styles.chartTitle}>Tendencia de tipo de alerta (Ultima semana)</Text>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 {datosAlertasPorTipoPastel.length > 0 && pieChartCardWidth > 0 ? (
                                     <PieChart

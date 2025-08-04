@@ -66,7 +66,7 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
 
       const residentsWithDynamicData = await Promise.all(currentResidentsData.map(async (resident) => {
         let heartRateHistory = [];
-        let latestHeartRate = null;
+        let latestHeartRate = null; // Changed to hold the full latest heart rate object
 
         try {
           const heartRateResponse = await fetch(`${API_URL}/LecturaResidente/${resident.id_residente}`);
@@ -75,9 +75,12 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
             if (Array.isArray(heartRateData) && heartRateData.length > 0) {
               const sortedData = heartRateData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
+              // Extract only ritmoCardiaco for the history graph
               heartRateHistory = sortedData.map(record => record.ritmoCardiaco);
+
+              // Store the latest complete record
               if (sortedData.length > 0) {
-                latestHeartRate = sortedData[0].ritmoCardiaco;
+                latestHeartRate = sortedData[0]; // This now includes ritmoCardiaco, estado, promedioRitmoReferencia
               }
             }
           } else {
@@ -90,8 +93,8 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
         return {
           ...resident,
           foto_url: resident.foto && resident.foto !== 'nophoto.png' ? `${baseStaticUrl}/images/residents/${resident.foto}` : null,
-          historial_frecuencia_cardiaca: heartRateHistory,
-          ultima_frecuencia_cardiaca: latestHeartRate,
+          historial_frecuencia_cardiaca: heartRateHistory, // For the graph data
+          latestHeartRateData: latestHeartRate, // Full latest object for current status and activity
         };
       }));
 
@@ -139,7 +142,7 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
 
   const handleViewProfile = (id) => {
     // MODIFICACIÓN: Pasa currentUserRole y currentUserId
-    navigation.navigate('ResidentProfile', { 
+    navigation.navigate('ResidentProfile', {
       residentId: id,
       currentUserRole: currentUserRole, // Asegúrate de que esta variable tenga el valor correcto
       currentUserId: currentUserId,     // Asegúrate de que esta variable tenga el valor correcto
