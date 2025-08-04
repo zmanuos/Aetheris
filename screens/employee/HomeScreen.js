@@ -4,7 +4,7 @@ import { LineChart, PieChart } from 'react-native-chart-kit';
 import { Ionicons } from '@expo/vector-icons';
 import Config from '../../config/config';
 import MaquetaSVG from '../../assets/images/maqueta';
-import { useSession } from '../../src/context/SessionContext'; // Import useSession
+import { useSession } from '../../src/context/SessionContext';
 
 const PRIMARY_ACCENT = '#4A90E2';
 const SECONDARY_ACCENT = '#7ED321';
@@ -21,7 +21,7 @@ const API_ENDPOINT = `${Config.API_BASE_URL}/Dashboard`;
 const RESIDENT_LOCATION_API_ENDPOINT = `${Config.API_BASE_URL.replace('/api', '')}/LecturasUbicacion/residentes`;
 const CHECKUP_API_ENDPOINT = `${Config.API_BASE_URL}/ChequeoSemanal`;
 const RESIDENT_DETAIL_API_ENDPOINT_BASE = `${Config.API_BASE_URL}/Residente`;
-const PERSONAL_DETAIL_API_ENDPOINT_BASE = `${Config.API_BASE_URL}/Personal`; // New API endpoint for Personal details
+const PERSONAL_DETAIL_API_ENDPOINT_BASE = `${Config.API_BASE_URL}/Personal`;
 
 const AREA_COORDINATES = {
     "patio": { x: 544.95, y: 545.13 },
@@ -45,10 +45,12 @@ const HomeScreen = () => {
     const [areaHeatmapColors, setAreaHeatmapColors] = useState({});
     const [weeklyCheckupsData, setWeeklyCheckupsData] = useState([]);
     const [svgRenderedSize, setSvgRenderedSize] = useState({ width: 0, height: 0 });
-    const [pieChartCardWidth, setPieChartCardWidth] = useState(0); // State for pie chart card width
+    const [pieChartCardWidth, setPieChartCardWidth] = useState(0);
 
-    const { session } = useSession(); // Use the session context
-    const isAdmin = session.userRole === 'admin'; // Check if the user is an admin
+    const { session } = useSession();
+    const isAdmin = session.userRole === 'admin';
+
+    const isMobile = screenWidth < 768;
 
     const getHeatmapColor = (count) => {
         if (count === 0) return `rgba(240, 240, 240, 0.3)`;
@@ -81,7 +83,6 @@ const HomeScreen = () => {
                     counts[area] = (counts[area] || 0) + 1;
                 });
                 setResidentLocationCounts(counts);
-                console.log("Resident Location Counts:", counts);
 
                 const colors = {};
                 Object.keys(AREA_COORDINATES).forEach(area => {
@@ -152,11 +153,9 @@ const HomeScreen = () => {
         const { width, height } = event.nativeEvent.layout;
         if (width !== svgRenderedSize.width || height !== svgRenderedSize.height) {
             setSvgRenderedSize({ width, height });
-            console.log("SVG Rendered Size (from onSvgLayout):", { width, height });
         }
     };
 
-    // New onLayout handler for the pie chart's card
     const onPieChartCardLayout = (event) => {
         const { width } = event.nativeEvent.layout;
         if (width !== pieChartCardWidth) {
@@ -233,9 +232,9 @@ const HomeScreen = () => {
         backgroundGradientTo: CARD_BACKGROUND,
         color: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
         labelColor: (opacity = 1) => `rgba(58, 71, 80, ${opacity})`,
-        paddingRight: 5, // Keep this
-        paddingLeft: 0, // Explicitly set to 0
-        center: [0, 0], // Explicitly set to [0,0]
+        paddingRight: 5,
+        paddingLeft: 0,
+        center: [0, 0],
     };
 
     if (loading) {
@@ -257,26 +256,28 @@ const HomeScreen = () => {
         );
     }
 
-    // Determine KPI card style based on admin status
     const kpiCardFlexBasis = isAdmin ? '31%' : '48%';
+
+    const svgWidth = isMobile ? screenWidth * 0.9 - 20 : chartCardWidth * 0.65;
+    const pieChartWidth = isMobile ? screenWidth * 0.7 - 20 : pieChartCardWidth - 10;
 
     return (
         <ScrollView style={styles.container}>
             <View style={styles.mainContent}>
-                <View style={styles.dashboardTopSection}>
-                    <View style={styles.svgMapColumn} onLayout={onChartCardLayout}>
-                        <View style={[styles.chartCard, styles.svgMapCardHeight]}>
+                <View style={isMobile ? styles.dashboardTopSectionMobile : styles.dashboardTopSection}>
+                    <View style={isMobile ? styles.fullWidthColumn : styles.svgMapColumn} onLayout={onChartCardLayout}>
+                        <View style={[styles.chartCard, isMobile ? styles.svgMapCardHeightMobile : styles.svgMapCardHeight]}>
                             <Text style={styles.chartTitle}>Ubicación de Residentes</Text>
-                            <View style={styles.svgAndLegendContainer}>
-                                <View style={styles.svgWrapper} onLayout={onSvgLayout}>
+                            <View style={isMobile ? styles.svgAndLegendContainerMobile : styles.svgAndLegendContainer}>
+                                <View style={isMobile ? styles.svgWrapperMobile : styles.svgWrapper} onLayout={onSvgLayout}>
                                     <MaquetaSVG
                                         width={"100%"}
                                         height={"100%"}
                                         areaColors={areaHeatmapColors}
                                     />
                                 </View>
-                                <View style={styles.legendContainer}>
-                                    <Text style={styles.legendTitle}>Cant. Residentes   </Text>
+                                <View style={isMobile ? styles.legendContainerMobile : styles.legendContainer}>
+                                    <Text style={styles.legendTitle}>Cant. Residentes</Text>
                                     <View style={styles.heatmapLegend}>
                                         <View style={styles.heatmapItem}>
                                             <View style={[styles.heatmapColor, { backgroundColor: 'rgba(240, 240, 240, 0.3)' }]} />
@@ -307,9 +308,9 @@ const HomeScreen = () => {
                             </View>
                         </View>
                     </View>
-                    <View style={styles.kpisAndPieChartColumn}>
+                    <View style={isMobile ? styles.fullWidthColumn : styles.kpisAndPieChartColumn}>
                         <View style={styles.kpiContainerNewPlacement}>
-                            {isAdmin && ( // Conditionally render based on isAdmin
+                            {isAdmin && (
                                 <View style={[styles.kpiCard, styles.kpiCardStacked, getKpiCardStyle(dashboardData.cantidadEmpleadosActivos.status), { flexBasis: kpiCardFlexBasis }]}>
                                     <Ionicons name="briefcase-outline" size={32} color={NEUTRAL_DARK} />
                                     <Text style={styles.kpiNumber}>{dashboardData.cantidadEmpleadosActivos.value}</Text>
@@ -327,13 +328,13 @@ const HomeScreen = () => {
                                 <Text style={styles.kpiLabel}>Temp. del Asilo</Text>
                             </View>
                         </View>
-                        <View style={[styles.chartCard, styles.pieChartCardHeight]} onLayout={onPieChartCardLayout}>
+                        <View style={[styles.chartCard, isMobile ? styles.pieChartCardHeightMobile : styles.pieChartCardHeight]} onLayout={onPieChartCardLayout}>
                             <Text style={styles.chartTitle}>Tendencia de tipo de alerta (Ultima semana)</Text>
                             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
                                 {datosAlertasPorTipoPastel.length > 0 && pieChartCardWidth > 0 ? (
                                     <PieChart
-                                        width={pieChartCardWidth - 10} // Adjusted to give more space
-                                        height={220}
+                                        width={isMobile ? screenWidth * 0.7 : pieChartCardWidth - 10}
+                                        height={180}
                                         data={datosAlertasPorTipoPastel}
                                         chartConfig={chartConfig}
                                         accessor={'population'}
@@ -348,7 +349,6 @@ const HomeScreen = () => {
                                                 const angle = (item.population / total) * 2 * Math.PI;
                                                 const midAngle = currentAngle + angle / 2;
 
-                                                // Adjust textRadius based on dynamic width/height
                                                 const textRadius = (Math.min(width, height) / 2) * 0.8;
                                                 const x = (width / 2) + textRadius * Math.cos(midAngle - Math.PI / 2);
                                                 const y = (height / 2) + textRadius * Math.sin(midAngle - Math.PI / 2);
@@ -384,8 +384,8 @@ const HomeScreen = () => {
                         </View>
                     </View>
                 </View>
-                <View style={styles.listsSection}>
-                    <View style={styles.leftColumn}>
+                <View style={isMobile ? styles.listsSectionMobile : styles.listsSection}>
+                    <View style={isMobile ? styles.fullWidthColumn : styles.leftColumn}>
                         <View style={styles.compactListCard}>
                             <Text style={styles.chartTitle}>Alertas Recientes</Text>
                             <ScrollView nestedScrollEnabled={true} style={{ flex: 1 }}>
@@ -418,7 +418,7 @@ const HomeScreen = () => {
                             </ScrollView>
                         </View>
                     </View>
-                    <View style={styles.rightColumn}>
+                    <View style={isMobile ? styles.fullWidthColumn : styles.rightColumn}>
                         <View style={styles.compactListCard}>
                             <Text style={styles.chartTitle}>Consultas Recientes</Text>
                             <ScrollView nestedScrollEnabled={true} style={{ flex: 1 }}>
@@ -565,6 +565,12 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         width: '100%',
     },
+    dashboardTopSectionMobile: {
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+        marginBottom: 15,
+        width: '100%',
+    },
     svgMapColumn: {
         flex: 1,
         flexBasis: '49%',
@@ -593,6 +599,12 @@ const styles = StyleSheet.create({
         flex: 1,
         marginBottom: 15,
     },
+    listsSectionMobile: {
+        flexDirection: 'column',
+        width: '100%',
+        flex: 1,
+        marginBottom: 15,
+    },
     leftColumn: {
         flex: 1,
         minWidth: 300,
@@ -606,6 +618,13 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         flexGrow: 1,
         flexBasis: '48%',
+    },
+    fullWidthColumn: {
+        flex: 1,
+        width: '100%',
+        marginBottom: 15,
+        marginRight: 0,
+        marginLeft: 0,
     },
     compactListCard: {
         backgroundColor: CARD_BACKGROUND,
@@ -633,8 +652,15 @@ const styles = StyleSheet.create({
     svgMapCardHeight: {
         height: SVG_MAP_CARD_TOTAL_HEIGHT,
     },
+    svgMapCardHeightMobile: {
+        height: Dimensions.get('window').width * 0.9 + 50,
+        marginTop: 100,
+    },
     pieChartCardHeight: {
         height: 300,
+    },
+    pieChartCardHeightMobile: {
+        height: 250,
     },
     chartTitle: {
         fontSize: 18,
@@ -650,9 +676,23 @@ const styles = StyleSheet.create({
         alignItems: 'stretch',
         paddingVertical: 10,
     },
+    svgAndLegendContainerMobile: {
+        flexDirection: 'row',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingVertical: 10,
+    },
     svgWrapper: {
         flex: 3,
         height: SVG_MAP_HEIGHT,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+    },
+    svgWrapperMobile: {
+        width: '65%',
+        height: Dimensions.get('window').width * 1,
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
@@ -663,12 +703,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignSelf: 'stretch',
     },
+    legendContainerMobile: {
+        width: '35%',
+        paddingTop: 15,
+        paddingLeft: 5,
+        justifyContent: 'center',
+        alignItems: 'flex-start',
+        alignSelf: 'stretch',
+    },
     legendTitle: {
         fontSize: 14,
         fontWeight: 'bold',
         color: NEUTRAL_DARK,
         marginBottom: 8,
-        textAlign: 'center',
+        textAlign: 'left',
     },
     heatmapLegend: {
         marginBottom: 15,

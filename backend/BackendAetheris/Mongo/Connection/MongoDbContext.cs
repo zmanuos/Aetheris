@@ -8,7 +8,7 @@ public class MongoDbContext
 
     public MongoDbContext()
     {
-        var connectionString = "mongodb://localhost:27017"; 
+        var connectionString = "mongodb+srv://manuos:Mm$blood05@cluster0.7brufrq.mongodb.net/";
         var client = new MongoClient(connectionString);
         _database = client.GetDatabase("aetheris");
     }
