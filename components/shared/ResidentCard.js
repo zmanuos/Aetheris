@@ -114,7 +114,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   const totalHorizontalPadding = gridContainerPadding * 2;
   const cardWidth = Platform.select({
     web: (width - totalHorizontalPadding - (GAP_BETWEEN_CARDS * 2)) / 2.5,
-    default: (width - totalHorizontalPadding - GAP_BETWEEN_CARDS) / 2,
+    default: (width - totalHorizontalPadding - GAP_BETWEEN_CARDS),
   });
 
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
@@ -208,7 +208,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   );
 
   return (
-    <View style={[styles.card, { width: '100%' }]}>
+    <View style={[styles.card, { width: Platform.OS === 'web' ? cardWidth : '100%' }]}>
       <View style={styles.cardHeader}>
         {resident.foto_url && !imageLoadError ? (
           <Image
@@ -259,7 +259,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
               )}
             </View>
           ) : (
-             <Text style={styles.heartRateValue}></Text>
+            <Text style={styles.heartRateValue}></Text>
           )}
         </View>
 
@@ -276,7 +276,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
             <>
               <LineChart
                 data={heartRateChartData}
-                width={cardWidth - 16}
+                width={Platform.OS === 'web' ? cardWidth - 16 : width - (totalHorizontalPadding * 2) - 16}
                 height={90}
                 chartConfig={chartConfig}
                 bezier

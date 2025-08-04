@@ -3,11 +3,10 @@ import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import LoginForm from '../../components/shared/LoginForm';
 
-
-export default function LoginScreen({ onLoginSuccess }) {
+export default function LoginScreen({ navigation, onLoginSuccess }) {
   return (
     <View style={styles.container}>
-      <LoginForm onLoginSuccess={onLoginSuccess} />
+      <LoginForm navigation={navigation} onLoginSuccess={onLoginSuccess} />
     </View>
   );
 }

@@ -169,6 +169,7 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      <ScrollView style={styles.scrollView}>
       <View style={styles.headerContainer}>
         <View style={styles.topControlsGroup}>
           <View style={styles.searchFilterContainer}>
@@ -182,7 +183,7 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
                 onChangeText={setSearchText}
               />
             </View>
-            <View style={{ marginTop: IS_LARGE_SCREEN ? 0 : 10 }}>
+            <View style={{ marginTop: IS_LARGE_SCREEN ? 0 : 2 }}>
               <TouchableOpacity style={styles.filterButton}>
                 <Text style={styles.filterButtonText}>Filtros</Text>
               </TouchableOpacity>
@@ -209,8 +210,9 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
               <View
                 key={resident.id_residente}
                 style={{
-                  width: IS_LARGE_SCREEN ? '48%' : '100%',
-                  paddingHorizontal: 5,
+                  flexBasis: IS_LARGE_SCREEN ? '48%' : '100%',
+                  maxWidth: IS_LARGE_SCREEN ? 800 : '100%',
+                  paddingHorizontal: 8,
                   marginBottom: 15,
                 }}
               >
@@ -227,7 +229,9 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
           </View>
         </ScrollView>
       )}
+  </ScrollView>
     </SafeAreaView>
+  
   );
 }
 
@@ -276,7 +280,8 @@ const styles = StyleSheet.create({
     alignItems: IS_LARGE_SCREEN ? 'center' : 'stretch',
     flex: 1,
     width: '100%',
-    marginBottom: IS_LARGE_SCREEN ? 0 : 10,
+    marginBottom: IS_LARGE_SCREEN ? 0 : 5,
+    marginTop: IS_LARGE_SCREEN ? 0 : 80,
     gap: 0,
   },
   searchInputContainer: {
@@ -286,7 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6',
     borderRadius: 8,
     paddingHorizontal: 10,
-    paddingVertical: 8,
+    paddingVertical: IS_LARGE_SCREEN ? 8 : 2,
     marginRight: IS_LARGE_SCREEN ? 10 : 0,
     maxWidth: IS_LARGE_SCREEN ? 300 : '100%',
     width: IS_LARGE_SCREEN ? 'auto' : '100%',
@@ -320,12 +325,13 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  residentsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    paddingHorizontal: 0,
-  },
+residentsGrid: {
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  justifyContent: 'space-between',
+  paddingHorizontal: 24, // más espacio a los lados
+  gap: 10, // opcional: separación entre filas/columnas en RN >0.71
+},
 
   loadingIndicator: {
     marginTop: 50,

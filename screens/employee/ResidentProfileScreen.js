@@ -479,10 +479,12 @@ const styles = StyleSheet.create({
   modernContainer: {
     flex: 1,
     backgroundColor: COLORS.pageBackground,
+    marginTop: 50,
+
   },
   modernBackButton: {
     position: "absolute",
-    top: IS_WEB ? 7 : Platform.OS === "ios" ? 50 : 30,
+    top: IS_WEB ? 7 : Platform.OS === "ios" ? 50 : 50,
     left: 20,
     zIndex: 10,
   },
