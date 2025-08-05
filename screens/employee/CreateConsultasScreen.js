@@ -584,6 +584,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: BACKGROUND_LIGHT,
+    marginTop: IS_LARGE_SCREEN? 0 : 60,
   },
   keyboardAvoidingView: {
     flex: 1,

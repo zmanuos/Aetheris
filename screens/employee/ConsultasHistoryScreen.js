@@ -439,6 +439,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: VERY_LIGHT_GRAY,
+        marginTop: IS_LARGE_SCREEN ? 0 : 30,
+
     },
     keyboardView: {
         flex: 1,

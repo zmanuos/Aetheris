@@ -22,7 +22,7 @@ import { useSession } from '../../src/context/SessionContext';
 
 const API_URL = Config.API_BASE_URL;
 
-export default function LoginForm({ onLoginSuccess }) {
+export default function LoginForm({ navigation, onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -35,20 +35,20 @@ export default function LoginForm({ onLoginSuccess }) {
     try {
       let endpoint = '';
       let userKey = '';
-      
+
       console.log(`[LoginForm] fetchUserDetails: Intentando obtener detalles para rol: ${role}, UID: ${firebaseUid}`);
 
       if (role === 'admin') {
         console.log("[LoginForm] Rol 'admin' detectado. No se buscarán detalles en el backend (id_personal será null).");
         return { userDetails: { nombre: "Administrador", apellido: "" }, userId: null, role: role, residentId: null };
-      } 
+      }
       else if (role === 'employee') {
         endpoint = `${API_URL}/Personal`;
         userKey = 'personal';
         console.log(`[LoginForm] Rol 'employee'. Endpoint: ${endpoint}`);
-      } 
+      }
       else if (role === 'family') {
-        endpoint = `${API_URL}/Familiar/firebase/${firebaseUid}`; 
+        endpoint = `${API_URL}/Familiar/firebase/${firebaseUid}`;
         userKey = 'familiar';
         console.log(`[LoginForm] Rol 'family'. Endpoint: ${endpoint}`);
       } else {
@@ -58,7 +58,7 @@ export default function LoginForm({ onLoginSuccess }) {
 
       console.log(`[LoginForm] Realizando fetch a: ${endpoint}`);
       const response = await fetch(endpoint);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[LoginForm] HTTP error! status: ${response.status}, response: ${errorText}`);
@@ -76,19 +76,19 @@ export default function LoginForm({ onLoginSuccess }) {
           console.error(`[LoginForm] La respuesta no contiene un array en ${userKey}:`, data);
           return null;
         }
-        currentUser = users.find(user => 
-          user.firebase_uid === firebaseUid || 
+        currentUser = users.find(user =>
+          user.firebase_uid === firebaseUid ||
           user.firebaseUid === firebaseUid
         );
       } else if (role === 'family') {
         // --- INICIO DE LA CORRECCIÓN ---
         // Acceder a la propiedad 'familiar' dentro de la respuesta
-        currentUser = data.familiar; 
+        currentUser = data.familiar;
         // --- FIN DE LA CORRECCIÓN ---
 
         if (!currentUser) {
-            console.warn(`[LoginForm] Familiar con firebase_uid ${firebaseUid} no encontrado en el endpoint. Datos recibidos:`, data);
-            return null;
+          console.warn(`[LoginForm] Familiar con firebase_uid ${firebaseUid} no encontrado en el endpoint. Datos recibidos:`, data);
+          return null;
         }
       }
 
@@ -96,7 +96,7 @@ export default function LoginForm({ onLoginSuccess }) {
       if (currentUser) {
         console.log("=== [LoginForm] DETALLES DEL USUARIO ENCONTRADO ===");
         console.log("[LoginForm] Datos completos del usuario de la API:", currentUser);
-        
+
         const apiUserId = currentUser.id;
         let associatedResidentId = null;
 
@@ -110,25 +110,25 @@ export default function LoginForm({ onLoginSuccess }) {
             console.log("[LoginForm] ID Residente asociado (desde objeto residente):", currentUser.residente.id_residente);
             associatedResidentId = currentUser.residente.id_residente;
           } else if (currentUser.id_residente) { // Fallback por si id_residente está directamente en familiar (menos probable por tu curl)
-              console.log("[LoginForm] ID Residente asociado (directo en familiar):", currentUser.id_residente);
-              associatedResidentId = currentUser.id_residente;
+            console.log("[LoginForm] ID Residente asociado (directo en familiar):", currentUser.id_residente);
+            associatedResidentId = currentUser.id_residente;
           }
           // --- FIN DE LA CORRECCIÓN ADICIONAL ---
           if (currentUser.parentesco) {
             console.log("[LoginForm] Parentesco:", currentUser.parentesco.nombre);
           }
-        } else if (role === 'employee') { 
+        } else if (role === 'employee') {
           console.log("[LoginForm] ID Personal (desde API):", apiUserId);
           console.log("[LoginForm] Nombre completo:", `${currentUser.nombre} ${currentUser.apellido}`);
           console.log("[LoginForm] Teléfono:", currentUser.telefono);
           console.log("[LoginForm] Activo:", currentUser.activo);
         }
-        
+
         console.log("======================================");
-        
+
         return {
           userDetails: currentUser,
-          userId: apiUserId, 
+          userId: apiUserId,
           role: role,
           residentId: associatedResidentId
         };
@@ -170,7 +170,7 @@ export default function LoginForm({ onLoginSuccess }) {
         loginTime: new Date().toISOString(),
         timestamp: Date.now()
       };
-      
+
       console.log("[LoginForm] Objeto de información del usuario:", userLoginInfo);
 
       const userDocRef = doc(db, "users", user.uid);
@@ -187,22 +187,22 @@ export default function LoginForm({ onLoginSuccess }) {
         if (assignedRole) {
           console.log("[LoginForm] Llamando a fetchUserDetails para obtener datos específicos del rol...");
           const userDetails = await fetchUserDetails(assignedRole, user.uid);
-          
+
           if (userDetails) {
             console.log("=== [LoginForm] RESUMEN FINAL DEL LOGIN ===");
             console.log("[LoginForm] Firebase UID:", user.uid);
             console.log("[LoginForm] Email:", user.email);
             console.log("[LoginForm] Rol:", assignedRole);
-            console.log("[LoginForm] ID de usuario (API, personal/familiar):", userDetails.userId); 
+            console.log("[LoginForm] ID de usuario (API, personal/familiar):", userDetails.userId);
             if (assignedRole === 'family') {
               console.log("[LoginForm] ID Residente Asociado:", userDetails.residentId);
             } else if (assignedRole === 'admin') {
-              console.log("[LoginForm] ID Personal (para API - Admin):", userDetails.userId); 
+              console.log("[LoginForm] ID Personal (para API - Admin):", userDetails.userId);
             }
             console.log("===============================");
-            
-            login(user.uid, assignedRole, userDetails.userId, userDetails.residentId); 
-            
+
+            login(user.uid, assignedRole, userDetails.userId, userDetails.residentId);
+
             console.log(">>> Objeto de sesión DESPUÉS de iniciar sesión:", session);
 
             if (onLoginSuccess) {
@@ -262,8 +262,8 @@ export default function LoginForm({ onLoginSuccess }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === "ios" ? "padding" : "height"} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardView}
       >
         <View style={styles.formContainer}>
@@ -306,15 +306,18 @@ export default function LoginForm({ onLoginSuccess }) {
                       autoCapitalize="none"
                       autoCorrect={false}
                       placeholder=""
+                      returnKeyType="done"
+                      onSubmitEditing={handleSubmit}
+                      blurOnSubmit={true}
                     />
-                    <TouchableOpacity 
-                      style={styles.eyeButton} 
+                    <TouchableOpacity
+                      style={styles.eyeButton}
                       onPress={() => setShowPassword(!showPassword)}
                     >
-                      <Ionicons 
-                        name={showPassword ? "eye-off" : "eye"} 
-                        size={20} 
-                        color="#9CA3AF" 
+                      <Ionicons
+                        name={showPassword ? "eye-off" : "eye"}
+                        size={20}
+                        color="#9CA3AF"
                       />
                     </TouchableOpacity>
                   </View>
@@ -337,7 +340,7 @@ export default function LoginForm({ onLoginSuccess }) {
               </View>
 
               <View style={styles.footer}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
                   <Text style={styles.forgotPassword}>Forgot your password?</Text>
                 </TouchableOpacity>
               </View>

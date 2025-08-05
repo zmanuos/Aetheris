@@ -32,15 +32,31 @@ const getHealthStatusColor = (status) => {
   }
 };
 
-const getHeartRateRange = (heartRate) => {
-  if (heartRate >= 60 && heartRate <= 100) {
+// New function to determine heart rate status based on reference average
+const getHeartRateStatus = (currentHeartRate, referenceAverage) => {
+  if (currentHeartRate === 'N/A' || !referenceAverage) return { text: 'N/A', color: LIGHT_GRAY };
+
+  const difference = currentHeartRate - referenceAverage;
+  const percentageDifference = (Math.abs(difference) / referenceAverage) * 100;
+
+  if (percentageDifference <= 10) { // Within 10% of reference
     return { text: 'Normal', color: PRIMARY_GREEN };
-  } else if (heartRate > 100) {
+  } else if (difference > 0) { // Higher than reference
     return { text: 'Alto', color: ERROR_RED };
-  } else if (heartRate < 60 && heartRate !== 0) {
+  } else { // Lower than reference
     return { text: 'Bajo', color: '#F59E0B' };
   }
-  return { text: 'N/A', color: LIGHT_GRAY };
+};
+
+// New function to map activity status to a descriptive string
+const getActivityDescription = (status) => {
+  if (!status || typeof status !== 'string') return 'Desconocido';
+  switch (status.toLowerCase()) {
+    case 'reposo': return 'Descansando';
+    case 'activo': return 'Caminando';
+    case 'agitado': return 'Corriendo';
+    default: return 'Desconocido';
+  }
 };
 
 const getInitials = (nombre, apellido) => {
@@ -63,6 +79,27 @@ const stringToHslColor = (str, s, l) => {
   return `hsl(${h}, ${s}%, ${l}%)`;
 };
 
+// Helper function to calculate a simple moving average
+const calculateMovingAverage = (data, windowSize) => {
+  if (data.length === 0) return [];
+  if (windowSize <= 1) return data;
+
+  const smoothedData = [];
+  for (let i = 0; i < data.length; i++) {
+    const start = Math.max(0, i - Math.floor(windowSize / 2));
+    const end = Math.min(data.length - 1, i + Math.ceil(windowSize / 2) - 1);
+    let sum = 0;
+    let count = 0;
+    for (let j = start; j <= end; j++) {
+      sum += data[j];
+      count++;
+    }
+    smoothedData.push(Math.round(sum / count)); // Round to nearest integer for BPM
+  }
+  return smoothedData;
+};
+
+
 const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, onAssignDevice, gridContainerPadding }) => {
   const [imageLoadError, setImageLoadError] = useState(false);
   const [selectedBPMValue, setSelectedBPMValue] = useState(null);
@@ -77,39 +114,63 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   const totalHorizontalPadding = gridContainerPadding * 2;
   const cardWidth = Platform.select({
     web: (width - totalHorizontalPadding - (GAP_BETWEEN_CARDS * 2)) / 2.5,
-    default: (width - totalHorizontalPadding - GAP_BETWEEN_CARDS) / 2,
+    default: (width - totalHorizontalPadding - GAP_BETWEEN_CARDS),
   });
 
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
 
   const numberOfPointsToShow = 7;
-  const heartRateDataPoints = resident.historial_frecuencia_cardiaca || [];
+  // heartRateHistory is already sorted from most recent to oldest in ResidentsScreen
+  const heartRateHistory = resident.historial_frecuencia_cardiaca || [];
+  
+  // Take the most recent 'numberOfPointsToShow' values.
+  // The last element of this array will be the most recent historical value.
+  let recentHeartRateDataRaw = heartRateHistory.slice(0, numberOfPointsToShow).reverse(); // Reverse to get oldest to newest for chart
 
-  const recentHeartRateData = heartRateDataPoints.slice(-numberOfPointsToShow);
+  const latestHeartRateEntry = resident.latestHeartRateData; // Get the latest complete heart rate entry
+  const displayedBPM = latestHeartRateEntry ? latestHeartRateEntry.ritmoCardiaco : 'N/A'; //
+  const referenceAverageBPM = latestHeartRateEntry ? latestHeartRateEntry.promedioRitmoReferencia : null; //
+  const currentActivityStatus = latestHeartRateEntry ? latestHeartRateEntry.estado : 'N/A'; //
 
-  const displayedBPM = recentHeartRateData.length > 0
-    ? recentHeartRateData[recentHeartRateData.length - 1]
-    : 'N/A';
+  // --- Smoothing the graph data ---
+  // Apply a moving average for stability.
+  // A window size of 3 is a good starting point for smoothing.
+  let smoothedHeartRateData = calculateMovingAverage(recentHeartRateDataRaw, 3);
 
-  const average = recentHeartRateData.length ? (recentHeartRateData.reduce((a, b) => a + b, 0) / recentHeartRateData.length) : 0;
+  // Ensure the very last point of the graph always matches the current displayedBPM.
+  // If there are data points, replace the last one with the exact displayedBPM.
+  if (smoothedHeartRateData.length > 0 && displayedBPM !== 'N/A') {
+    smoothedHeartRateData[smoothedHeartRateData.length - 1] = displayedBPM;
+  } else if (displayedBPM !== 'N/A' && smoothedHeartRateData.length === 0) {
+    // If no historical data but we have a current BPM, add it as the only point
+    smoothedHeartRateData.push(displayedBPM);
+  }
+  // --- End Smoothing ---
+
+  const averageGraph = smoothedHeartRateData.length ? (smoothedHeartRateData.reduce((a, b) => a + b, 0) / smoothedHeartRateData.length) : 0;
   const healthColor = getHealthStatusColor(resident.estado_salud_general);
-  const heartRateRange = getHeartRateRange(displayedBPM);
+  const heartRateStatus = getHeartRateStatus(displayedBPM, referenceAverageBPM);
+  const activityDescription = getActivityDescription(currentActivityStatus);
 
 
   const heartRateChartData = {
-    labels: recentHeartRateData.map((_, index) => {
-      const daysAgo = numberOfPointsToShow - 1 - index;
+    labels: smoothedHeartRateData.map((_, index) => {
+      // Labels should reflect the 'days ago' for the displayed points
+      // If we reversed the data, the last element is 'Today' (0 days ago)
+      // The first element is 'numberOfPointsToShow - 1' days ago.
+      const daysAgo = smoothedHeartRateData.length - 1 - index;
       if (daysAgo === 0) return 'Hoy';
+      if (daysAgo < 0) return ''; // Should not happen with correct slicing
       return `D-${daysAgo}`;
     }),
     datasets: [
       {
-        data: recentHeartRateData,
+        data: smoothedHeartRateData,
         color: (opacity = 1) => `rgba(239, 68, 68, ${opacity})`,
         strokeWidth: 2
       },
       {
-        data: new Array(recentHeartRateData.length).fill(average),
+        data: new Array(smoothedHeartRateData.length).fill(averageGraph),
         color: (opacity = 1) => `rgba(107, 178, 64, ${opacity * 0.6})`,
         strokeWidth: 1,
         withDots: false,
@@ -147,7 +208,7 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   );
 
   return (
-    <View style={[styles.card, { width: '100%' }]}>
+    <View style={[styles.card, { width: Platform.OS === 'web' ? cardWidth : '100%' }]}>
       <View style={styles.cardHeader}>
         {resident.foto_url && !imageLoadError ? (
           <Image
@@ -184,26 +245,38 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         <View style={styles.heartRateSection}>
           <Ionicons name="heart-outline" size={14} color="#EF4444" />
           <Text style={styles.heartRateText}>FC:</Text>
-          {resident.dispositivo && displayedBPM !== '' ? (
+          {resident.dispositivo && displayedBPM !== 'N/A' ? (
             <View style={styles.heartRateValueContainer}>
-              <View style={[styles.heartRateRangeTag, { backgroundColor: heartRateRange.color }]}>
-                <Text style={styles.heartRateRangeText}>{heartRateRange.text}</Text>
+              <View style={[styles.heartRateRangeTag, { backgroundColor: heartRateStatus.color }]}>
+                <Text style={styles.heartRateRangeText}>{heartRateStatus.text}</Text>
               </View>
               <Text style={styles.heartRateValue}>
                 {displayedBPM}
                 <Text style={styles.heartRateUnit}> bpm</Text>
               </Text>
+              {referenceAverageBPM !== null && (
+                <Text style={styles.referenceBPMText}> (Ref: {referenceAverageBPM} bpm)</Text>
+              )}
             </View>
           ) : (
-             <Text style={styles.heartRateValue}></Text>
+            <Text style={styles.heartRateValue}></Text>
           )}
         </View>
+
+        {resident.dispositivo && currentActivityStatus !== 'N/A' && (
+          <View style={styles.activitySection}>
+            <Ionicons name="walk-outline" size={14} color={MEDIUM_GRAY} />
+            <Text style={styles.activityText}>Actividad: </Text>
+            <Text style={styles.activityValue}>{activityDescription}</Text>
+          </View>
+        )}
+
         <View style={styles.chartContainer}>
-          {resident.dispositivo && recentHeartRateData && recentHeartRateData.length > 0 ? (
+          {resident.dispositivo && smoothedHeartRateData && smoothedHeartRateData.length > 0 ? (
             <>
               <LineChart
                 data={heartRateChartData}
-                width={cardWidth - 16}
+                width={Platform.OS === 'web' ? cardWidth - 16 : width - (totalHorizontalPadding * 2) - 16}
                 height={90}
                 chartConfig={chartConfig}
                 bezier
@@ -391,6 +464,27 @@ const styles = StyleSheet.create({
     color: WHITE,
     fontSize: 9,
     fontWeight: 'bold',
+  },
+  referenceBPMText: {
+    fontSize: 10,
+    color: LIGHT_GRAY,
+    marginLeft: 5,
+  },
+  activitySection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  activityText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: MEDIUM_GRAY,
+    marginLeft: 4,
+  },
+  activityValue: {
+    fontSize: 12,
+    color: DARK_GRAY,
   },
   chartContainer: {
     height: 90,

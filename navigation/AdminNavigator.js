@@ -2,18 +2,17 @@ import { createDrawerNavigator } from "@react-navigation/drawer"
 import { createStackNavigator } from "@react-navigation/stack"
 import { Platform, View, Text, StyleSheet } from "react-native"
 
-// Importaciones de Header y SideMenu
 import Header from "../components/navigation/Header"
 import SideMenu from "../components/navigation/SideMenu"
 
-// IMPORTACIONES DE PANTALLAS
 import HomeScreen from "../screens/employee/HomeScreen"
 import ResidentsScreen from "../screens/employee/ResidentsScreen"
 import CombinedRegistrationScreen from "../screens/employee/CombinedRegistrationScreen"
 import ResidentProfileScreen from "../screens/employee/ResidentProfileScreen"
 import WeeklyCheckupDetailScreen from "../screens/employee/WeeklyCheckupDetailScreen"
 import ResidentEditScreen from "../screens/employee/ResidentEditScreen"
-import ChatGeneralScreen from "../screens/employee/ChatGeneralScreen"
+import ChatListScreen from "../screens/employee/ChatListScreen"
+import SpecificChatScreen from "../screens/employee/SpecificChatScreen"
 import CreateConsultasScreen from "../screens/employee/CreateConsultasScreen"
 import ConsultasHistoryScreen from "../screens/employee/ConsultasHistoryScreen"
 import CheckupReportsScreen from "../screens/employee/CheckupReportsScreen"
@@ -23,15 +22,15 @@ import AsylumDataScreen from "../screens/admin/AsylumDataScreen"
 import EmployeeEditScreen from "../screens/admin/EmployeeEditScreen"
 import DeviceManagementScreen from "../screens/admin/DeviceManagementScreen"
 import MyAccountScreen from "../components/navigation/MyAccountScreen"
+import ChatGeneralScreen from "../screens/employee/ChatGeneralScreen"
 
-// Importar el nuevo proveedor de contexto
 import { UnreadMessagesProvider } from "../src/context/UnreadMessagesContext"
 
 const Drawer = createDrawerNavigator()
 const ResidentsStack = createStackNavigator()
 const EmployeeStack = createStackNavigator()
+const ChatStack = createStackNavigator()
 
-// FUNCIONES STACK
 function ResidentsStackScreen() {
   return (
     <ResidentsStack.Navigator
@@ -73,7 +72,59 @@ function EmployeeManagementStackScreen() {
   )
 }
 
-// Componente de prueba mínimo
+function ChatStackScreen() {
+  if (Platform.OS === "web") {
+    return (
+      <ChatStack.Navigator
+        initialRouteName="ChatGeneral"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <ChatStack.Screen
+          name="ChatGeneral"
+          component={ChatGeneralScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+      </ChatStack.Navigator>
+    )
+  } else {
+    return (
+      <ChatStack.Navigator
+        initialRouteName="ChatList"
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <ChatStack.Screen
+          name="ChatList"
+          component={ChatListScreen}
+          options={{
+            headerShown: true,
+            header: ({ options, navigation, route }) => (
+              <Header
+                title={options.title || route.name}
+                onMenuPress={() => navigation.toggleDrawer()}
+                navigation={navigation}
+              />
+            ),
+            title: "CHAT CON FAMILIARES",
+          }}
+        />
+        <ChatStack.Screen
+          name="SpecificChat"
+          component={SpecificChatScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+      </ChatStack.Navigator>
+    )
+  }
+}
+
 function TestScreen() {
   return (
     <View style={styles.container}>
@@ -85,7 +136,6 @@ function TestScreen() {
 
 const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
   return (
-    // Envolver el Drawer.Navigator con el UnreadMessagesProvider
     <UnreadMessagesProvider>
       <Drawer.Navigator
         initialRouteName="Home"
@@ -113,10 +163,9 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
           },
         })}
       >
-        {/* PANTALLAS DEL DRAWER */}
         <Drawer.Screen name="Home" component={HomeScreen} options={{ title: "INICIO" }} />
         <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: "GESTIÓN RESIDENTES" }} />
-        <Drawer.Screen name="ChatGeneral" component={ChatGeneralScreen} options={{ title: "CHAT CON FAMILIARES" }} />
+        <Drawer.Screen name="ChatGeneral" component={ChatStackScreen} options={{ title: "CHAT CON FAMILIARES" }} />
         <Drawer.Screen
           name="DeviceManagement"
           component={DeviceManagementScreen}

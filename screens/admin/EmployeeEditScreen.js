@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
   formContainer: {
     ...containerBaseStyles,
     alignSelf: 'center',
-    marginTop: IS_LARGE_SCREEN ? 0 : 120,
+    marginTop: IS_LARGE_SCREEN ? 0 : 145,
     marginBottom: IS_LARGE_SCREEN ? 0 : 10,
     paddingVertical: 18,
     paddingHorizontal: IS_LARGE_SCREEN ? 30 : 10,

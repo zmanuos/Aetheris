@@ -1,9 +1,17 @@
+// main.js
 import { config } from './config.js';
 import { simularDiaTemperatura } from './mainTemperatura.js';
 
 var contador = 0;
 var acomuladorOriginal = 0;
 var acomuladorModificado = 0;
+
+// Definir los posibles estados y sus promedios de ritmo asociados
+const estadosResidente = [
+    { nombre: "reposo", promedioKey: "promedioReposo" },
+    { nombre: "activo", promedioKey: "promedioActivo" },
+    { nombre: "agitado", promedioKey: "promedioAgitado" }
+];
 
 async function init() {
     console.log("Initializing Document...");
@@ -22,13 +30,43 @@ async function init() {
                 dispositivoId = residente.dispositivo.id;
             } else {
                 console.warn(`Residente con ID ${residenteId} no tiene un dispositivo asignado. Se omitirá la simulación para este residente.`);
-                return;
+                return; // Omitir este residente si no tiene dispositivo
             }
 
-            const promedio = Math.floor(Math.random() * (90 - 70 + 1)) + 70;
+            // **NUEVA VALIDACIÓN AQUÍ**
+            // Verificar si los promedios existen y son valores positivos (no null o 0)
+            if (!residente.promedioReposo || residente.promedioReposo <= 0 ||
+                !residente.promedioActivo || residente.promedioActivo <= 0 ||
+                !residente.promedioAgitado || residente.promedioAgitado <= 0) {
+                console.warn(`Residente con ID ${residenteId} será omitido. Le faltan promedios de ritmo cardíaco (reposo, activo, agitado) o son inválidos (menor o igual a 0).`);
+                return; // Omitir este residente si le faltan promedios válidos
+            }
 
+            // Ahora podemos usar los promedios directamente sin valores por defecto
+            const promedioReposo = residente.promedioReposo;
+            const promedioActivo = residente.promedioActivo;
+            const promedioAgitado = residente.promedioAgitado;
+
+            // Iniciar la simulación para cada residente con sus promedios
             setInterval(() => {
-                simularResidente(residenteId, promedio, dispositivoId);
+                const estadoActual = estadosResidente[Math.floor(Math.random() * estadosResidente.length)];
+                let promedioReferencia;
+
+                switch (estadoActual.nombre) {
+                    case "reposo":
+                        promedioReferencia = promedioReposo;
+                        break;
+                    case "activo":
+                        promedioReferencia = promedioActivo;
+                        break;
+                    case "agitado":
+                        promedioReferencia = promedioAgitado;
+                        break;
+                    default:
+                        promedioReferencia = promedioReposo;
+                }
+                
+                simularResidente(residenteId, promedioReferencia, dispositivoId, estadoActual.nombre, promedioReferencia);
             }, 11000);
         });
     });
@@ -42,13 +80,12 @@ async function init() {
 
     document.getElementById("button-stop").addEventListener("click", () => {
         console.log("Deteniendo envio de lecturas...");
-        clearInterval(intervalReceive);
     });
 }
 
 async function obtenerResidentes() {
     try {
-        const response = await fetch("https://localhost:7160/api/Residente", {
+        const response = await fetch(config.api.url.residentes, {
             method: "GET",
             headers: {
                 "Accept": "application/json"
@@ -93,18 +130,20 @@ async function enviarAlertaResidente(idResidente, alertaTipo, mensaje) {
     }
 }
 
-async function enviarLectura(residenteId, dispositivoId, RitmoPromedio) {
-    console.log("ENVIANDO:", residenteId, dispositivoId, RitmoPromedio);
+async function enviarLectura(residenteId, dispositivoId, ritmoActual, estado, promedioRitmoReferencia) {
+    console.log("ENVIANDO:", residenteId, dispositivoId, ritmoActual, estado, promedioRitmoReferencia); 
 
-    const ritmo = parseInt(RitmoPromedio);
+    const ritmo = parseInt(ritmoActual);
 
     const formData = new FormData();
     formData.append("ResidenteId", residenteId);
     formData.append("DispositivoId", dispositivoId);
     formData.append("RitmoCardiaco", ritmo);
+    formData.append("Estado", estado);
+    formData.append("PromedioRitmoReferencia", promedioRitmoReferencia);
 
     try {
-        const response = await fetch("https://localhost:7160/api/LecturaResidente", {
+        const response = await fetch(config.api.url.lecturas, {
             method: "POST",
             body: formData,
             headers: {
@@ -170,7 +209,7 @@ function generarVariaciones(promedio, horaActual, variacionCritica) {
             modificador = (ritmo * 0.65) + (signoCritico * (promedio * ((Math.random() * (0.05)))));
             break;
         case 3: // Taquicardia
-            modificador = (ritmo * 1.30) + (signoCritico * (promedio * ((Math.random() * (0.05))))); // 
+            modificador = (ritmo * 1.30) + (signoCritico * (promedio * ((Math.random() * (0.05)))));
             break;
     }
 
@@ -179,7 +218,7 @@ function generarVariaciones(promedio, horaActual, variacionCritica) {
 
 let simulacionActiva = false;
 
-function simularResidente(residenteId, promedio, dispositivoId) {
+function simularResidente(residenteId, promedio, dispositivoId, estado, promedioRitmoReferencia) {
     if (simulacionActiva) {
         console.log("Simulación en curso. Esperando que finalice...");
         return;
@@ -205,7 +244,7 @@ function simularResidente(residenteId, promedio, dispositivoId) {
         }
     }
 
-    console.log("variacion: " + variacion);
+    console.log("variacion: " + variacion + ", estado: " + estado + ", promedioRef: " + promedioRitmoReferencia);
 
     if (variacion > 0) {
         let repeticiones = 0;
@@ -223,12 +262,14 @@ function simularResidente(residenteId, promedio, dispositivoId) {
             const promedioModificado = Math.round((acomuladorModificado / contador) * 100) / 100;
 
             console.log("______________________________________________________");
+            console.log("Estado: " + estado);
             console.log("Ritmo Cardiaco Modificado: " + lecturaRitmo + " bpm");
             console.log("Ritmo Cardiaco Original:   " + lecturaModificada + " bpm");
             console.log("Promedio Original:      " + promedioOriginal + " bpm\t\t variacion: " + config.variation[hora] + " hora: " + (hora > 12 ? hora - 12 : hora) + " " + (hora >= 12 ? "PM" : "AM"));
             console.log("Promedio Modificado:    " + promedioModificado + " bpm\t\t variacion: " + config.variation[hora] + " hora: " + (hora > 12 ? hora - 12 : hora) + " " + (hora >= 12 ? "PM" : "AM"));
+            console.log("Promedio de Referencia: " + promedioRitmoReferencia + " bpm");
 
-            enviarLectura(residenteId, dispositivoId, lecturaModificada);
+            enviarLectura(residenteId, dispositivoId, lecturaModificada, estado, promedioRitmoReferencia);
 
             repeticiones++;
 
@@ -239,7 +280,7 @@ function simularResidente(residenteId, promedio, dispositivoId) {
                         enviarAlertaResidente(residenteId, 3, "Se presenta Arritmia");
                         break;
                     case 2:
-                        enviarAlertaResidente(residenteId, 3, "Se presenta Braquicardia");
+                        enviarAlertaResidente(residenteId, 3, "Se presenta Bradicardia");
                         break;
                     case 3:
                         enviarAlertaResidente(residenteId, 3, "Se presenta Taquicardia");
@@ -258,10 +299,12 @@ function simularResidente(residenteId, promedio, dispositivoId) {
         const promedioOriginal = Math.round((acomuladorOriginal / contador) * 100) / 100;
 
         console.log("______________________________________________________");
+        console.log("Estado: " + estado);
         console.log("Ritmo Cardiaco: " + lecturaRitmo + " bpm");
         console.log("Promedio Original: " + promedioOriginal + " bpm\t\t variacion: " + config.variation[hora] + " hora: " + (hora > 12 ? hora - 12 : hora) + " " + (hora >= 12 ? "PM" : "AM"));
+        console.log("Promedio de Referencia: " + promedioRitmoReferencia + " bpm");
 
-        enviarLectura(residenteId, dispositivoId, lecturaRitmo);
+        enviarLectura(residenteId, dispositivoId, lecturaRitmo, estado, promedioRitmoReferencia);
         simulacionActiva = false;
     }
 }
