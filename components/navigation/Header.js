@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Config from '../../config/config.js';
 
 const Header = ({ title, onMenuPress, navigation }) => {
   const { width } = useWindowDimensions();
@@ -52,30 +53,83 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }
       setError(null);
 
-      const response = await new Promise(resolve => setTimeout(() => {
-        const mockData = {
-          notificaciones: [
-            { tipo: 'alerta', idReferencia: 1, residenteNombre: 'Juan', residenteApellido: 'Pérez', descripcion: 'Alerta crítica: Nivel de glucosa bajo.', tipoDetalleAlerta: 'Crítica', fecha: '2025-07-16T09:45:00Z' },
-            { tipo: 'nota', idReferencia: 2, residenteNombre: 'Maria', residenteApellido: 'García', descripcion: 'Nota de seguimiento: Residente solicitó asistencia.', fecha: '2025-07-16T09:40:00Z' },
-            { tipo: 'alerta', idReferencia: 3, residenteNombre: 'Carlos', residenteApellido: 'Martínez', descripcion: 'Alerta de medicación: Dosis de insulina pendiente.', tipoDetalleAlerta: 'Urgente', fecha: '2025-07-16T09:35:00Z' },
-            { tipo: 'nota', idReferencia: 4, residenteNombre: 'Ana', residenteApellido: 'López', descripcion: 'Nota: Visita programada para mañana a las 10 AM.', fecha: '2025-07-16T09:30:00Z' },
-            { tipo: 'alerta', idReferencia: 5, residenteNombre: 'Pedro', residenteApellido: 'Sánchez', descripcion: 'Alerta crítica: Presión arterial elevada.', tipoDetalleAlerta: 'Crítica', fecha: '2025-07-16T09:25:00Z' },
-            { tipo: 'nota', idReferencia: 6, residenteNombre: 'Laura', residenteApellido: 'Díaz', descripcion: 'Nota: Residente ha descansado bien hoy.', fecha: '2025-07-16T09:20:00Z' },
-            { tipo: 'alerta', idReferencia: 7, residenteNombre: 'Sofía', residenteApellido: 'Ruiz', descripcion: 'Alerta de rutina: Recordatorio de ejercicios.', tipoDetalleAlerta: 'Informativa', fecha: '2025-07-16T09:15:00Z' },
-            { tipo: 'nota', idReferencia: 8, residenteNombre: 'Diego', residenteApellido: 'Gómez', descripcion: 'Nota: Se requiere revisión de expediente.', fecha: '2025-07-16T09:10:00Z' },
-            { tipo: 'alerta', idReferencia: 9, residenteNombre: 'Elena', residenteApellido: 'Fernández', descripcion: 'Alerta: Residente necesita asistencia para caminar.', tipoDetalleAlerta: 'Urgente', fecha: '2025-07-16T09:05:00Z' },
-            { tipo: 'nota', idReferencia: 10, residenteNombre: 'Miguel', residenteApellido: 'Torres', descripcion: 'Nota: El médico revisará los resultados de análisis.', fecha: '2025-07-16T09:00:00Z' },
-          ]
-        };
-        resolve({ ok: true, json: () => Promise.resolve(mockData) });
-      }, 500));
+      // ---  Marcadores de posición: Reemplaza estos valores con la información real de tu sesión.
+      const currentUserId = 1; // Por ejemplo, el ID del empleado o administrador logueado
+      const currentUserRole = 'administrador'; // Puede ser 'empleado' o 'administrador'
+      // --------------------------------------------------------------------------------------
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      const [alertaResponse, notaResponse] = await Promise.all([
+        fetch(`${Config.API_BASE_URL}/Alerta`, {
+          headers: { 'accept': '*/*' }
+        }),
+        fetch(`${Config.API_BASE_URL}/Nota`, {
+          headers: { 'accept': '*/*' }
+        })
+      ]);
+
+      if (!alertaResponse.ok || !notaResponse.ok) {
+        throw new Error('Error al cargar notificaciones desde la API.');
+      }
+      
+      const alertasData = await alertaResponse.json();
+      const notasData = await notaResponse.json();
+      
+      const alertas = alertasData.alertas || alertasData;
+      const notas = notasData.notas || notasData;
+
+      // Obtener IDs de familiares únicos para buscar sus nombres
+      const uniqueFamiliarIds = new Set(notas.filter(n => n.id_familiar && n.id_personal !== 0).map(n => n.id_familiar));
+      const familiarNames = {};
+
+      if (uniqueFamiliarIds.size > 0) {
+        const familiarPromises = [...uniqueFamiliarIds].map(id => 
+          fetch(`${Config.API_BASE_URL}/Familiar/${id}`).then(res => res.json())
+        );
+        const familiarResults = await Promise.all(familiarPromises);
+        familiarResults.forEach(result => {
+          if (result && result.familiar) {
+            familiarNames[result.familiar.id] = `${result.familiar.nombre} ${result.familiar.apellido}`;
+          }
+        });
       }
 
-      const data = await response.json();
-      const recentNotifications = data.notificaciones.slice(0, 10);
+      const combinedNotifications = [
+        ...(Array.isArray(alertas) ? alertas.map(a => ({
+          tipo: 'alerta',
+          idReferencia: a.id,
+          residenteNombre: a.residente?.nombre || 'Residente Desconocido',
+          residenteApellido: a.residente?.apellido || '',
+          descripcion: a.alerta_tipo?.descripcion || 'Descripción no disponible',
+          tipoDetalleAlerta: a.alerta_tipo?.nombre || 'Tipo de Alerta Desconocido',
+          fecha: a.fecha,
+        })) : []),
+        ...(Array.isArray(notas) ? notas.filter(n => {
+          // --- LÓGICA DE FILTRADO ACTUALIZADA
+          // Si el rol es 'administrador' y la nota tiene id_personal = 0, se filtra (no se muestra).
+          if (currentUserRole === 'administrador' && n.id_personal === 0) {
+            return false;
+          }
+          // En cualquier otro caso, se muestra la nota.
+          return true;
+        }).map(n => {
+          const senderName = n.id_personal === 0 
+            ? 'Administrador' 
+            : familiarNames[n.id_familiar] || `Familiar ID: ${n.id_familiar}`;
+            
+          return {
+            tipo: 'mensaje', // CAMBIO: de 'nota' a 'mensaje'
+            idReferencia: n.id,
+            residenteNombre: senderName,
+            residenteApellido: '',
+            descripcion: n.nota,
+            tipoDetalleAlerta: null,
+            fecha: n.fecha,
+          }
+        }) : [])
+      ];
+
+      combinedNotifications.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      const recentNotifications = combinedNotifications.slice(0, 10);
 
       const currentIds = new Set(recentNotifications.map(n => `${n.tipo}-${n.idReferencia}`));
 
@@ -96,6 +150,7 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }
 
     } catch (error) {
+      console.error(error);
       setError('Error al cargar notificaciones');
     } finally {
       setLoading(false);
@@ -189,6 +244,7 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }).start();
     }
   };
+  
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -209,10 +265,10 @@ const Header = ({ title, onMenuPress, navigation }) => {
   };
 
   const getNotificationIcon = (tipo, tipoDetalleAlerta) => {
-    if (tipo === 'nota') {
+    if (tipo === 'mensaje') { // CAMBIO: de 'nota' a 'mensaje'
       return { name: 'chatbubble', color: '#4A90E2' };
     } else if (tipo === 'alerta') {
-      return tipoDetalleAlerta === 'Crítica'
+      return tipoDetalleAlerta === 'Bradicardia'
         ? { name: 'warning', color: '#E74C3C' }
         : { name: 'alert-circle', color: '#F39C12' };
     }
@@ -261,7 +317,7 @@ const Header = ({ title, onMenuPress, navigation }) => {
 
           <View style={styles.notificationFooter}>
             <Text style={styles.notificationType}>
-              {notification.tipo === 'nota' ? 'Nota' : 'Alerta'}
+              {notification.tipo === 'mensaje' ? 'Mensaje' : 'Alerta'}
               {notification.tipoDetalleAlerta && ` • ${notification.tipoDetalleAlerta}`}
             </Text>
           </View>

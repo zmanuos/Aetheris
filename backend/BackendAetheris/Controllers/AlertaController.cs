@@ -1,18 +1,29 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json; // Se añade el using para JsonSerializer
+using System.Threading.Tasks; // Se añade el using para Task
 
 [Route("api/[controller]")]
 [ApiController]
 public class AlertaController : ControllerBase
 {
+    // Se añade un campo privado para el WebSocketHandler
+    private readonly WebSocketHandler _webSocketHandler;
+
+    // Se añade el constructor para inyectar el WebSocketHandler
+    public AlertaController(WebSocketHandler webSocketHandler)
+    {
+        _webSocketHandler = webSocketHandler;
+    }
+
     [HttpGet]
     public ActionResult Get()
     {
         return Ok(AlertaListResponse.GetResponse(Alerta.Get()));
     }
 
-    [HttpGet("{id}")] // Este endpoint ya existe para obtener una alerta por su ID de alerta
+    [HttpGet("{id}")]
     public ActionResult Get(int id)
     {
         try
@@ -30,7 +41,6 @@ public class AlertaController : ControllerBase
         }
     }
 
-    // Nuevo endpoint para obtener alertas por ID de residente
     [HttpGet("residente/{id_residente}")]
     public ActionResult GetAlertasByResidente(int id_residente)
     {
@@ -43,7 +53,6 @@ public class AlertaController : ControllerBase
             }
             else
             {
-                // Si no se encuentran alertas para el residente, devuelve una respuesta adecuada
                 return Ok(MessageResponse.GetReponse(1, $"No se encontraron alertas para el residente con ID {id_residente}", MessageType.Warning));
             }
         }
@@ -54,15 +63,27 @@ public class AlertaController : ControllerBase
     }
 
     [HttpPost("residente")]
-    public ActionResult PostAlertaResidente([FromForm]int id_residente, [FromForm] int alertaTipo, [FromForm] string mensaje)
+    public async Task<IActionResult> PostAlertaResidente([FromForm]int id_residente, [FromForm] int alertaTipo, [FromForm] string mensaje)
     {
         try
         {
             bool result = Alerta.AlertaResidente(id_residente, alertaTipo , mensaje);
             if (result)
+            {
+                // Obtener la alerta recién creada para enviarla por WebSocket
+                var nuevaAlerta = Alerta.GetLastCreatedByResidente(id_residente);
+                if (nuevaAlerta != null)
+                {
+                    var json = JsonSerializer.Serialize(nuevaAlerta);
+                    await _webSocketHandler.SendMessageToAllAsync(json);
+                }
+                
                 return Ok(MessageResponse.GetReponse(0, "Alerta ingresada exitosamente", MessageType.Success));
+            }
             else
+            {
                 return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
+            }
         }
         catch (Exception ex)
         {
@@ -71,15 +92,27 @@ public class AlertaController : ControllerBase
     }
 
     [HttpPost("area")]
-    public ActionResult PostAlertaArea([FromForm] int id_area, [FromForm] int alertaTipo, [FromForm] string mensaje)
+    public async Task<IActionResult> PostAlertaArea([FromForm] int id_area, [FromForm] int alertaTipo, [FromForm] string mensaje)
     {
         try
         {
             bool result = Alerta.AlertaArea(id_area, alertaTipo, mensaje);
             if (result)
+            {
+                // Lógica para enviar por WebSocket
+                var nuevaAlerta = Alerta.GetLastCreatedByArea(id_area);
+                if (nuevaAlerta != null)
+                {
+                    var json = JsonSerializer.Serialize(nuevaAlerta);
+                    await _webSocketHandler.SendMessageToAllAsync(json);
+                }
+                
                 return Ok(MessageResponse.GetReponse(0, "Alerta ingresadaexitosamente", MessageType.Success));
+            }
             else
+            {
                 return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
+            }
         }
         catch (Exception ex)
         {
@@ -88,15 +121,27 @@ public class AlertaController : ControllerBase
     }
 
     [HttpPost("general")]
-    public ActionResult PostAlertaGeneral( [FromForm] int alertaTipo, [FromForm] string mensaje)
+    public async Task<IActionResult> PostAlertaGeneral([FromForm] int alertaTipo, [FromForm] string mensaje)
     {
         try
         {
             bool result = Alerta.AlertaGeneral(alertaTipo, mensaje);
             if (result)
+            {
+                // Lógica para enviar por WebSocket
+                var nuevaAlerta = Alerta.GetLastCreatedGeneral();
+                if (nuevaAlerta != null)
+                {
+                    var json = JsonSerializer.Serialize(nuevaAlerta);
+                    await _webSocketHandler.SendMessageToAllAsync(json);
+                }
+                
                 return Ok(MessageResponse.GetReponse(0, "Alerta ingresada exitosamente", MessageType.Success));
+            }
             else
+            {
                 return Ok(MessageResponse.GetReponse(999, "No se pudo ingresar la alerta", MessageType.Error));
+            }
         }
         catch (Exception ex)
         {

@@ -45,31 +45,51 @@ AppConfig.ConfigureServices(builder.Services, builder.Configuration);
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
 builder.Services.AddWebSocketManager();
 
+// Agrega servicios de WebSockets
+builder.Services.AddWebSockets(options =>
+{
+    options.KeepAliveInterval = TimeSpan.FromMinutes(10);
+});
+
 var app = builder.Build();
 
 AppConfig.ConfigurePipeline(app);
 
+// Usa WebSockets. Esto debe ir antes del mapeo de controladores.
 app.UseWebSockets();
 
-app.Use(async (context, next) =>
+// Mapea la ruta '/ws' al WebSocketHandler
+app.Map("/ws", async context =>
 {
-    if (context.Request.Path == "/ws/sensor_data")
+    if (context.WebSockets.IsWebSocketRequest)
     {
-        if (context.WebSockets.IsWebSocketRequest)
-        {
-            using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-            await app.Services.GetRequiredService<WebSocketHandler>().HandleWebSocketAsync(webSocket);
-        }
-        else
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-        }
+        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        var webSocketHandler = app.Services.GetRequiredService<WebSocketHandler>();
+        await webSocketHandler.HandleWebSocketAsync(webSocket);
     }
     else
     {
-        await next();
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
     }
 });
+
+// Mapea la ruta '/ws/sensor_data' al WebSocketHandler
+app.Map("/ws/sensor_data", async context =>
+{
+    if (context.WebSockets.IsWebSocketRequest)
+    {
+        using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+        var webSocketHandler = app.Services.GetRequiredService<WebSocketHandler>();
+        await webSocketHandler.HandleWebSocketAsync(webSocket);
+    }
+    else
+    {
+        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+    }
+});
+
+
+app.MapControllers();
 
 app.Run();
 
