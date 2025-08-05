@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -12,22 +12,22 @@ import {
   Switch,
   Dimensions,
   Alert, // Added for alerts
-  ActivityIndicator // Added for loading indicator
-} from 'react-native';
-import Config from '../../config/config'; // Adjust the path if necessary
+  ActivityIndicator, // Added for loading indicator
+} from "react-native";
+import Config from "../../config/config"; // Adjust the path if necessary
 
 // Define the colors based on the provided constants
-const PRIMARY_GREEN = '#6BB240';
-const LIGHT_GREEN = '#9CD275';
-const ACCENT_GREEN_BACKGROUND = '#EEF7E8';
-const DARK_GRAY = '#333';
-const MEDIUM_GRAY = '#555';
-const LIGHT_GRAY = '#888';
-const VERY_LIGHT_GRAY = '#eee';
-const BACKGROUND_LIGHT = '#fcfcfc';
-const WHITE = '#fff';
+const PRIMARY_GREEN = "#6BB240";
+const LIGHT_GREEN = "#9CD275";
+const ACCENT_GREEN_BACKGROUND = "#EEF7E8";
+const DARK_GRAY = "#333";
+const MEDIUM_GRAY = "#555";
+const LIGHT_GRAY = "#888";
+const VERY_LIGHT_GRAY = "#eee";
+const BACKGROUND_LIGHT = "#fcfcfc";
+const WHITE = "#fff";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const IS_LARGE_SCREEN = width > 900;
 const AUTO_CAPTURE_DELAY = 3000; // milisegundos (3 segundos)
 
@@ -36,12 +36,12 @@ export default function CreateConsultaScreen({ route, navigation }) {
   const { pacienteId } = route.params; // Re-added pacienteId from route.params
 
   // Estados para los campos del formulario (these will be the final values sent)
-  const [frecuencia, setFrecuencia] = useState('');
-  const [oxigeno, setOxigeno] = useState('');
-  const [temperatura, setTemperatura] = useState('');
-  const [peso, setPeso] = useState('');
-  const [estatura, setEstatura] = useState('');
-  const [observaciones, setObservaciones] = useState('');
+  const [frecuencia, setFrecuencia] = useState("");
+  const [oxigeno, setOxigeno] = useState("");
+  const [temperatura, setTemperatura] = useState("");
+  const [peso, setPeso] = useState("");
+  const [estatura, setEstatura] = useState("");
+  const [observaciones, setObservaciones] = useState("");
 
   // General form states
   const [loading, setLoading] = useState(false);
@@ -53,11 +53,11 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
   // Estado para los datos en tiempo real (what the WebSocket is currently receiving)
   const [sensorData, setSensorData] = useState({
-    Spo2: '',
-    Pulso: '',
-    TemperaturaCorporal: '',
-    Peso: '',
-    Altura: '',
+    Spo2: "",
+    Pulso: "",
+    TemperaturaCorporal: "",
+    Peso: "",
+    Altura: "",
   });
 
   // Estados para los valores congelados (values that have been captured/autocaptured)
@@ -76,20 +76,19 @@ export default function CreateConsultaScreen({ route, navigation }) {
   const alturaTimer = useRef(null);
 
   // Guardar el último valor recibido para cada sensor para evitar procesamiento repetido
-  const lastSpo2 = useRef('');
-  const lastPulso = useRef('');
-  const lastTemp = useRef('');
-  const lastPeso = useRef('');
-  const lastAltura = useRef('');
+  const lastSpo2 = useRef("");
+  const lastPulso = useRef("");
+  const lastTemp = useRef("");
+  const lastPeso = useRef("");
+  const lastAltura = useRef("");
 
   // WebSocket instance ref
   const ws = useRef(null);
 
   // Hardcode the IP and Port directly in this file
   // as they are not being exported from your Config.js
-  const ip = "172.18.5.81"; 
+  const ip = "192.168.84.142";
   const port = 5214;
-
 
   // Function to start/reset the timer for each sensor data point
   const startOrResetTimer = (type, value) => {
@@ -118,11 +117,12 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
     // Clear any existing timer for this type
     clearTimeout(timers[type].current);
-    
+
     // Start a new timer
     timers[type].current = setTimeout(() => {
       // If the value hasn't been manually captured (frozen), then auto-capture it
-      if (setFrozen[type] !== null) { // Check if it's not manually frozen
+      if (setFrozen[type] !== null) {
+        // Check if it's not manually frozen
         setFrozen[type](value); // Freeze the value
         setForm[type](String(value)); // Set it to the form input state
       }
@@ -150,7 +150,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
     ws.current = new WebSocket(`ws://${ip}:${port}/ws/sensor_data`);
 
     ws.current.onopen = () => {
-      console.log('WebSocket Connected');
+      console.log("WebSocket Connected");
       // Potentially send a message to request initial data here
     };
 
@@ -160,54 +160,86 @@ export default function CreateConsultaScreen({ route, navigation }) {
         // console.log('Received WebSocket data:', data); // For debugging
 
         // Update sensorData state with latest real-time values
-        setSensorData(prevData => ({
+        setSensorData((prevData) => ({
           ...prevData,
           Spo2: data.Spo2 !== undefined ? String(data.Spo2) : prevData.Spo2,
           Pulso: data.Pulso !== undefined ? String(data.Pulso) : prevData.Pulso,
-          TemperaturaCorporal: data.TemperaturaCorporal !== undefined ? String(data.TemperaturaCorporal) : prevData.TemperaturaCorporal,
+          TemperaturaCorporal:
+            data.TemperaturaCorporal !== undefined
+              ? String(data.TemperaturaCorporal)
+              : prevData.TemperaturaCorporal,
           Peso: data.Peso !== undefined ? String(data.Peso) : prevData.Peso,
-          Altura: data.Altura !== undefined ? String(data.Altura) : prevData.Altura,
+          Altura:
+            data.Altura !== undefined ? String(data.Altura) : prevData.Altura,
         }));
 
         // Auto-capture logic: Start/reset timer if value is not manually frozen
         // and a new different value is received.
-        if (frozenSpo2 === null && data.Spo2 !== undefined && String(data.Spo2) !== lastSpo2.current) {
+        if (
+          frozenSpo2 === null &&
+          data.Spo2 !== undefined &&
+          String(data.Spo2) !== lastSpo2.current
+        ) {
           lastSpo2.current = String(data.Spo2);
-          startOrResetTimer('Spo2', String(data.Spo2));
+          startOrResetTimer("Spo2", String(data.Spo2));
         }
-        if (frozenPulso === null && data.Pulso !== undefined && String(data.Pulso) !== lastPulso.current) {
+        if (
+          frozenPulso === null &&
+          data.Pulso !== undefined &&
+          String(data.Pulso) !== lastPulso.current
+        ) {
           lastPulso.current = String(data.Pulso);
-          startOrResetTimer('Pulso', String(data.Pulso));
+          startOrResetTimer("Pulso", String(data.Pulso));
         }
-        if (frozenTemp === null && data.TemperaturaCorporal !== undefined && String(data.TemperaturaCorporal) !== lastTemp.current) {
+        if (
+          frozenTemp === null &&
+          data.TemperaturaCorporal !== undefined &&
+          String(data.TemperaturaCorporal) !== lastTemp.current
+        ) {
           lastTemp.current = String(data.TemperaturaCorporal);
-          startOrResetTimer('Temp', String(data.TemperaturaCorporal));
+          startOrResetTimer("Temp", String(data.TemperaturaCorporal));
         }
-        if (frozenPeso === null && data.Peso !== undefined && String(data.Peso) !== lastPeso.current) {
+        if (
+          frozenPeso === null &&
+          data.Peso !== undefined &&
+          String(data.Peso) !== lastPeso.current
+        ) {
           lastPeso.current = String(data.Peso);
-          startOrResetTimer('Peso', String(data.Peso));
+          startOrResetTimer("Peso", String(data.Peso));
         }
-        if (frozenAltura === null && data.Altura !== undefined && String(data.Altura) !== lastAltura.current) {
+        if (
+          frozenAltura === null &&
+          data.Altura !== undefined &&
+          String(data.Altura) !== lastAltura.current
+        ) {
           lastAltura.current = String(data.Altura);
-          startOrResetTimer('Altura', String(data.Altura));
+          startOrResetTimer("Altura", String(data.Altura));
         }
-
       } catch (error) {
-        console.error('Error al parsear el mensaje WebSocket:', error);
+        console.error("Error al parsear el mensaje WebSocket:", error);
       }
     };
 
     ws.current.onerror = (e) => {
-      console.error('WebSocket Error:', e.message);
-      if (e.message && e.message.includes("An invalid or illegal string was specified")) {
-          Alert.alert("Error de Conexión", "La URL del WebSocket es inválida. Por favor, verifique la configuración de IP y Puerto.");
+      console.error("WebSocket Error:", e.message);
+      if (
+        e.message &&
+        e.message.includes("An invalid or illegal string was specified")
+      ) {
+        Alert.alert(
+          "Error de Conexión",
+          "La URL del WebSocket es inválida. Por favor, verifique la configuración de IP y Puerto."
+        );
       } else {
-          Alert.alert("Error de Conexión", "No se pudo establecer conexión con el servidor de sensores. Intente de nuevo más tarde.");
+        Alert.alert(
+          "Error de Conexión",
+          "No se pudo establecer conexión con el servidor de sensores. Intente de nuevo más tarde."
+        );
       }
     };
 
     ws.current.onclose = (e) => {
-      console.log('WebSocket Disconnected:', e.code, e.reason);
+      console.log("WebSocket Disconnected:", e.code, e.reason);
       // Re-attempt connection or show a message if needed
     };
 
@@ -223,77 +255,93 @@ export default function CreateConsultaScreen({ route, navigation }) {
       clearTimeout(pesoTimer.current);
       clearTimeout(alturaTimer.current);
     };
-  }, [autoFillEnabled, frozenSpo2, frozenPulso, frozenTemp, frozenPeso, frozenAltura]); // Dependencies to re-run effect
+  }, [
+    autoFillEnabled,
+    frozenSpo2,
+    frozenPulso,
+    frozenTemp,
+    frozenPeso,
+    frozenAltura,
+  ]); // Dependencies to re-run effect
 
   // Functions to manually capture/release each value
-  const handleCapture = (type) => { 
+  const handleCapture = (type) => {
     switch (type) {
-      case 'Spo2':
+      case "Spo2":
         setFrozenSpo2(sensorData.Spo2);
         setOxigeno(sensorData.Spo2);
         clearTimeout(spo2Timer.current); // Stop auto-capture timer
         break;
-      case 'Pulso':
+      case "Pulso":
         setFrozenPulso(sensorData.Pulso);
         setFrecuencia(sensorData.Pulso);
         clearTimeout(pulsoTimer.current);
         break;
-      case 'Temp':
+      case "Temp":
         setFrozenTemp(sensorData.TemperaturaCorporal);
         setTemperatura(sensorData.TemperaturaCorporal);
         clearTimeout(tempTimer.current);
         break;
-      case 'Peso':
+      case "Peso":
         setFrozenPeso(sensorData.Peso);
         setPeso(sensorData.Peso);
         clearTimeout(pesoTimer.current);
         break;
-      case 'Altura':
+      case "Altura":
         setFrozenAltura(sensorData.Altura);
         setEstatura(sensorData.Altura);
         clearTimeout(alturaTimer.current);
         break;
-      default: break;
+      default:
+        break;
     }
   };
 
   const handleRelease = (type) => {
     switch (type) {
-      case 'Spo2':
+      case "Spo2":
         setFrozenSpo2(null); // Unfreeze the value
-        setOxigeno(''); // Clear the form field
-        lastSpo2.current = ''; // Reset last received value for auto-capture
+        setOxigeno(""); // Clear the form field
+        lastSpo2.current = ""; // Reset last received value for auto-capture
         break;
-      case 'Pulso':
+      case "Pulso":
         setFrozenPulso(null);
-        setFrecuencia('');
-        lastPulso.current = '';
+        setFrecuencia("");
+        lastPulso.current = "";
         break;
-      case 'Temp':
+      case "Temp":
         setFrozenTemp(null);
-        setTemperatura('');
-        lastTemp.current = '';
+        setTemperatura("");
+        lastTemp.current = "";
         break;
-      case 'Peso':
+      case "Peso":
         setFrozenPeso(null);
-        setPeso('');
-        lastPeso.current = '';
+        setPeso("");
+        lastPeso.current = "";
         break;
-      case 'Altura':
+      case "Altura":
         setFrozenAltura(null);
-        setEstatura('');
-        lastAltura.current = '';
+        setEstatura("");
+        lastAltura.current = "";
         break;
-      default: break;
+      default:
+        break;
     }
   };
 
   // Renderiza un cuadro individual para cada sensor
-  const renderSensorBox = (label, value, frozenValue, onCapture, onRelease, unit) => (
+  const renderSensorBox = (
+    label,
+    value,
+    frozenValue,
+    onCapture,
+    onRelease,
+    unit
+  ) => (
     <View style={styles.sensorMiniBox}>
       <Text style={styles.sensorMiniLabel}>{label}</Text>
       <Text style={styles.sensorMiniValue}>
-        {frozenValue !== null ? frozenValue : (value || '--')} {unit}
+        {frozenValue !== null ? frozenValue : value || "--"} {unit}
       </Text>
       {autoFillEnabled && ( // Only show capture/release buttons if autofill is enabled
         <TouchableOpacity
@@ -301,7 +349,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
           onPress={frozenValue === null ? onCapture : onRelease}
         >
           <Text style={styles.miniButtonText}>
-            {frozenValue === null ? 'Capturar' : 'Liberar'}
+            {frozenValue === null ? "Capturar" : "Liberar"}
           </Text>
         </TouchableOpacity>
       )}
@@ -311,7 +359,10 @@ export default function CreateConsultaScreen({ route, navigation }) {
   // Función para enviar el formulario (POST a /api/ChequeoSemanal)
   const handleSubmit = async () => {
     if (!frecuencia || !oxigeno || !temperatura || !peso || !estatura) {
-      Alert.alert('Campos Obligatorios', 'Por favor, complete todos los campos de datos de sensores y las observaciones.');
+      Alert.alert(
+        "Campos Obligatorios",
+        "Por favor, complete todos los campos de datos de sensores y las observaciones."
+      );
       return;
     }
 
@@ -321,9 +372,9 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
     try {
       const response = await fetch(`${Config.API_BASE_URL}/ChequeoSemanal`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           paciente_id: pacienteId, // Use the pacienteId from route.params
@@ -339,19 +390,21 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al enviar la consulta.');
+        throw new Error(errorData.message || "Error al enviar la consulta.");
       }
 
       const data = await response.json();
-      console.log('Consulta enviada:', data);
+      console.log("Consulta enviada:", data);
       setSuccess(true);
-      Alert.alert('Éxito', 'Consulta enviada correctamente.');
+      Alert.alert("Éxito", "Consulta enviada correctamente.");
       navigation.goBack(); // Navigate back after success
-
     } catch (err) {
-      console.error('Error al enviar la consulta:', err);
+      console.error("Error al enviar la consulta:", err);
       setError(err.message);
-      Alert.alert('Error', 'Hubo un problema al enviar la consulta: ' + err.message);
+      Alert.alert(
+        "Error",
+        "Hubo un problema al enviar la consulta: " + err.message
+      );
     } finally {
       setLoading(false);
     }
@@ -361,7 +414,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={styles.keyboardAvoidingView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
           <View style={styles.mainContentArea}>
@@ -369,20 +422,18 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
             {/* Switch global para autocaptura */}
             <View style={styles.switchContainer}>
-              <Text style={styles.switchLabel}>
-                Autocompletar con sensores
-              </Text>
+              <Text style={styles.switchLabel}>Autocompletar con sensores</Text>
               <Switch
                 value={autoFillEnabled}
                 onValueChange={(newValue) => {
                   setAutoFillEnabled(newValue);
                   // Optionally clear inputs when toggling off autofill
                   if (!newValue) {
-                    setFrecuencia('');
-                    setOxigeno('');
-                    setTemperatura('');
-                    setPeso('');
-                    setEstatura('');
+                    setFrecuencia("");
+                    setOxigeno("");
+                    setTemperatura("");
+                    setPeso("");
+                    setEstatura("");
                     // Also reset frozen values if autoFillEnabled is turned off
                     setFrozenSpo2(null);
                     setFrozenPulso(null);
@@ -391,19 +442,54 @@ export default function CreateConsultaScreen({ route, navigation }) {
                     setFrozenAltura(null);
                   }
                 }}
-                thumbColor={autoFillEnabled ? PRIMARY_GREEN : '#ccc'}
-                trackColor={{ false: '#ccc', true: LIGHT_GREEN }}
+                thumbColor={autoFillEnabled ? PRIMARY_GREEN : "#ccc"}
+                trackColor={{ false: "#ccc", true: LIGHT_GREEN }}
               />
             </View>
 
             {/* Cuadros individuales de sensores (visible if autofill is enabled) */}
             {autoFillEnabled && (
               <View style={styles.sensorMiniBoxContainer}>
-                {renderSensorBox('SpO2', sensorData.Spo2, frozenSpo2, () => handleCapture('Spo2'), () => handleRelease('Spo2'), '%')}
-                {renderSensorBox('Pulso', sensorData.Pulso, frozenPulso, () => handleCapture('Pulso'), () => handleRelease('Pulso'), 'lpm')}
-                {renderSensorBox('Temp.', sensorData.TemperaturaCorporal, frozenTemp, () => handleCapture('Temp'), () => handleRelease('Temp'), '°C')}
-                {renderSensorBox('Peso', sensorData.Peso, frozenPeso, () => handleCapture('Peso'), () => handleRelease('Peso'), 'kg')}
-                {renderSensorBox('Altura', sensorData.Altura, frozenAltura, () => handleCapture('Altura'), () => handleRelease('Altura'), 'cm')}
+                {renderSensorBox(
+                  "SpO2",
+                  sensorData.Spo2,
+                  frozenSpo2,
+                  () => handleCapture("Spo2"),
+                  () => handleRelease("Spo2"),
+                  "%"
+                )}
+                {renderSensorBox(
+                  "Pulso",
+                  sensorData.Pulso,
+                  frozenPulso,
+                  () => handleCapture("Pulso"),
+                  () => handleRelease("Pulso"),
+                  "lpm"
+                )}
+                {renderSensorBox(
+                  "Temp.",
+                  sensorData.TemperaturaCorporal,
+                  frozenTemp,
+                  () => handleCapture("Temp"),
+                  () => handleRelease("Temp"),
+                  "°C"
+                )}
+                {renderSensorBox(
+                  "Peso",
+                  sensorData.Peso,
+                  frozenPeso,
+                  () => handleCapture("Peso"),
+                  () => handleRelease("Peso"),
+                  "kg"
+                )}
+                {renderSensorBox(
+                  "Altura",
+                  sensorData.Altura,
+                  frozenAltura,
+                  () => handleCapture("Altura"),
+                  () => handleRelease("Altura"),
+                  "cm"
+                )}
               </View>
             )}
 
@@ -469,9 +555,17 @@ export default function CreateConsultaScreen({ route, navigation }) {
               />
 
               {error && <Text style={styles.errorText}>{error}</Text>}
-              {success && <Text style={styles.successText}>Consulta enviada correctamente.</Text>}
+              {success && (
+                <Text style={styles.successText}>
+                  Consulta enviada correctamente.
+                </Text>
+              )}
 
-              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+              <TouchableOpacity
+                style={styles.submitButton}
+                onPress={handleSubmit}
+                disabled={loading}
+              >
                 {loading ? (
                   <ActivityIndicator color={WHITE} />
                 ) : (
@@ -497,17 +591,17 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: IS_LARGE_SCREEN ? 40 : 16,
     backgroundColor: BACKGROUND_LIGHT,
   },
   mainContentArea: {
-    width: IS_LARGE_SCREEN ? 600 : '100%',
+    width: IS_LARGE_SCREEN ? 600 : "100%",
     backgroundColor: WHITE,
     borderRadius: 16,
     padding: 24,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
@@ -516,15 +610,15 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 26,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: PRIMARY_GREEN,
     marginBottom: 18,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center', // Centered horizontally
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center", // Centered horizontally
     marginBottom: 15,
     paddingVertical: 10,
     backgroundColor: ACCENT_GREEN_BACKGROUND,
@@ -536,14 +630,14 @@ const styles = StyleSheet.create({
   switchLabel: {
     marginRight: 10,
     color: DARK_GRAY,
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 16,
   },
   sensorMiniBoxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center', // Changed to center the boxes
+    flexDirection: "row",
+    justifyContent: "center", // Changed to center the boxes
     marginBottom: 18,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
     gap: 8, // Using gap for spacing between flex items
   },
   sensorMiniBox: {
@@ -552,13 +646,13 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
     borderColor: LIGHT_GREEN,
-    alignItems: 'center',
+    alignItems: "center",
     minWidth: 90, // Adjusted minWidth for better spacing
     flexGrow: 1, // Allow boxes to grow
-    maxWidth: '48%', // Approx half width for two columns on smaller screens
+    maxWidth: "48%", // Approx half width for two columns on smaller screens
   },
   sensorMiniLabel: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: PRIMARY_GREEN,
     fontSize: 13,
     marginBottom: 2,
@@ -566,7 +660,7 @@ const styles = StyleSheet.create({
   sensorMiniValue: {
     color: DARK_GRAY,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 4,
   },
   miniButton: {
@@ -574,11 +668,11 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 6,
-    alignItems: 'center',
+    alignItems: "center",
   },
   miniButtonText: {
     color: WHITE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 13,
   },
   formBox: {
@@ -586,7 +680,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: MEDIUM_GRAY,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 4,
     marginTop: 10,
     fontSize: 16,
@@ -603,33 +697,33 @@ const styles = StyleSheet.create({
   },
   multilineInput: {
     height: 80,
-    textAlignVertical: 'top', // For Android
+    textAlignVertical: "top", // For Android
   },
   submitButton: {
     backgroundColor: PRIMARY_GREEN,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 18,
   },
   submitButtonText: {
     color: WHITE,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 17,
   },
   errorText: {
-    color: 'red',
-    textAlign: 'center',
+    color: "red",
+    textAlign: "center",
     marginTop: 10,
     marginBottom: 10,
     fontSize: 14,
   },
   successText: {
     color: PRIMARY_GREEN,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 10,
     marginBottom: 10,
     fontSize: 14,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
