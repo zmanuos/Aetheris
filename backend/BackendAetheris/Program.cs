@@ -84,45 +84,77 @@ public static class WebSocketManagerExtensions
 
 public class WebSocketHandler
 {
-    private readonly ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
+    private readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
+    private readonly ILogger<WebSocketHandler> _logger;
+
+    public WebSocketHandler(ILogger<WebSocketHandler> logger)
+    {
+        _logger = logger;
+    }
 
     public async Task HandleWebSocketAsync(WebSocket webSocket)
     {
         var socketId = Guid.NewGuid().ToString();
         _sockets.TryAdd(socketId, webSocket);
-
-        Console.WriteLine($"WebSocket conectado: {socketId}");
+        _logger.LogInformation($"WebSocket conectado: {socketId}");
 
         var buffer = new byte[1024 * 4];
-        var receiveResult = await webSocket.ReceiveAsync(
-            new ArraySegment<byte>(buffer), CancellationToken.None);
-
-        while (!receiveResult.CloseStatus.HasValue)
+        
+        try
         {
-            receiveResult = await webSocket.ReceiveAsync(
+            var receiveResult = await webSocket.ReceiveAsync(
                 new ArraySegment<byte>(buffer), CancellationToken.None);
-        }
 
-        _sockets.TryRemove(socketId, out _);
-        await webSocket.CloseAsync(
-            receiveResult.CloseStatus.Value,
-            receiveResult.CloseStatusDescription, CancellationToken.None);
-        Console.WriteLine($"WebSocket desconectado: {socketId}");
+            while (!receiveResult.CloseStatus.HasValue)
+            {
+                // Procesar mensaje recibido
+                if (receiveResult.MessageType == WebSocketMessageType.Text)
+                {
+                    var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
+                    _logger.LogInformation($"Mensaje recibido de {socketId}: {message}");
+
+                    // Enviar confirmación de recepción
+                    var ackMessage = $"ACK: {DateTime.UtcNow:o}";
+                    await SendMessageAsync(webSocket, ackMessage);
+                    await SendMessageToAllAsync(message);
+                }
+
+                receiveResult = await webSocket.ReceiveAsync(
+                    new ArraySegment<byte>(buffer), CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error en WebSocket {socketId}");
+        }
+        finally
+        {
+            _sockets.TryRemove(socketId, out _);
+            await webSocket.CloseAsync(
+                WebSocketCloseStatus.NormalClosure,
+                "Cierre normal",
+                CancellationToken.None);
+            _logger.LogInformation($"WebSocket desconectado: {socketId}");
+        }
+    }
+
+    private async Task SendMessageAsync(WebSocket socket, string message)
+    {
+        var bytes = Encoding.UTF8.GetBytes(message);
+        await socket.SendAsync(
+            new ArraySegment<byte>(bytes),
+            WebSocketMessageType.Text,
+            true,
+            CancellationToken.None);
     }
 
     public async Task SendMessageToAllAsync(string message)
     {
-        var bytes = Encoding.UTF8.GetBytes(message);
         foreach (var pair in _sockets)
         {
-            var webSocket = pair.Value;
-            if (webSocket.State == WebSocketState.Open)
+            if (pair.Value.State == WebSocketState.Open)
             {
-                await webSocket.SendAsync(
-                    new ArraySegment<byte>(bytes, 0, bytes.Length),
-                    WebSocketMessageType.Text,
-                    true,
-                    CancellationToken.None);
+                await SendMessageAsync(pair.Value, message);
             }
         }
     }

@@ -1,4 +1,3 @@
-// fileName: LecturaUbicacionResidente.cs
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
@@ -6,7 +5,8 @@ using System;
 public class LecturaUbicacionResidente
 {
     [BsonId]
-    public ObjectId Id { get; set; }
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
 
     [BsonElement("residenteId")]
     public string ResidenteId { get; set; }
