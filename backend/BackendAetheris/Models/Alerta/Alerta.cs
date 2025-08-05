@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using MySql.Data.MySqlClient;
@@ -13,9 +13,10 @@ public class Alerta
     private static string insertAlertaResidente= @"INSERT INTO ALERTA (id_residente, id_alerta_tipo, mensaje) VALUES (@id_residente, @id_alerta_tipo, @mensaje)";
     private static string insertAlertaArea = @"INSERT INTO ALERTA (id_residente, id_area, id_alerta_tipo, mensaje) VALUES (NULL, @id_area, @id_alerta_tipo, @mensaje)";
     private static string insertAlertaGeneral = @"INSERT INTO ALERTA (id_alerta_tipo, mensaje) VALUES (@id_alerta_tipo, @mensaje)";
-    private static string selectLastByResidente = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_residente = @id_residente ORDER BY id_alerta DESC LIMIT 1";
-    private static string selectLastByArea = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_area = @id_area ORDER BY id_alerta DESC LIMIT 1";
-    private static string selectLastGeneral = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_residente IS NULL AND id_area IS NULL ORDER BY id_alerta DESC LIMIT 1";
+    private static string selectLastByResidente = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_residente = @id_residente ORDER BY fecha DESC LIMIT 1";
+    private static string selectLastByArea = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_area = @id_area ORDER BY fecha DESC LIMIT 1";
+    private static string selectLastGeneral = @"SELECT id_alerta, id_residente, id_alerta_tipo, id_area, fecha, mensaje FROM ALERTA WHERE id_residente IS NULL AND id_area IS NULL ORDER BY fecha DESC LIMIT 1";
+
 
     #endregion
 
@@ -131,59 +132,43 @@ public class Alerta
         return rowsAffected > 0;
     }
 
-    public static Alerta GetLastCreatedByResidente(int idResidente)
+    // Método para obtener la última alerta creada por residente
+    public static Alerta GetLastCreatedByResidente(int id_residente)
     {
         MySqlCommand command = new MySqlCommand(selectLastByResidente);
-        command.Parameters.AddWithValue("@id_residente", idResidente);
+        command.Parameters.AddWithValue("@id_residente", id_residente);
         DataTable table = SqlServerConnection.ExecuteQuery(command);
+
         if (table.Rows.Count > 0)
         {
-            Alerta alerta = AlertaMapper.ToObject(table.Rows[0]);
-            // Cargar los objetos relacionados
-            if (alerta.residente == null && table.Rows[0]["id_residente"] != DBNull.Value) {
-                 alerta.residente = Residente.Get(Convert.ToInt32(table.Rows[0]["id_residente"]));
-            }
-            if (alerta.alerta_tipo == null && table.Rows[0]["id_alerta_tipo"] != DBNull.Value) {
-                alerta.alerta_tipo = AlertaTipo.Get(Convert.ToInt32(table.Rows[0]["id_alerta_tipo"]));
-            }
-            return alerta;
+            return AlertaMapper.ToObject(table.Rows[0]);
         }
         return null;
     }
 
-    public static Alerta GetLastCreatedByArea(int idArea)
+    // Método para obtener la última alerta creada por área
+    public static Alerta GetLastCreatedByArea(int id_area)
     {
         MySqlCommand command = new MySqlCommand(selectLastByArea);
-        command.Parameters.AddWithValue("@id_area", idArea);
+        command.Parameters.AddWithValue("@id_area", id_area);
         DataTable table = SqlServerConnection.ExecuteQuery(command);
+
         if (table.Rows.Count > 0)
         {
-            Alerta alerta = AlertaMapper.ToObject(table.Rows[0]);
-            // Cargar los objetos relacionados
-            if (alerta.area == null && table.Rows[0]["id_area"] != DBNull.Value) {
-                // Asumiendo que existe una clase Area similar a Residente y AlertaTipo
-                // alerta.area = Area.Get(Convert.ToInt32(table.Rows[0]["id_area"]));
-            }
-            if (alerta.alerta_tipo == null && table.Rows[0]["id_alerta_tipo"] != DBNull.Value) {
-                alerta.alerta_tipo = AlertaTipo.Get(Convert.ToInt32(table.Rows[0]["id_alerta_tipo"]));
-            }
-            return alerta;
+            return AlertaMapper.ToObject(table.Rows[0]);
         }
         return null;
     }
 
+    // Método para obtener la última alerta general creada
     public static Alerta GetLastCreatedGeneral()
     {
         MySqlCommand command = new MySqlCommand(selectLastGeneral);
         DataTable table = SqlServerConnection.ExecuteQuery(command);
+
         if (table.Rows.Count > 0)
         {
-            Alerta alerta = AlertaMapper.ToObject(table.Rows[0]);
-            // Cargar los objetos relacionados
-            if (alerta.alerta_tipo == null && table.Rows[0]["id_alerta_tipo"] != DBNull.Value) {
-                alerta.alerta_tipo = AlertaTipo.Get(Convert.ToInt32(table.Rows[0]["id_alerta_tipo"]));
-            }
-            return alerta;
+            return AlertaMapper.ToObject(table.Rows[0]);
         }
         return null;
     }

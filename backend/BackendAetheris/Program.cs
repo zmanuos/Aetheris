@@ -12,7 +12,6 @@ using System.Threading;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebSockets;
-using Microsoft.Extensions.Logging; // Added for ILogger
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,25 +39,9 @@ else
     }
 }
 
-// Ensure SqlServerConnection and AppConfig are properly defined or mocked if they are external
-// For this example, I'm assuming they exist elsewhere or are simple placeholders.
-// If they are not defined, this code will not compile without their definitions.
-// public static class SqlServerConnection { public static void InitializeConfiguration(IConfiguration config) { /* ... */ } }
-// public static class AppConfig { public static void ConfigureServices(IServiceCollection services, IConfiguration config) { /* ... */ } public static void ConfigurePipeline(IApplicationBuilder app) { /* ... */ } }
+SqlServerConnection.InitializeConfiguration(builder.Configuration);
 
-// Add logging to the service collection
-builder.Services.AddLogging(configure => configure.AddConsole());
-
-// Placeholder for AppConfig.ConfigureServices if not defined elsewhere
-// If AppConfig is defined in a separate file, ensure it's correctly referenced.
-// Otherwise, you might need to move its content here.
-// For now, I'm assuming it's correctly handled.
-// Example:
-// builder.Services.AddControllers();
-// builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
 AppConfig.ConfigureServices(builder.Services, builder.Configuration);
-
 
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
 builder.Services.AddWebSocketManager();
@@ -71,14 +54,6 @@ builder.Services.AddWebSockets(options =>
 
 var app = builder.Build();
 
-// Placeholder for AppConfig.ConfigurePipeline if not defined elsewhere
-// If AppConfig is defined in a separate file, ensure it's correctly referenced.
-// Otherwise, you might need to move its content here.
-// For now, I'm assuming it's correctly handled.
-// Example:
-// if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
-// app.UseHttpsRedirection();
-// app.UseAuthorization();
 AppConfig.ConfigurePipeline(app);
 
 // Usa WebSockets. Esto debe ir antes del mapeo de controladores.
@@ -114,7 +89,8 @@ app.Map("/ws/sensor_data", async context =>
     }
 });
 
-app.MapControllers(); // Ensure this is present if you have API controllers
+
+app.MapControllers();
 
 app.Run();
 
@@ -129,10 +105,10 @@ public static class WebSocketManagerExtensions
 
 public class WebSocketHandler
 {
-    private readonly ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
-    private readonly ILogger<WebSocketHandler> _logger; // Inject ILogger
+    private readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
+    private readonly ILogger<WebSocketHandler> _logger;
 
-    public WebSocketHandler(ILogger<WebSocketHandler> logger) // Constructor to receive ILogger
+    public WebSocketHandler(ILogger<WebSocketHandler> logger)
     {
         _logger = logger;
     }
@@ -141,7 +117,7 @@ public class WebSocketHandler
     {
         var socketId = Guid.NewGuid().ToString();
         _sockets.TryAdd(socketId, webSocket);
-        _logger.LogInformation($"WebSocket conectado: {socketId}"); // Use logger
+        _logger.LogInformation($"WebSocket conectado: {socketId}");
 
         var buffer = new byte[1024 * 4];
         
@@ -156,7 +132,7 @@ public class WebSocketHandler
                 if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
                     var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
-                    _logger.LogInformation($"Mensaje recibido de {socketId}: {message}"); // Use logger
+                    _logger.LogInformation($"Mensaje recibido de {socketId}: {message}");
 
                     // Enviar confirmación de recepción
                     var ackMessage = $"ACK: {DateTime.UtcNow:o}";
@@ -170,7 +146,7 @@ public class WebSocketHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error en WebSocket {socketId}"); // Use logger for errors
+            _logger.LogError(ex, $"Error en WebSocket {socketId}");
         }
         finally
         {
@@ -179,7 +155,7 @@ public class WebSocketHandler
                 WebSocketCloseStatus.NormalClosure,
                 "Cierre normal",
                 CancellationToken.None);
-            _logger.LogInformation($"WebSocket desconectado: {socketId}"); // Use logger
+            _logger.LogInformation($"WebSocket desconectado: {socketId}");
         }
     }
 

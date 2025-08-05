@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿﻿﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Text.Json; // Se añade el using para JsonSerializer
@@ -8,8 +8,10 @@ using System.Threading.Tasks; // Se añade el using para Task
 [ApiController]
 public class AlertaController : ControllerBase
 {
+    // Se añade un campo privado para el WebSocketHandler
     private readonly WebSocketHandler _webSocketHandler;
 
+    // Se añade el constructor para inyectar el WebSocketHandler
     public AlertaController(WebSocketHandler webSocketHandler)
     {
         _webSocketHandler = webSocketHandler;
@@ -68,6 +70,7 @@ public class AlertaController : ControllerBase
             bool result = Alerta.AlertaResidente(id_residente, alertaTipo , mensaje);
             if (result)
             {
+                // Obtener la alerta recién creada para enviarla por WebSocket
                 var nuevaAlerta = Alerta.GetLastCreatedByResidente(id_residente);
                 if (nuevaAlerta != null)
                 {
@@ -96,6 +99,7 @@ public class AlertaController : ControllerBase
             bool result = Alerta.AlertaArea(id_area, alertaTipo, mensaje);
             if (result)
             {
+                // Lógica para enviar por WebSocket
                 var nuevaAlerta = Alerta.GetLastCreatedByArea(id_area);
                 if (nuevaAlerta != null)
                 {
@@ -124,6 +128,7 @@ public class AlertaController : ControllerBase
             bool result = Alerta.AlertaGeneral(alertaTipo, mensaje);
             if (result)
             {
+                // Lógica para enviar por WebSocket
                 var nuevaAlerta = Alerta.GetLastCreatedGeneral();
                 if (nuevaAlerta != null)
                 {
