@@ -14,22 +14,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Config from '../../config/config.js';
 
-const Header = ({ title, onMenuPress, navigation }) => {
+const Header = ({ title, onMenuPress, navigation, newNotificationsCount, onResetUnreadCount }) => {
   const { width } = useWindowDimensions();
   const showMenuButton = Platform.OS !== 'web' || width < 1024;
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [error, setError] = useState(null);
-  const [newNotificationsCount, setNewNotificationsCount] = useState(0);
   const [viewedNotifications, setViewedNotifications] = useState(new Set());
   const [notificationIds, setNotificationIds] = useState(new Set());
-
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [hoveredSettingsItem, setHoveredSettingsItem] = useState(null);
-
   const [hoveredNotificationId, setHoveredNotificationId] = useState(null);
-
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const toastTimeoutRef = useRef(null);
@@ -53,10 +49,8 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }
       setError(null);
 
-      // ---  Marcadores de posición: Reemplaza estos valores con la información real de tu sesión.
-      const currentUserId = 1; // Por ejemplo, el ID del empleado o administrador logueado
-      const currentUserRole = 'administrador'; // Puede ser 'empleado' o 'administrador'
-      // --------------------------------------------------------------------------------------
+      const currentUserId = 1; 
+      const currentUserRole = 'administrador'; 
 
       const [alertaResponse, notaResponse] = await Promise.all([
         fetch(`${Config.API_BASE_URL}/Alerta`, {
@@ -77,7 +71,6 @@ const Header = ({ title, onMenuPress, navigation }) => {
       const alertas = alertasData.alertas || alertasData;
       const notas = notasData.notas || notasData;
 
-      // Obtener IDs de familiares únicos para buscar sus nombres
       const uniqueFamiliarIds = new Set(notas.filter(n => n.id_familiar && n.id_personal !== 0).map(n => n.id_familiar));
       const familiarNames = {};
 
@@ -104,12 +97,9 @@ const Header = ({ title, onMenuPress, navigation }) => {
           fecha: a.fecha,
         })) : []),
         ...(Array.isArray(notas) ? notas.filter(n => {
-          // --- LÓGICA DE FILTRADO ACTUALIZADA
-          // Si el rol es 'administrador' y la nota tiene id_personal = 0, se filtra (no se muestra).
           if (currentUserRole === 'administrador' && n.id_personal === 0) {
             return false;
           }
-          // En cualquier otro caso, se muestra la nota.
           return true;
         }).map(n => {
           const senderName = n.id_personal === 0 
@@ -117,7 +107,7 @@ const Header = ({ title, onMenuPress, navigation }) => {
             : familiarNames[n.id_familiar] || `Familiar ID: ${n.id_familiar}`;
             
           return {
-            tipo: 'mensaje', // CAMBIO: de 'nota' a 'mensaje'
+            tipo: 'mensaje',
             idReferencia: n.id,
             residenteNombre: senderName,
             residenteApellido: '',
@@ -132,15 +122,6 @@ const Header = ({ title, onMenuPress, navigation }) => {
       const recentNotifications = combinedNotifications.slice(0, 10);
 
       const currentIds = new Set(recentNotifications.map(n => `${n.tipo}-${n.idReferencia}`));
-
-      if (!isInitialLoad && notificationIds.size > 0) {
-        const newIds = [...currentIds].filter(id => !notificationIds.has(id));
-        if (newIds.length > 0) {
-          setNewNotificationsCount(prev => prev + newIds.length);
-          animateBadge();
-          showToast('¡Tienes nuevas notificaciones!');
-        }
-      }
 
       setNotifications(recentNotifications);
       setNotificationIds(currentIds);
@@ -173,6 +154,12 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (newNotificationsCount > 0) {
+      animateBadge();
+    }
+  }, [newNotificationsCount]);
 
   const animateBadge = () => {
     badgeAnimation.setValue(0);
@@ -210,7 +197,9 @@ const Header = ({ title, onMenuPress, navigation }) => {
       }).start(() => setShowDropdown(false));
     } else {
       setShowDropdown(true);
-      setNewNotificationsCount(0);
+      if (onResetUnreadCount) {
+          onResetUnreadCount();
+      }
       const allViewed = new Set(
         notifications.map(n => `${n.tipo}-${n.idReferencia}`)
       );
@@ -265,7 +254,7 @@ const Header = ({ title, onMenuPress, navigation }) => {
   };
 
   const getNotificationIcon = (tipo, tipoDetalleAlerta) => {
-    if (tipo === 'mensaje') { // CAMBIO: de 'nota' a 'mensaje'
+    if (tipo === 'mensaje') {
       return { name: 'chatbubble', color: '#4A90E2' };
     } else if (tipo === 'alerta') {
       return tipoDetalleAlerta === 'Bradicardia'

@@ -24,6 +24,24 @@ public class LecturasUbicacionController : ControllerBase
         var lecturas = await collection.Find(new BsonDocument()).ToListAsync();
         return Ok(lecturas);
     }
+
+    [HttpGet("residente/{residenteId}")]
+    public async Task<ActionResult<LecturaUbicacionResidente>> GetUltimaUbicacionResidente(string residenteId)
+    {
+        var collection = _context.GetCollection<LecturaUbicacionResidente>("lecturas_ubicacion_residentes");
+
+        var ultimaLectura = await collection
+            .Find(l => l.ResidenteId == residenteId)
+            .SortByDescending(l => l.Timestamp)
+            .FirstOrDefaultAsync();
+
+        if (ultimaLectura == null)
+        {
+            return NotFound($"No se encontró ninguna ubicación para el residente con ID: {residenteId}.");
+        }
+
+        return Ok(ultimaLectura);
+    }
     
     [HttpPost("residentes")]
     public async Task<ActionResult<LecturaUbicacionResidente>> PostLecturaUbicacionResidente([FromForm] LecturaUbicacionResidenteDto nuevaLecturaDto)

@@ -1,9 +1,24 @@
-// AlertModal.js
-
-import React, { useEffect, useRef } from 'react';
+// fileName: AlertModal.js
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Image, Animated, Easing } from 'react-native';
 
+// URL base de la nueva API para la ubicación.
+const RESIDENT_LOCATION_API_ENDPOINT_BASE = 'http://localhost:5214/LecturasUbicacion/residente';
+const residentPhotoBaseUrl = 'http://localhost:5214/images/residents'; 
+
+// Función auxiliar para convertir a "Title Case"
+const toTitleCase = (str) => {
+  return str.replace(
+    /\w\S*/g,
+    function(txt) {
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    }
+  );
+};
+
 const AlertModal = ({ isVisible, alertData, onConfirm }) => {
+  const [residenteLocation, setResidenteLocation] = useState(null);
+
   // Animación para el pulso de escala del modal
   const modalScalePulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -11,9 +26,27 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
   const modalBorderPulseAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    let modalScalePulse;
+    let modalBorderPulse;
+
+    const fetchResidentLocation = async (residenteId) => {
+        try {
+            const response = await fetch(`${RESIDENT_LOCATION_API_ENDPOINT_BASE}/${residenteId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setResidenteLocation(data);
+            } else {
+                console.error("Failed to fetch resident location:", response.status);
+                setResidenteLocation(null);
+            }
+        } catch (error) {
+            console.error("Error fetching resident location:", error);
+            setResidenteLocation(null);
+        }
+    };
+
     if (isVisible) {
-      // Iniciar la animación de escala del modal
-      const modalScalePulse = Animated.loop(
+      modalScalePulse = Animated.loop(
         Animated.sequence([
           Animated.timing(modalScalePulseAnim, {
             toValue: 1.05,
@@ -31,32 +64,43 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
       );
       modalScalePulse.start();
 
-      // Iniciar la animación del borde del modal (grosor y color)
-      const modalBorderPulse = Animated.loop(
+      modalBorderPulse = Animated.loop(
         Animated.sequence([
           Animated.timing(modalBorderPulseAnim, {
-            toValue: 1, // Va de 0 a 1
-            duration: 700, // Duración del pulso del borde
-            easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false, // Necesario para animar colores y borderWidth
-          }),
-          Animated.timing(modalBorderPulseAnim, {
-            toValue: 0, // Vuelve a 0
+            toValue: 1,
             duration: 700,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: false, // Necesario para animar colores y borderWidth
+            useNativeDriver: false,
+          }),
+          Animated.timing(modalBorderPulseAnim, {
+            toValue: 0,
+            duration: 700,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: false,
           }),
         ])
       );
       modalBorderPulse.start();
 
-      // Detener ambas animaciones al desmontar o cuando deja de ser visible
-      return () => {
-        modalScalePulse.stop();
-        modalBorderPulse.stop();
-      };
+      const residenteIdToFetch = alertData?.residente?.Id_residente;
+
+      if (residenteIdToFetch) {
+        fetchResidentLocation(residenteIdToFetch);
+      } else {
+        console.warn("No se pudo encontrar el ID del residente en los datos de la alerta.");
+        setResidenteLocation(null);
+      }
+    } else {
+      if (modalScalePulse) modalScalePulse.stop();
+      if (modalBorderPulse) modalBorderPulse.stop();
+      setResidenteLocation(null);
     }
-  }, [isVisible, modalScalePulseAnim, modalBorderPulseAnim]);
+
+    return () => {
+      if (modalScalePulse) modalScalePulse.stop();
+      if (modalBorderPulse) modalBorderPulse.stop();
+    };
+  }, [isVisible, alertData, modalScalePulseAnim, modalBorderPulseAnim]);
 
   if (!alertData) {
     return null;
@@ -65,8 +109,6 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
   const residenteNombre = alertData?.residente?.Nombre || "Residente";
   const residenteApellido = alertData?.residente?.Apellido || "Desconocido";
 
-  const residentPhotoBaseUrl = 'http://localhost:5214/images/residents'; 
-
   const photoUrl = alertData?.residente?.Foto
     ? `${residentPhotoBaseUrl}/${alertData.residente.Foto}`
     : null;
@@ -74,17 +116,22 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
   const title = `${residenteNombre} ${residenteApellido}`;
   const subtitle = alertData?.alerta_tipo?.nombre || "Alerta";
   const message = alertData?.mensaje || "Se ha recibido una nueva alerta.";
+  
+  // Se usa la función toTitleCase para formatear el texto de la ubicación
+  const locationText = residenteLocation?.area 
+    ? `Última ubicación: ${toTitleCase(residenteLocation.area)}` 
+    : 'Ubicación no disponible';
 
   // Interpolación para el grosor del borde del modal
   const animatedModalBorderWidth = modalBorderPulseAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [2, 8], // El grosor del borde va de 2px a 8px
+    outputRange: [2, 8],
   });
 
   // Interpolación para el color del borde del modal (de un rojo más claro a uno más oscuro)
   const animatedModalBorderColor = modalBorderPulseAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['rgba(255, 0, 0, 0.5)', 'rgba(255, 0, 0, 1)'], // De rojo semi-transparente a rojo sólido
+    outputRange: ['rgba(255, 0, 0, 0.5)', 'rgba(255, 0, 0, 1)'],
   });
 
   return (
@@ -95,19 +142,16 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
       onRequestClose={onConfirm}
     >
       <View style={styles.centeredView}>
-        {/* El modal interno con su animación de escala y la nueva animación de borde */}
         <Animated.View
           style={[
             styles.modalView,
             {
               transform: [{ scale: modalScalePulseAnim }],
-              // Aplicar las animaciones del borde del modal
               borderWidth: animatedModalBorderWidth,
               borderColor: animatedModalBorderColor,
             },
           ]}
         >
-          {/* Texto de alerta añadido */}
           <Text style={styles.alertIndicator}>¡ALERTA!</Text>
           {photoUrl && (
             <Image
@@ -118,6 +162,7 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
           <Text style={styles.alertTitle}>{title}</Text>
           <Text style={styles.alertSubtitle}>{subtitle}</Text>
           <Text style={styles.alertMessage}>{message}</Text>
+          <Text style={styles.alertLocation}>{locationText}</Text>
           <TouchableOpacity
             style={styles.confirmButton}
             onPress={onConfirm}
@@ -131,7 +176,6 @@ const AlertModal = ({ isVisible, alertData, onConfirm }) => {
 };
 
 const styles = StyleSheet.create({
-  // screenBorder styles have been removed as requested
   centeredView: {
     flex: 1,
     justifyContent: 'center',
@@ -153,9 +197,8 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     width: 400,
-    height: 450,
+    height: 480,
     justifyContent: 'center',
-    // Los estilos de borde ahora serán animados, por lo que los valores fijos se eliminan de aquí
   },
   alertIndicator: {
     fontSize: 32,
@@ -189,7 +232,15 @@ const styles = StyleSheet.create({
   alertMessage: {
     fontSize: 18,
     color: '#333',
-    marginBottom: 25,
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  alertLocation: {
+    fontSize: 20, // Se aumentó el tamaño de la fuente
+    fontWeight: '900', // Se hizo más negrita
+    color: '#333', // Se oscureció el color para que destaque más
+    marginTop: 10, // Se añadió más espacio arriba
+    marginBottom: 20,
     textAlign: 'center',
   },
   confirmButton: {

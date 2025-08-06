@@ -4,13 +4,11 @@ import React, { useEffect, useRef, useState } from "react";
 import { createDrawerNavigator } from "@react-navigation/drawer"
 import { createStackNavigator } from "@react-navigation/stack"
 import { Platform, View, Text, StyleSheet } from "react-native"
-import { Audio } from 'expo-av'; // Importar la librería de audio
+import { Audio } from 'expo-av';
 
 import AlertModal from "../components/shared/AlertModal";
-
 import Header from "../components/navigation/Header"
 import SideMenu from "../components/navigation/SideMenu"
-
 import HomeScreen from "../screens/employee/HomeScreen"
 import ResidentsScreen from "../screens/employee/ResidentsScreen"
 import CombinedRegistrationScreen from "../screens/employee/CombinedRegistrationScreen"
@@ -29,8 +27,7 @@ import EmployeeEditScreen from "../screens/admin/EmployeeEditScreen"
 import DeviceManagementScreen from "../screens/admin/DeviceManagementScreen"
 import MyAccountScreen from "../components/navigation/MyAccountScreen"
 import ChatGeneralScreen from "../screens/employee/ChatGeneralScreen"
-
-import { UnreadMessagesProvider } from "../src/context/UnreadMessagesContext"
+import { useUnreadMessages } from "../src/context/UnreadMessagesContext"
 
 const Drawer = createDrawerNavigator()
 const ResidentsStack = createStackNavigator()
@@ -38,96 +35,102 @@ const EmployeeStack = createStackNavigator()
 const ChatStack = createStackNavigator()
 
 function ResidentsStackScreen() {
-  return (
-    <ResidentsStack.Navigator
-      initialRouteName="ResidentsList"
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <ResidentsStack.Screen name="ResidentsList" component={ResidentsScreen} />
-      <ResidentsStack.Screen name="RegisterResidentAndFamiliar" component={CombinedRegistrationScreen} />
-      <ResidentsStack.Screen name="ResidentEditScreen" component={ResidentEditScreen} />
-      <ResidentsStack.Screen name="ResidentProfile" component={ResidentProfileScreen} />
-      <ResidentsStack.Screen name="WeeklyCheckupDetail" component={WeeklyCheckupDetailScreen} />
-      <ResidentsStack.Screen name="ResidentEdit" component={ResidentEditScreen} />
-    </ResidentsStack.Navigator>
-  )
+  return React.createElement(ResidentsStack.Navigator, {
+    initialRouteName: "ResidentsList",
+    screenOptions: {
+      headerShown: false,
+    }
+  }, React.createElement(ResidentsStack.Screen, {
+    name: "ResidentsList",
+    component: ResidentsScreen
+  }), React.createElement(ResidentsStack.Screen, {
+    name: "RegisterResidentAndFamiliar",
+    component: CombinedRegistrationScreen
+  }), React.createElement(ResidentsStack.Screen, {
+    name: "ResidentEditScreen",
+    component: ResidentEditScreen
+  }), React.createElement(ResidentsStack.Screen, {
+    name: "ResidentProfile",
+    component: ResidentProfileScreen
+  }), React.createElement(ResidentsStack.Screen, {
+    name: "WeeklyCheckupDetail",
+    component: WeeklyCheckupDetailScreen
+  }), React.createElement(ResidentsStack.Screen, {
+    name: "ResidentEdit",
+    component: ResidentEditScreen
+  }));
 }
 
 function EmployeeManagementStackScreen() {
-  return (
-    <EmployeeStack.Navigator
-      initialRouteName="EmployeeList"
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <EmployeeStack.Screen
-        name="EmployeeList"
-        component={EmployeeManagementScreen}
-        options={{ title: "Gestión de Empleados" }}
-      />
-      <EmployeeStack.Screen
-        name="CreateEmployee"
-        component={EmployeeCreationScreen}
-        options={{ title: "Registrar Nuevo Empleado" }}
-      />
-      <EmployeeStack.Screen name="EditEmployee" component={EmployeeEditScreen} options={{ title: "Editar Empleado" }} />
-    </EmployeeStack.Navigator>
-  )
+  return React.createElement(EmployeeStack.Navigator, {
+    initialRouteName: "EmployeeList",
+    screenOptions: {
+      headerShown: false,
+    }
+  }, React.createElement(EmployeeStack.Screen, {
+    name: "EmployeeList",
+    component: EmployeeManagementScreen,
+    options: {
+      title: "Gestión de Empleados"
+    }
+  }), React.createElement(EmployeeStack.Screen, {
+    name: "CreateEmployee",
+    component: EmployeeCreationScreen,
+    options: {
+      title: "Registrar Nuevo Empleado"
+    }
+  }), React.createElement(EmployeeStack.Screen, {
+    name: "EditEmployee",
+    component: EmployeeEditScreen,
+    options: {
+      title: "Editar Empleado"
+    }
+  }));
 }
 
 function ChatStackScreen() {
   if (Platform.OS === "web") {
-    return (
-      <ChatStack.Navigator
-        initialRouteName="ChatGeneral"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <ChatStack.Screen
-          name="ChatGeneral"
-          component={ChatGeneralScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </ChatStack.Navigator>
-    )
+    return React.createElement(ChatStack.Navigator, {
+      initialRouteName: "ChatGeneral",
+      screenOptions: {
+        headerShown: false,
+      }
+    }, React.createElement(ChatStack.Screen, {
+      name: "ChatGeneral",
+      component: ChatGeneralScreen,
+      options: {
+        headerShown: false,
+      }
+    }));
   } else {
-    return (
-      <ChatStack.Navigator
-        initialRouteName="ChatList"
-        screenOptions={{
-          headerShown: false,
-        }}
-      >
-        <ChatStack.Screen
-          name="ChatList"
-          component={ChatListScreen}
-          options={{
-            headerShown: true,
-            header: ({ options, navigation, route }) => (
-              <Header
-                title={options.title || route.name}
-                onMenuPress={() => navigation.toggleDrawer()}
-                navigation={navigation}
-              />
-            ),
-            title: "CHAT CON FAMILIARES",
-          }}
-        />
-        <ChatStack.Screen
-          name="SpecificChat"
-          component={SpecificChatScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-      </ChatStack.Navigator>
-    )
+    return React.createElement(ChatStack.Navigator, {
+      initialRouteName: "ChatList",
+      screenOptions: {
+        headerShown: false,
+      }
+    }, React.createElement(ChatStack.Screen, {
+      name: "ChatList",
+      component: ChatListScreen,
+      options: {
+        headerShown: true,
+        header: ({
+          options,
+          navigation,
+          route
+        }) => React.createElement(Header, {
+          title: options.title || route.name,
+          onMenuPress: () => navigation.toggleDrawer(),
+          navigation: navigation
+        }),
+        title: "CHAT CON FAMILIARES",
+      }
+    }), React.createElement(ChatStack.Screen, {
+      name: "SpecificChat",
+      component: SpecificChatScreen,
+      options: {
+        headerShown: false,
+      }
+    }));
   }
 }
 
@@ -136,6 +139,7 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
     const [isModalVisible, setModalVisible] = useState(false);
     const [currentAlert, setCurrentAlert] = useState(null);
     const soundObject = useRef(new Audio.Sound());
+    const { totalUnreadCount, setTotalUnreadCount } = useUnreadMessages();
 
     const playSound = async () => {
         try {
@@ -159,7 +163,7 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
     };
 
     useEffect(() => {
-        ws.current = new WebSocket("ws://localhost:5214/ws"); 
+        ws.current = new WebSocket("ws://localhost:5214/ws");
 
         ws.current.onopen = () => {
             console.log("Conectado al servidor WebSocket.");
@@ -172,8 +176,8 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
 
                 setCurrentAlert(alertData);
                 setModalVisible(true);
-                playSound(); // Iniciar la reproducción del sonido
-                
+                playSound();
+                setTotalUnreadCount(prevCount => prevCount + 1);
             } catch (error) {
                 console.error("Error al procesar el mensaje WebSocket:", error);
             }
@@ -187,97 +191,130 @@ const AdminNavigator = ({ onLogout, userRole, firebaseUid }) => {
 
         ws.current.onclose = () => {
             console.log("Conexión WebSocket cerrada.");
-            // Limpieza al cerrar la conexión
             if (ws.current) {
                 ws.current.close();
             }
         };
 
-        // Limpieza del useEffect para evitar fugas de memoria
         return () => {
             if (ws.current) {
                 ws.current.close();
             }
-            stopSound(); // Detener el sonido si el componente se desmonta
+            stopSound();
         };
     }, []);
 
     const handleConfirm = () => {
-        stopSound(); // Detener el sonido al confirmar la alerta
+        stopSound();
         setModalVisible(false);
         setCurrentAlert(null);
     };
 
-    return (
-        <UnreadMessagesProvider>
-            <Drawer.Navigator
-                initialRouteName="Home"
-                drawerContent={(props) => <SideMenu {...props} onLogout={onLogout} userRole={userRole} />}
-                screenOptions={({ navigation, route }) => ({
-                    drawerType: Platform.OS === "web" ? "permanent" : "front",
-                    drawerStyle: {
-                        width: 260,
-                        backgroundColor: "#fcfcfc",
-                        shadowColor: "#000",
-                        shadowOffset: { width: 6, height: 0 },
-                        shadowOpacity: 0.05,
-                        shadowRadius: 10,
-                        elevation: 8,
-                    },
-                    headerShown: true,
-                    header: ({ options }) => {
-                        return (
-                            <Header
-                                title={options.title || route.name}
-                                onMenuPress={() => navigation.toggleDrawer()}
-                                navigation={navigation}
-                            />
-                        )
-                    },
-                })}
-            >
-                <Drawer.Screen name="Home" component={HomeScreen} options={{ title: "INICIO" }} />
-                <Drawer.Screen name="Residents" component={ResidentsStackScreen} options={{ title: "GESTIÓN RESIDENTES" }} />
-                <Drawer.Screen name="ChatGeneral" component={ChatStackScreen} options={{ title: "CHAT CON FAMILIARES" }} />
-                <Drawer.Screen
-                    name="DeviceManagement"
-                    component={DeviceManagementScreen}
-                    options={{ title: "GESTIÓN DE DISPOSITIVOS" }}
-                />
-                <Drawer.Screen
-                    name="CreateConsultas"
-                    component={CreateConsultasScreen}
-                    options={{ title: "CREAR CONSULTAS" }}
-                />
-                <Drawer.Screen
-                    name="ConsultasHistory"
-                    component={ConsultasHistoryScreen}
-                    options={{ title: "HISTORIAL DE CONSULTAS" }}
-                />
-                <Drawer.Screen
-                    name="CheckupReports"
-                    component={CheckupReportsScreen}
-                    options={{ title: "REPORTES DE CHEQUEOS" }}
-                />
-                <Drawer.Screen
-                    name="EmployeeManagement"
-                    component={EmployeeManagementStackScreen}
-                    options={{ title: "GESTIÓN EMPLEADOS" }}
-                />
-                <Drawer.Screen name="AsylumData" component={AsylumDataScreen} options={{ title: "DATOS DEL ASILO" }} />
-                <Drawer.Screen
-                    name="MyAccountScreen"
-                    component={MyAccountScreen}
-                    options={{ title: "MI CUENTA" }}
-                    initialParams={{ firebaseUid: firebaseUid }}
-                />
-            </Drawer.Navigator>
-
-            <AlertModal isVisible={isModalVisible} alertData={currentAlert} onConfirm={handleConfirm} />
-
-        </UnreadMessagesProvider>
-    )
-}
+    return React.createElement(React.Fragment, null, React.createElement(Drawer.Navigator, {
+      initialRouteName: "Home",
+      drawerContent: (props) => React.createElement(SideMenu, { ...props,
+        onLogout: onLogout,
+        userRole: userRole
+      }),
+      screenOptions: ({
+        navigation,
+        route
+      }) => ({
+        drawerType: Platform.OS === "web" ? "permanent" : "front",
+        drawerStyle: {
+          width: 260,
+          backgroundColor: "#fcfcfc",
+          shadowColor: "#000",
+          shadowOffset: {
+            width: 6,
+            height: 0
+          },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          elevation: 8,
+        },
+        headerShown: true,
+        header: ({
+          options
+        }) => {
+          return React.createElement(Header, {
+            title: options.title || route.name,
+            onMenuPress: () => navigation.toggleDrawer(),
+            navigation: navigation,
+            newNotificationsCount: totalUnreadCount,
+            onResetUnreadCount: () => setTotalUnreadCount(0)
+          });
+        },
+      })
+    }, React.createElement(Drawer.Screen, {
+      name: "Home",
+      component: HomeScreen,
+      options: {
+        title: "INICIO"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "Residents",
+      component: ResidentsStackScreen,
+      options: {
+        title: "GESTIÓN RESIDENTES"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "ChatGeneral",
+      component: ChatStackScreen,
+      options: {
+        title: "CHAT CON FAMILIARES"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "DeviceManagement",
+      component: DeviceManagementScreen,
+      options: {
+        title: "GESTIÓN DE DISPOSITIVOS"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "CreateConsultas",
+      component: CreateConsultasScreen,
+      options: {
+        title: "CREAR CONSULTAS"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "ConsultasHistory",
+      component: ConsultasHistoryScreen,
+      options: {
+        title: "HISTORIAL DE CONSULTAS"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "CheckupReports",
+      component: CheckupReportsScreen,
+      options: {
+        title: "REPORTES DE CHEQUEOS"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "EmployeeManagement",
+      component: EmployeeManagementStackScreen,
+      options: {
+        title: "GESTIÓN EMPLEADOS"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "AsylumData",
+      component: AsylumDataScreen,
+      options: {
+        title: "DATOS DEL ASILO"
+      }
+    }), React.createElement(Drawer.Screen, {
+      name: "MyAccountScreen",
+      component: MyAccountScreen,
+      options: {
+        title: "MI CUENTA"
+      },
+      initialParams: {
+        firebaseUid: firebaseUid
+      }
+    })), React.createElement(AlertModal, {
+      isVisible: isModalVisible,
+      alertData: currentAlert,
+      onConfirm: handleConfirm
+    }));
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -304,6 +341,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     textDecorationLine: "underline",
   },
-})
+});
 
 export default AdminNavigator;

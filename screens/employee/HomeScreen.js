@@ -33,6 +33,8 @@ const AREA_COORDINATES = {
 const SVG_MAP_HEIGHT = 400;
 const SVG_MAP_CARD_TOTAL_HEIGHT = SVG_MAP_HEIGHT + 50;
 
+const REFRESH_INTERVAL = 15000; // 15 segundos
+
 const HomeScreen = () => {
     const { width: screenWidth } = useWindowDimensions();
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0, visible: false, value: 0 });
@@ -61,85 +63,101 @@ const HomeScreen = () => {
         return `rgba(232, 51, 51, 0.9)`;
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const dashboardResponse = await fetch(API_ENDPOINT);
-                if (!dashboardResponse.ok) {
-                    throw new Error(`HTTP error! status: ${dashboardResponse.status} from Dashboard API`);
-                }
-                const dashboardJson = await dashboardResponse.json();
-                setDashboardData(dashboardJson);
-
-                const locationResponse = await fetch(RESIDENT_LOCATION_API_ENDPOINT);
-                if (!locationResponse.ok) {
-                    throw new Error(`HTTP error! status: ${locationResponse.status} from Resident Location API`);
-                }
-                const locationJson = await locationResponse.json();
-
-                const counts = {};
-                locationJson.forEach(resident => {
-                    const area = resident.area?.toLowerCase() || "desconocido";
-                    counts[area] = (counts[area] || 0) + 1;
-                });
-                setResidentLocationCounts(counts);
-
-                const colors = {};
-                Object.keys(AREA_COORDINATES).forEach(area => {
-                    const count = counts[area] || 0;
-                    colors[area] = getHeatmapColor(count);
-                });
-                setAreaHeatmapColors(colors);
-
-                const checkupResponse = await fetch(CHECKUP_API_ENDPOINT);
-                if (!checkupResponse.ok) {
-                    throw new Error(`HTTP error! status: ${checkupResponse.status} from Checkup API`);
-                }
-                const checkupJson = await checkupResponse.json();
-
-                const enrichedCheckups = await Promise.all(checkupJson.map(async (checkup) => {
-                    const residentDetailUrl = `${RESIDENT_DETAIL_API_ENDPOINT_BASE}/${checkup.residenteId}`;
-                    let residentName = `ID: ${checkup.residenteId} (Desconocido)`;
-                    try {
-                        const residentResponse = await fetch(residentDetailUrl);
-                        if (!residentResponse.ok) {
-                            console.warn(`Could not fetch resident details for ID: ${checkup.residenteId}, status: ${residentResponse.status}`);
-                        } else {
-                            const residentData = await residentResponse.json();
-                            residentName = residentData.residente ? `${residentData.residente.nombre} ${residentData.residente.apellido}` : `ID: ${checkup.residenteId} (Desconocido)`;
-                        }
-                    } catch (residentError) {
-                        console.error(`Error fetching resident ID ${checkup.residenteId}:`, residentError);
-                    }
-
-                    const personalDetailUrl = `${PERSONAL_DETAIL_API_ENDPOINT_BASE}/${checkup.personalId}`;
-                    let personalName = `ID: ${checkup.personalId} (Desconocido)`;
-                    try {
-                        const personalResponse = await fetch(personalDetailUrl);
-                        if (!personalResponse.ok) {
-                            console.warn(`Could not fetch personal details for ID: ${checkup.personalId}, status: ${personalResponse.status}`);
-                        } else {
-                            const personalData = await personalResponse.json();
-                            personalName = personalData.personal ? `${personalData.personal.nombre} ${personalData.personal.apellido}` : `ID: ${checkup.personalId} (Desconocido)`;
-                        }
-                    } catch (personalError) {
-                        console.error(`Error fetching personal ID ${checkup.personalId}:`, personalError);
-                    }
-
-                    return { ...checkup, residenteNombreCompleto: residentName, personalNombreCompleto: personalName };
-                }));
-
-                setWeeklyCheckupsData(enrichedCheckups.slice(0, 3));
-
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                setError(err.message);
-            } finally {
-                setLoading(false);
+    const fetchData = async () => {
+        try {
+            const dashboardResponse = await fetch(API_ENDPOINT);
+            if (!dashboardResponse.ok) {
+                throw new Error(`HTTP error! status: ${dashboardResponse.status} from Dashboard API`);
             }
-        };
+            const dashboardJson = await dashboardResponse.json();
+            setDashboardData(dashboardJson);
 
+            const locationResponse = await fetch(RESIDENT_LOCATION_API_ENDPOINT);
+            if (!locationResponse.ok) {
+                throw new Error(`HTTP error! status: ${locationResponse.status} from Resident Location API`);
+            }
+            const locationJson = await locationResponse.json();
+
+            // Usamos un objeto para almacenar la última ubicación de cada residente.
+            const latestLocations = {};
+            locationJson.forEach(resident => {
+                const residentId = resident.residenteId;
+                const timestamp = new Date(resident.timestamp);
+
+                // Si el residente no está en el objeto o si la lectura actual es más reciente, la guardamos.
+                if (!latestLocations[residentId] || timestamp > new Date(latestLocations[residentId].timestamp)) {
+                    latestLocations[residentId] = resident;
+                }
+            });
+
+            // Ahora, contamos las ubicaciones únicas y más recientes.
+            const counts = {};
+            Object.values(latestLocations).forEach(resident => {
+                const area = resident.area?.toLowerCase() || "desconocido";
+                counts[area] = (counts[area] || 0) + 1;
+            });
+            setResidentLocationCounts(counts);
+
+            const colors = {};
+            Object.keys(AREA_COORDINATES).forEach(area => {
+                const count = counts[area] || 0;
+                colors[area] = getHeatmapColor(count);
+            });
+            setAreaHeatmapColors(colors);
+
+            const checkupResponse = await fetch(CHECKUP_API_ENDPOINT);
+            if (!checkupResponse.ok) {
+                throw new Error(`HTTP error! status: ${checkupResponse.status} from Checkup API`);
+            }
+            const checkupJson = await checkupResponse.json();
+
+            const enrichedCheckups = await Promise.all(checkupJson.map(async (checkup) => {
+                const residentDetailUrl = `${RESIDENT_DETAIL_API_ENDPOINT_BASE}/${checkup.residenteId}`;
+                let residentName = `ID: ${checkup.residenteId} (Desconocido)`;
+                try {
+                    const residentResponse = await fetch(residentDetailUrl);
+                    if (!residentResponse.ok) {
+                        console.warn(`Could not fetch resident details for ID: ${checkup.residenteId}, status: ${residentResponse.status}`);
+                    } else {
+                        const residentData = await residentResponse.json();
+                        residentName = residentData.residente ? `${residentData.residente.nombre} ${residentData.residente.apellido}` : `ID: ${checkup.residenteId} (Desconocido)`;
+                    }
+                } catch (residentError) {
+                    console.error(`Error fetching resident ID ${checkup.residenteId}:`, residentError);
+                }
+
+                const personalDetailUrl = `${PERSONAL_DETAIL_API_ENDPOINT_BASE}/${checkup.personalId}`;
+                let personalName = `ID: ${checkup.personalId} (Desconocido)`;
+                try {
+                    const personalResponse = await fetch(personalDetailUrl);
+                    if (!personalResponse.ok) {
+                        console.warn(`Could not fetch personal details for ID: ${checkup.personalId}, status: ${personalResponse.status}`);
+                    } else {
+                        const personalData = await personalResponse.json();
+                        personalName = personalData.personal ? `${personalData.personal.nombre} ${personalData.personal.apellido}` : `ID: ${checkup.personalId} (Desconocido)`;
+                    }
+                } catch (personalError) {
+                    console.error(`Error fetching personal ID ${checkup.personalId}:`, personalError);
+                }
+
+                return { ...checkup, residenteNombreCompleto: residentName, personalNombreCompleto: personalName };
+            }));
+
+            setWeeklyCheckupsData(enrichedCheckups.slice(0, 3));
+
+        } catch (err) {
+            console.error("Error fetching data:", err);
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        setLoading(true);
         fetchData();
+        const intervalId = setInterval(fetchData, REFRESH_INTERVAL);
+        return () => clearInterval(intervalId);
     }, []);
 
     const onChartCardLayout = (event) => {

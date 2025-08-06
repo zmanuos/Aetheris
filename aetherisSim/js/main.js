@@ -13,6 +13,9 @@ const estadosResidente = [
     { nombre: "agitado", promedioKey: "promedioAgitado" }
 ];
 
+// Nombres de las áreas para la ubicación
+const areas = ["comedor", "dormitorio", "patio"];
+
 async function init() {
     console.log("Initializing Document...");
 
@@ -65,7 +68,13 @@ async function init() {
                     default:
                         promedioReferencia = promedioReposo;
                 }
-                
+
+                // Generar un número aleatorio para decidir si enviar la ubicación
+                if (Math.random() < 0.1) {
+                    const areaAleatoria = areas[Math.floor(Math.random() * areas.length)];
+                    enviarUbicacion(residenteId, areaAleatoria);
+                }
+
                 simularResidente(residenteId, promedioReferencia, dispositivoId, estadoActual.nombre, promedioReferencia);
             }, 11000);
         });
@@ -159,6 +168,32 @@ async function enviarLectura(residenteId, dispositivoId, ritmoActual, estado, pr
         console.log("Respuesta del servidor:", data);
     } catch (error) {
         console.error("Error al enviar lectura:", error);
+    }
+}
+
+// Nueva función para enviar la ubicación
+async function enviarUbicacion(residenteId, area) {
+    const formData = new FormData();
+    formData.append("ResidenteId", residenteId);
+    formData.append("Area", area);
+
+    try {
+        const response = await fetch("http://localhost:5214/LecturasUbicacion/residentes", {
+            method: "POST",
+            body: formData,
+            headers: {
+                "Accept": "text/plain"
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error HTTP: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log(`Ubicación enviada para residente ${residenteId}: ${area}. Respuesta:`, data);
+    } catch (error) {
+        console.error("Error al enviar ubicación:", error);
     }
 }
 
@@ -280,10 +315,10 @@ function simularResidente(residenteId, promedio, dispositivoId, estado, promedio
                         enviarAlertaResidente(residenteId, 3, "Se presenta Arritmia");
                         break;
                     case 2:
-                        enviarAlertaResidente(residenteId, 3, "Se presenta Bradicardia");
+                        enviarAlertaResidente(residenteId, 1, "Se presenta Bradicardia");
                         break;
                     case 3:
-                        enviarAlertaResidente(residenteId, 3, "Se presenta Taquicardia");
+                        enviarAlertaResidente(residenteId, 2, "Se presenta Taquicardia");
                         break;
                 }
                 simulacionActiva = false;

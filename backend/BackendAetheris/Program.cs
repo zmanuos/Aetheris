@@ -11,7 +11,8 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebSockets;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.WebSockets; // Agregado para ILogger
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,12 +42,13 @@ else
 
 SqlServerConnection.InitializeConfiguration(builder.Configuration);
 
+// Configuración de servicios de la aplicación (desde AppConfig.cs)
 AppConfig.ConfigureServices(builder.Services, builder.Configuration);
 
 builder.Services.AddSingleton<IFirebaseAuthService, FirebaseAuthService>();
-builder.Services.AddWebSocketManager();
+builder.Services.AddWebSocketManager(); // Registra WebSocketHandler como Singleton
 
-// Agrega servicios de WebSockets
+// Agrega los servicios de WebSockets al contenedor de inyección de dependencias
 builder.Services.AddWebSockets(options =>
 {
     options.KeepAliveInterval = TimeSpan.FromMinutes(10);
@@ -54,12 +56,13 @@ builder.Services.AddWebSockets(options =>
 
 var app = builder.Build();
 
+// Configuración del pipeline HTTP de la aplicación (desde AppConfig.cs)
 AppConfig.ConfigurePipeline(app);
 
-// Usa WebSockets. Esto debe ir antes del mapeo de controladores.
+// Habilita el middleware de WebSockets. Debe ir antes de cualquier mapeo de rutas WebSocket.
 app.UseWebSockets();
 
-// Mapea la ruta '/ws' al WebSocketHandler
+// Mapea la ruta '/ws' al WebSocketHandler para alertas
 app.Map("/ws", async context =>
 {
     if (context.WebSockets.IsWebSocketRequest)
@@ -74,7 +77,7 @@ app.Map("/ws", async context =>
     }
 });
 
-// Mapea la ruta '/ws/sensor_data' al WebSocketHandler
+// Mapea la ruta '/ws/sensor_data' al WebSocketHandler para datos de sensores
 app.Map("/ws/sensor_data", async context =>
 {
     if (context.WebSockets.IsWebSocketRequest)
@@ -89,11 +92,12 @@ app.Map("/ws/sensor_data", async context =>
     }
 });
 
-
+// Mapea los controladores de API REST
 app.MapControllers();
 
 app.Run();
 
+// Extensión para registrar WebSocketHandler
 public static class WebSocketManagerExtensions
 {
     public static IServiceCollection AddWebSocketManager(this IServiceCollection services)
@@ -103,6 +107,7 @@ public static class WebSocketManagerExtensions
     }
 }
 
+// Clase WebSocketHandler
 public class WebSocketHandler
 {
     private readonly ConcurrentDictionary<string, WebSocket> _sockets = new();
@@ -128,16 +133,15 @@ public class WebSocketHandler
 
             while (!receiveResult.CloseStatus.HasValue)
             {
-                // Procesar mensaje recibido
+                // Procesar mensaje recibido del cliente (si lo hay)
                 if (receiveResult.MessageType == WebSocketMessageType.Text)
                 {
                     var message = Encoding.UTF8.GetString(buffer, 0, receiveResult.Count);
                     _logger.LogInformation($"Mensaje recibido de {socketId}: {message}");
 
-                    // Enviar confirmación de recepción
-                    var ackMessage = $"ACK: {DateTime.UtcNow:o}";
-                    await SendMessageAsync(webSocket, ackMessage);
-                    await SendMessageToAllAsync(message);
+                    // Opcional: Reenviar el mensaje recibido a todos los clientes (comportamiento de "chat")
+                    // Si solo quieres que el servidor envíe alertas, puedes quitar esta línea.
+                    // await SendMessageToAllAsync(message); 
                 }
 
                 receiveResult = await webSocket.ReceiveAsync(

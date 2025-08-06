@@ -24,7 +24,6 @@ const POLLING_INTERVAL_MS = 3000;
 const { width } = Dimensions.get('window');
 const IS_LARGE_SCREEN = width > 900;
 
-// MODIFICACIÓN: Acepta currentUserRole y currentUserId como props
 export default function ResidentsScreen({ navigation, currentUserRole, currentUserId }) {
   const [isLoading, setIsLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
@@ -46,8 +45,10 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
 
     try {
       let currentResidentsData = residentsRef.current;
+      let residentLocations = {};
 
       if (initialLoad || currentResidentsData.length === 0) {
+        console.log('LOG: Fetching initial residents data...');
         const residentsResponse = await fetch(`${API_URL}/Residente`);
         if (!residentsResponse.ok) {
           throw new Error(`HTTP error! status: ${residentsResponse.status}`);
@@ -57,16 +58,40 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
         if (residentsJson && Array.isArray(residentsJson.data)) {
           currentResidentsData = residentsJson.data;
         } else {
-          console.warn('La respuesta de la API de residentes no contiene un array en la propiedad "data". Respuesta:', residentsJson);
+          console.warn('LOG: API de residentes no contiene un array en la propiedad "data". Respuesta:', residentsJson);
           currentResidentsData = [];
         }
       }
 
-      const baseStaticUrl = API_URL.replace('/api', '');
+      // CORRECCIÓN Y LOGS: Fetch de ubicaciones
+      try {
+        const baseStaticUrl = API_URL.replace('/api', '');
+        const locationsUrl = `${baseStaticUrl}/LecturasUbicacion/residentes`;
+        console.log(`LOG: Fetching resident locations from URL: ${locationsUrl}`);
+        const locationsResponse = await fetch(locationsUrl);
 
+        console.log(`LOG: Locations fetch response status: ${locationsResponse.status}, OK: ${locationsResponse.ok}`);
+
+        if (locationsResponse.ok) {
+          const locationsData = await locationsResponse.json();
+          console.log('LOG: Locations API response data:', locationsData);
+
+          residentLocations = locationsData.reduce((acc, location) => {
+            acc[location.residenteId] = location.area;
+            return acc;
+          }, {});
+          console.log('LOG: Mapped resident locations object:', residentLocations);
+
+        } else {
+          console.warn(`LOG: No se pudo obtener la ubicación de los residentes: ${locationsResponse.statusText}`);
+        }
+      } catch (error) {
+        console.error('LOG: Error al obtener las ubicaciones:', error);
+      }
+      
       const residentsWithDynamicData = await Promise.all(currentResidentsData.map(async (resident) => {
         let heartRateHistory = [];
-        let latestHeartRate = null; // Changed to hold the full latest heart rate object
+        let latestHeartRate = null;
 
         try {
           const heartRateResponse = await fetch(`${API_URL}/LecturaResidente/${resident.id_residente}`);
@@ -74,33 +99,35 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
             const heartRateData = await heartRateResponse.json();
             if (Array.isArray(heartRateData) && heartRateData.length > 0) {
               const sortedData = heartRateData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-              // Extract only ritmoCardiaco for the history graph
               heartRateHistory = sortedData.map(record => record.ritmoCardiaco);
-
-              // Store the latest complete record
               if (sortedData.length > 0) {
-                latestHeartRate = sortedData[0]; // This now includes ritmoCardiaco, estado, promedioRitmoReferencia
+                latestHeartRate = sortedData[0];
               }
             }
           } else {
-            console.warn(`No se pudo obtener la frecuencia cardíaca para el residente ${resident.id_residente}: ${heartRateResponse.statusText}`);
+            console.warn(`LOG: No se pudo obtener la frecuencia cardíaca para el residente ${resident.id_residente}: ${heartRateResponse.statusText}`);
           }
         } catch (error) {
-          console.error(`Error al obtener la frecuencia cardíaca para el residente ${resident.id_residente}:`, error);
+          console.error(`LOG: Error al obtener la frecuencia cardíaca para el residente ${resident.id_residente}:`, error);
         }
 
-        return {
+        const baseStaticUrl = API_URL.replace('/api', '');
+        const residentData = {
           ...resident,
           foto_url: resident.foto && resident.foto !== 'nophoto.png' ? `${baseStaticUrl}/images/residents/${resident.foto}` : null,
-          historial_frecuencia_cardiaca: heartRateHistory, // For the graph data
-          latestHeartRateData: latestHeartRate, // Full latest object for current status and activity
+          historial_frecuencia_cardiaca: heartRateHistory,
+          latestHeartRateData: latestHeartRate,
+          ubicacion: residentLocations[resident.id_residente] || 'N/A', 
         };
+
+        console.log(`LOG: Processed resident ${resident.id_residente} with location: ${residentData.ubicacion}`);
+        return residentData;
       }));
 
       setResidents(residentsWithDynamicData);
+      console.log('LOG: Residents state updated.');
     } catch (error) {
-      console.error('Error al obtener residentes:', error);
+      console.error('LOG: Error general al obtener residentes:', error);
       setFetchError('No se pudieron cargar los residentes. Intenta de nuevo más tarde.');
       if (initialLoad) showNotification('Error al cargar residentes.', 'error');
     } finally {
@@ -141,25 +168,20 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
   };
 
   const handleViewProfile = (id) => {
-    // MODIFICACIÓN: Pasa currentUserRole y currentUserId
     navigation.navigate('ResidentProfile', {
       residentId: id,
-      currentUserRole: currentUserRole, // Asegúrate de que esta variable tenga el valor correcto
-      currentUserId: currentUserId,     // Asegúrate de que esta variable tenga el valor correcto
+      currentUserRole: currentUserRole,
+      currentUserId: currentUserId,
     });
   };
 
-  const handleHistory = (id) => {
-
-  };
+  const handleHistory = (id) => {};
 
   const handleEditResident = (id) => {
-    navigation.navigate('ResidentEditScreen', { residentId: id }); // Changed from 'EditResidentAndFamiliar'
+    navigation.navigate('ResidentEditScreen', { residentId: id });
   };
 
-  const handleAssignDevice = (residentId) => {
-
-  };
+  const handleAssignDevice = (residentId) => {};
 
   const filteredResidents = residents.filter(resident =>
     resident.nombre.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -170,68 +192,66 @@ export default function ResidentsScreen({ navigation, currentUserRole, currentUs
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView style={styles.scrollView}>
-      <View style={styles.headerContainer}>
-        <View style={styles.topControlsGroup}>
-          <View style={styles.searchFilterContainer}>
-            <View style={styles.searchInputContainer}>
-              <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Buscar residente..."
-                placeholderTextColor="#9CA3AF"
-                value={searchText}
-                onChangeText={setSearchText}
-              />
-            </View>
-            <View style={{ marginTop: IS_LARGE_SCREEN ? 0 : 2 }}>
-              <TouchableOpacity style={styles.filterButton}>
-                <Text style={styles.filterButtonText}>Filtros</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
-            <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
-            <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#10B981" style={styles.loadingIndicator} />
-      ) : fetchError ? (
-        <Text style={styles.errorText}>{fetchError}</Text>
-      ) : filteredResidents.length === 0 ? (
-        <Text style={styles.noResidentsText}>No hay residentes registrados que coincidan con la búsqueda.</Text>
-      ) : (
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.residentsGrid}>
-            {filteredResidents.map((resident) => (
-              <View
-                key={resident.id_residente}
-                style={{
-                  flexBasis: IS_LARGE_SCREEN ? '48%' : '100%',
-                  maxWidth: IS_LARGE_SCREEN ? 800 : '100%',
-                  paddingHorizontal: 8,
-                  marginBottom: 15,
-                }}
-              >
-                <ResidentCard
-                  resident={resident}
-                  onEdit={handleEditResident}
-                  onViewProfile={handleViewProfile}
-                  onHistory={handleHistory}
-                  onAssignDevice={handleAssignDevice}
-                  gridContainerPadding={GRID_CONTAINER_PADDING}
+        <View style={styles.headerContainer}>
+          <View style={styles.topControlsGroup}>
+            <View style={styles.searchFilterContainer}>
+              <View style={styles.searchInputContainer}>
+                <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Buscar residente..."
+                  placeholderTextColor="#9CA3AF"
+                  value={searchText}
+                  onChangeText={setSearchText}
                 />
               </View>
-            ))}
+              <View style={{ marginTop: IS_LARGE_SCREEN ? 0 : 2 }}>
+                <TouchableOpacity style={styles.filterButton}>
+                  <Text style={styles.filterButtonText}>Filtros</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <TouchableOpacity style={styles.createButton} onPress={handleAddNewResident}>
+              <Ionicons name="person-add" size={20} color={styles.createButtonText.color} />
+              <Text style={styles.createButtonText}>NUEVO RESIDENTE</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
-      )}
-  </ScrollView>
+        </View>
+
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#10B981" style={styles.loadingIndicator} />
+        ) : fetchError ? (
+          <Text style={styles.errorText}>{fetchError}</Text>
+        ) : filteredResidents.length === 0 ? (
+          <Text style={styles.noResidentsText}>No hay residentes registrados que coincidan con la búsqueda.</Text>
+        ) : (
+          <ScrollView style={styles.scrollView}>
+            <View style={styles.residentsGrid}>
+              {filteredResidents.map((resident) => (
+                <View
+                  key={resident.id_residente}
+                  style={{
+                    flexBasis: IS_LARGE_SCREEN ? '48%' : '100%',
+                    maxWidth: IS_LARGE_SCREEN ? 800 : '100%',
+                    paddingHorizontal: 8,
+                    marginBottom: 15,
+                  }}
+                >
+                  <ResidentCard
+                    resident={resident}
+                    onEdit={handleEditResident}
+                    onViewProfile={handleViewProfile}
+                    onHistory={handleHistory}
+                    onAssignDevice={handleAssignDevice}
+                    gridContainerPadding={GRID_CONTAINER_PADDING}
+                  />
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        )}
+      </ScrollView>
     </SafeAreaView>
-  
   );
 }
 
@@ -296,7 +316,6 @@ const styles = StyleSheet.create({
     maxWidth: IS_LARGE_SCREEN ? 300 : '100%',
     width: IS_LARGE_SCREEN ? 'auto' : '100%',
     flexShrink: 1,
-
   },
   searchIcon: {
     marginRight: 8,
@@ -325,14 +344,13 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-residentsGrid: {
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  justifyContent: 'space-between',
-  paddingHorizontal: 24, // más espacio a los lados
-  gap: 10, // opcional: separación entre filas/columnas en RN >0.71
-},
-
+  residentsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 24,
+    gap: 10,
+  },
   loadingIndicator: {
     marginTop: 50,
   },

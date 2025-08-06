@@ -99,6 +99,11 @@ const calculateMovingAverage = (data, windowSize) => {
   return smoothedData;
 };
 
+const capitalizeFirstLetter = (string) => {
+  if (!string) return 'N/A';
+  return string.charAt(0).toUpperCase() + string.slice(1);
+};
+
 
 const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, onAssignDevice, gridContainerPadding }) => {
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -118,6 +123,8 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
   });
 
   const age = resident.fecha_nacimiento ? new Date().getFullYear() - new Date(resident.fecha_nacimiento).getFullYear() : 'N/A';
+  const displayLocation = capitalizeFirstLetter(resident.ubicacion);
+
 
   const numberOfPointsToShow = 7;
   // heartRateHistory is already sorted from most recent to oldest in ResidentsScreen
@@ -226,7 +233,9 @@ const ResidentCard = ({ resident, onEdit, onDelete, onViewProfile, onHistory, on
         )}
         <View style={styles.headerInfo}>
           <Text style={styles.residentName}>{resident.nombre} {resident.apellido}</Text>
-          <Text style={styles.residentDetails}>{age} años • Hab. {resident.nombre_area || 'N/A'}</Text>
+          <Text style={styles.residentDetails}>
+            {age} años • Hab. {displayLocation}
+          </Text>
         </View>
         {!resident.dispositivo && (
           <TouchableOpacity style={styles.addDeviceButton} onPress={() => onAssignDevice(resident.id_residente)}>
