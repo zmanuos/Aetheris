@@ -75,10 +75,6 @@ public class ChequeoSemanalController : ControllerBase
             Peso = chequeo.Peso,
             Altura = chequeo.Altura,
             Imc = chequeo.Imc,
-            DispositivoSpO2 = chequeo.DispositivoSpO2,
-            DispositivoTempCorp = chequeo.DispositivoTempCorp,
-            DispositivoPeso = chequeo.DispositivoPeso,
-            DispositivoAltura = chequeo.DispositivoAltura,
             Observaciones = chequeo.Observaciones // Asignar el nuevo campo
         };
 

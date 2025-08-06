@@ -12,9 +12,5 @@ public class ChequeoSemanalPost
     public double Peso { get; set; }
     public double Altura { get; set; }
     public double Imc { get; set; }
-    public string DispositivoSpO2 { get; set; }
-    public string DispositivoTempCorp { get; set; }
-    public string DispositivoPeso { get; set; }
-    public string DispositivoAltura { get; set; }
-    public string Observaciones { get; set; } // Nuevo campo
+    public string Observaciones { get; set; }
 }
