@@ -1,3 +1,4 @@
+// src/components/Header.js
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -13,8 +14,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Config from '../../config/config.js';
+import { useSession } from '../../src/context/SessionContext'; // Importamos el hook para el contexto
 
 const Header = ({ title, onMenuPress, navigation, newNotificationsCount, onResetUnreadCount }) => {
+  const { session } = useSession(); // Obtenemos el objeto de sesión
+  const userRole = session.userRole; // Extraemos el rol del usuario
+
   const { width } = useWindowDimensions();
   const showMenuButton = Platform.OS !== 'web' || width < 1024;
   const [notifications, setNotifications] = useState([]);
@@ -49,8 +54,8 @@ const Header = ({ title, onMenuPress, navigation, newNotificationsCount, onReset
       }
       setError(null);
 
-      const currentUserId = 1; 
-      const currentUserRole = 'administrador'; 
+      const currentUserId = 1;
+      const currentUserRole = 'administrador';
 
       const [alertaResponse, notaResponse] = await Promise.all([
         fetch(`${Config.API_BASE_URL}/Alerta`, {
@@ -362,112 +367,115 @@ const Header = ({ title, onMenuPress, navigation, newNotificationsCount, onReset
             <Text style={styles.screenTitle}>{title}</Text>
           </View>
 
-          <View style={styles.rightIconsContainer}>
-            <View style={styles.notificationWrapper}>
-              <Pressable
-                onPress={toggleDropdown}
-                style={styles.notificationButton}
-              >
-                <Ionicons name="notifications-outline" size={24} color="#666" />
-                {newNotificationsCount > 0 && (
+          {/* Renderizado condicional: oculta este contenedor si el rol es 'family' */}
+          {userRole !== 'family' && (
+            <View style={styles.rightIconsContainer}>
+              <View style={styles.notificationWrapper}>
+                <Pressable
+                  onPress={toggleDropdown}
+                  style={styles.notificationButton}
+                >
+                  <Ionicons name="notifications-outline" size={24} color="#666" />
+                  {newNotificationsCount > 0 && (
+                    <Animated.View
+                      style={[
+                        styles.notificationBadge,
+                        {
+                          transform: [{ scale: badgeAnimation }],
+                        }
+                      ]}
+                    >
+                      <Text style={styles.notificationCount}>
+                        {newNotificationsCount > 99 ? '99+' : newNotificationsCount}
+                      </Text>
+                    </Animated.View>
+                  )}
+                </Pressable>
+
+                {showDropdown && (
                   <Animated.View
                     style={[
-                      styles.notificationBadge,
-                      {
-                        transform: [{ scale: badgeAnimation }],
-                      }
+                      styles.dropdown,
+                      { height: dropdownHeight }
                     ]}
                   >
-                    <Text style={styles.notificationCount}>
-                      {newNotificationsCount > 99 ? '99+' : newNotificationsCount}
-                    </Text>
+                    <View style={styles.dropdownHeader}>
+                      <Text style={styles.dropdownTitle}>Notificaciones</Text>
+                      <Pressable onPress={() => fetchNotifications(false)}>
+                        <Ionicons name="refresh" size={18} color="#666" />
+                      </Pressable>
+                    </View>
+
+                    <View style={styles.dropdownContent}>
+                      {loading && (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="small" color="#6BB240" />
+                          <Text style={styles.loadingText}>Actualizando...</Text>
+                        </View>
+                      )}
+
+                      {error && (
+                        <View style={styles.errorContainer}>
+                          <Text style={styles.errorText}>{error}</Text>
+                          <Pressable onPress={() => fetchNotifications(false)} style={styles.retryButton}>
+                            <Text style={styles.retryButtonText}>Reintentar</Text>
+                          </Pressable>
+                        </View>
+                      )}
+
+                      {!loading && !error && (
+                        <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
+                          {notifications.length > 0 ? (
+                            notifications.map((notification) => (
+                              <NotificationItem
+                                key={`${notification.tipo}-${notification.idReferencia}`}
+                                notification={notification}
+                              />
+                            ))
+                          ) : (
+                            <View style={styles.emptyContainer}>
+                              <Ionicons name="notifications-off-outline" size={32} color="#BDC3C7" />
+                              <Text style={styles.emptyText}>No hay notificaciones</Text>
+                            </View>
+                          )}
+                        </ScrollView>
+                      )}
+                    </View>
                   </Animated.View>
                 )}
-              </Pressable>
+              </View>
 
-              {showDropdown && (
-                <Animated.View
-                  style={[
-                    styles.dropdown,
-                    { height: dropdownHeight }
-                  ]}
-                >
-                  <View style={styles.dropdownHeader}>
-                    <Text style={styles.dropdownTitle}>Notificaciones</Text>
-                    <Pressable onPress={() => fetchNotifications(false)}>
-                      <Ionicons name="refresh" size={18} color="#666" />
-                    </Pressable>
-                  </View>
+              <View style={styles.settingsWrapper}>
+                <Pressable onPress={toggleSettingsDropdown} style={styles.settingsButton}>
+                  <Ionicons name="settings-outline" size={24} color="#666" />
+                </Pressable>
 
-                  <View style={styles.dropdownContent}>
-                    {loading && (
-                      <View style={styles.loadingContainer}>
-                        <ActivityIndicator size="small" color="#6BB240" />
-                        <Text style={styles.loadingText}>Actualizando...</Text>
-                      </View>
-                    )}
-
-                    {error && (
-                      <View style={styles.errorContainer}>
-                        <Text style={styles.errorText}>{error}</Text>
-                        <Pressable onPress={() => fetchNotifications(false)} style={styles.retryButton}>
-                          <Text style={styles.retryButtonText}>Reintentar</Text>
-                        </Pressable>
-                      </View>
-                    )}
-
-                    {!loading && !error && (
-                      <ScrollView style={styles.notificationsList} showsVerticalScrollIndicator={false}>
-                        {notifications.length > 0 ? (
-                          notifications.map((notification) => (
-                            <NotificationItem
-                              key={`${notification.tipo}-${notification.idReferencia}`}
-                              notification={notification}
-                            />
-                          ))
-                        ) : (
-                          <View style={styles.emptyContainer}>
-                            <Ionicons name="notifications-off-outline" size={32} color="#BDC3C7" />
-                            <Text style={styles.emptyText}>No hay notificaciones</Text>
-                          </View>
-                        )}
-                      </ScrollView>
-                    )}
-                  </View>
-                </Animated.View>
-              )}
+                {showSettingsDropdown && (
+                  <Animated.View
+                    style={[
+                      styles.dropdown,
+                      styles.settingsDropdown,
+                      { height: settingsDropdownHeight }
+                    ]}
+                  >
+                    <SettingsDropdownItem
+                      iconName="person-circle-outline"
+                      text="Mi cuenta"
+                      onPress={() => {
+                        if (navigation) {
+                          navigation.navigate('MyAccountScreen');
+                        } else {
+                          console.warn('Objeto de navegación no disponible. Asegúrate de pasar la prop navigation al Header.');
+                        }
+                        toggleSettingsDropdown();
+                      }}
+                      itemKey="miCuenta"
+                    />
+                  </Animated.View>
+                )}
+              </View>
             </View>
-
-            <View style={styles.settingsWrapper}>
-              <Pressable onPress={toggleSettingsDropdown} style={styles.settingsButton}>
-                <Ionicons name="settings-outline" size={24} color="#666" />
-              </Pressable>
-
-              {showSettingsDropdown && (
-                <Animated.View
-                  style={[
-                    styles.dropdown,
-                    styles.settingsDropdown,
-                    { height: settingsDropdownHeight }
-                  ]}
-                >
-                  <SettingsDropdownItem
-                    iconName="person-circle-outline"
-                    text="Mi cuenta"
-                    onPress={() => {
-                      if (navigation) {
-                        navigation.navigate('MyAccountScreen');
-                      } else {
-                        console.warn('Objeto de navegación no disponible. Asegúrate de pasar la prop navigation al Header.');
-                      }
-                      toggleSettingsDropdown();
-                    }}
-                    itemKey="miCuenta"
-                  />
-                </Animated.View>
-              )}
-            </View>
-          </View>
+          )}
         </View>
       </SafeAreaView>
     </View>

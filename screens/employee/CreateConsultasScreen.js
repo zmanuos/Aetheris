@@ -11,11 +11,14 @@ import {
   StyleSheet,
   Switch,
   Dimensions,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import { useSession } from '../../src/context/SessionContext';
+import { useNotification } from '../../src/context/NotificationContext';
+// Import the global configuration
+import Config from '../../config/config';
 
 // Color constants from the design code
 const PRIMARY_GREEN = "#6BB240";
@@ -33,13 +36,17 @@ const { width } = Dimensions.get("window");
 const IS_LARGE_SCREEN = width > 900;
 const AUTO_CAPTURE_DELAY = 3000; // milisegundos (3 segundos)
 
-// URLs de la API y WebSocket
-const API_BASE_URL = 'http://localhost:5214/api';
-const WS_IP = "192.168.84.142";
-const WS_PORT = 5214;
+const API_BASE_URL = Config.API_BASE_URL;
+
+
+const url = new URL(Config.API_BASE_URL);
+const WS_IP = url.hostname;
+const WS_PORT = url.port;
 
 export default function CreateConsultaScreen({ route, navigation }) {
   const { pacienteId } = route.params;
+  const { session } = useSession();
+  const { showNotification } = useNotification();
 
   // Form states
   const [frecuencia, setFrecuencia] = useState("");
@@ -50,9 +57,6 @@ export default function CreateConsultaScreen({ route, navigation }) {
   const [observaciones, setObservaciones] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
-
   const [autoFillEnabled, setAutoFillEnabled] = useState(true);
 
   // Real-time sensor data state
@@ -85,7 +89,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
   const ws = useRef(null);
 
   // State for residents and current date/time from the design code
-  const [idResidente, setIdResidente] = useState(""); // <-- Inicializado con un string vacío
+  const [idResidente, setIdResidente] = useState("");
   const [currentDateTime, setCurrentDateTime] = useState("");
   const [residentes, setResidentes] = useState([]);
 
@@ -175,7 +179,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
       } catch (err) {
         console.error("Error fetching residentes:", err);
-        Alert.alert("Error", "No se pudo cargar la lista de residentes activos.");
+        showNotification("No se pudo cargar la lista de residentes activos.", 'error');
       }
     };
 
@@ -236,7 +240,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
     ws.current.onerror = (e) => {
       console.error("WebSocket Error:", e.message);
-      Alert.alert("Error de Conexión", "No se pudo establecer conexión con el servidor de sensores.");
+      showNotification("No se pudo establecer conexión con el servidor de sensores.", 'error');
     };
 
     ws.current.onclose = (e) => console.log("WebSocket Disconnected:", e.code, e.reason);
@@ -249,7 +253,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
       clearTimeout(pesoTimer.current);
       clearTimeout(alturaTimer.current);
     };
-  }, [autoFillEnabled, frozenSpo2, frozenPulso, frozenTemp, frozenPeso, frozenAltura]);
+  }, [autoFillEnabled, frozenSpo2, frozenPulso, frozenTemp, frozenPeso, frozenAltura, showNotification]);
 
   // Capture/release functions from the original file
   const handleCapture = (type) => {
@@ -318,30 +322,59 @@ export default function CreateConsultaScreen({ route, navigation }) {
 
   // Submit function from the original file
   const handleSubmit = async () => {
-    if (!frecuencia || !oxigeno || !temperatura || !peso || !estatura || !observaciones) {
-      Alert.alert("Campos Obligatorios", "Por favor, complete todos los campos de datos y las observaciones.");
+    const personalId = session?.apiUserId ?? 0;
+    
+    // --- VALIDACIONES FINALES ANTES DE ENVIAR ---
+    const errors = [];
+    if (!idResidente) errors.push("El ID del residente es obligatorio.");
+    // La validación para personalId se ha eliminado para permitir el envío de 0
+    if (!frecuencia || isNaN(parseInt(frecuencia))) errors.push("La frecuencia cardíaca debe ser un número entero válido.");
+    if (!oxigeno || isNaN(parseInt(oxigeno))) errors.push("La oxigenación (SpO2) debe ser un número entero válido.");
+    if (!temperatura || isNaN(parseFloat(temperatura))) errors.push("La temperatura corporal debe ser un número válido.");
+    if (!peso || isNaN(parseFloat(peso))) errors.push("El peso debe ser un número válido.");
+    if (!estatura || isNaN(parseFloat(estatura))) errors.push("La estatura debe ser un número válido.");
+    if (imc === "") errors.push("El IMC no se pudo calcular. Verifique el peso y la estatura.");
+    if (!observaciones) errors.push("Las observaciones son obligatorias.");
+    
+    if (errors.length > 0) {
+      showNotification(errors.join("\n"), 'error');
       return;
     }
-
+    // --- FIN DE VALIDACIONES FINALES ---
+    
     setLoading(true);
-    setError(null);
-    setSuccess(false);
+
+    // Crear el objeto con los datos que se van a enviar
+    const postData = {
+        ResidenteId: idResidente,
+        PersonalId: String(personalId),
+        FechaChequeo: new Date().toISOString(),
+        Spo2: parseInt(oxigeno),
+        Pulso: parseInt(frecuencia),
+        TemperaturaCorporal: parseFloat(temperatura),
+        Peso: parseFloat(peso),
+        Altura: parseFloat(estatura),
+        Imc: parseFloat(imc),
+        Observaciones: observaciones,
+    };
+
+    console.log("Datos a enviar al API:", postData);
 
     try {
+      // Usar FormData para replicar el comportamiento de 'multipart/form-data'
+      const formData = new FormData();
+      for (const key in postData) {
+        formData.append(key, postData[key]);
+      }
+
+      console.log("FormData preparado:", formData);
+
       const response = await fetch(`${API_BASE_URL}/ChequeoSemanal`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          // No necesitamos 'Content-Type' aquí, fetch lo establece automáticamente para FormData
         },
-        body: JSON.stringify({
-          paciente_id: idResidente,
-          frecuencia_cardiaca: frecuencia,
-          spo2: oxigeno,
-          temperatura_corporal: temperatura,
-          peso: peso,
-          estatura: estatura,
-          observaciones: observaciones,
-        }),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -350,14 +383,12 @@ export default function CreateConsultaScreen({ route, navigation }) {
       }
 
       const data = await response.json();
-      console.log("Consulta enviada:", data);
-      setSuccess(true);
-      Alert.alert("Éxito", "Consulta enviada correctamente.");
+      console.log("Respuesta del API:", data);
+      showNotification("Consulta enviada correctamente.", 'success');
       navigation.goBack();
     } catch (err) {
       console.error("Error al enviar la consulta:", err);
-      setError(err.message);
-      Alert.alert("Error", "Hubo un problema al enviar la consulta: " + err.message);
+      showNotification("Hubo un problema al enviar la consulta: " + err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -390,6 +421,30 @@ export default function CreateConsultaScreen({ route, navigation }) {
   );
 
   const residenteSeleccionado = residentes.find((r) => r.id_residente === idResidente);
+
+  // Función de validación en tiempo real para números
+  const handleNumericChange = (setter, text, isInteger = false) => {
+    if (text === '') {
+      setter('');
+      return;
+    }
+  
+    // Regex para números enteros (con signo negativo opcional)
+    if (isInteger) {
+      const regex = /^-?\d*$/;
+      if (regex.test(text)) {
+        setter(text);
+      }
+      return;
+    }
+    
+    // Regex para números con decimales (con signo negativo opcional)
+    // Se permite un solo punto decimal y solo después de un dígito
+    const regex = /^-?\d*\.?\d*$/;
+    if (regex.test(text)) {
+      setter(text);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -465,7 +520,6 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <Text style={styles.infoText}><Text style={styles.infoLabel}>Nombre:</Text> {residenteSeleccionado.nombre} {residenteSeleccionado.apellido}</Text>
                   <Text style={styles.infoText}><Text style={styles.infoLabel}>Edad:</Text> {new Date().getFullYear() - new Date(residenteSeleccionado.fecha_nacimiento).getFullYear()} años</Text>
                   <Text style={styles.infoText}><Text style={styles.infoLabel}>Teléfono:</Text> {residenteSeleccionado.telefono}</Text>
-                  {/* <Text style={styles.infoText}><Text style={styles.infoLabel}>Área asignada:</Text> {residenteSeleccionado.area}</Text> */}
                 </View>
               )}
 
@@ -477,7 +531,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={styles.input}
                     value={frozenPulso !== null ? frozenPulso : frecuencia}
-                    onChangeText={setFrecuencia}
+                    onChangeText={(text) => handleNumericChange(setFrecuencia, text, true)}
                     keyboardType="numeric"
                     placeholder="Ej: 80"
                     placeholderTextColor={LIGHT_GRAY}
@@ -494,7 +548,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={styles.input}
                     value={frozenSpo2 !== null ? frozenSpo2 : oxigeno}
-                    onChangeText={setOxigeno}
+                    onChangeText={(text) => handleNumericChange(setOxigeno, text, true)}
                     keyboardType="numeric"
                     placeholder="Ej: 98"
                     placeholderTextColor={LIGHT_GRAY}
@@ -511,7 +565,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={styles.input}
                     value={frozenTemp !== null ? frozenTemp : temperatura}
-                    onChangeText={setTemperatura}
+                    onChangeText={(text) => handleNumericChange(setTemperatura, text)}
                     keyboardType="numeric"
                     placeholder="Ej: 36.5"
                     placeholderTextColor={LIGHT_GRAY}
@@ -528,7 +582,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={styles.input}
                     value={frozenPeso !== null ? frozenPeso : peso}
-                    onChangeText={setPeso}
+                    onChangeText={(text) => handleNumericChange(setPeso, text)}
                     keyboardType="numeric"
                     placeholder="Ej: 70"
                     placeholderTextColor={LIGHT_GRAY}
@@ -545,7 +599,7 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={styles.input}
                     value={frozenAltura !== null ? frozenAltura : estatura}
-                    onChangeText={setEstatura}
+                    onChangeText={(text) => handleNumericChange(setEstatura, text)}
                     keyboardType="numeric"
                     placeholder="Ej: 170"
                     placeholderTextColor={LIGHT_GRAY}
@@ -557,10 +611,10 @@ export default function CreateConsultaScreen({ route, navigation }) {
               {/* IMC */}
               <View style={styles.fieldWrapper}>
                 <Text style={styles.inputLabel}>Índice de Masa Corporal (IMC)</Text>
-                <View style={styles.inputContainerWithIcon}>
+                <View style={[styles.inputContainerWithIcon, styles.uneditableInput]}>
                   <Ionicons name="body-outline" size={18} color={MEDIUM_GRAY} style={styles.inputIcon} />
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input]}
                     value={imc}
                     editable={false}
                     placeholder="Calculado automáticamente"
@@ -577,17 +631,16 @@ export default function CreateConsultaScreen({ route, navigation }) {
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={observaciones}
-                    onChangeText={setObservaciones}
+                    onChangeText={(text) => setObservaciones(text.slice(0, 200))}
+                    maxLength={200}
                     multiline
                     placeholder="Añade cualquier observación relevante aquí..."
                     placeholderTextColor={LIGHT_GRAY}
                     textAlignVertical="top"
                   />
                 </View>
+                <Text style={styles.charCounter}>{observaciones.length}/200</Text>
               </View>
-
-              {error && <Text style={styles.errorText}>{error}</Text>}
-              {success && <Text style={styles.successText}>Consulta enviada correctamente.</Text>}
 
               {/* Submit Button */}
               <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit} disabled={loading}>
@@ -869,19 +922,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     letterSpacing: 0.5,
   },
-  errorText: {
-    color: "red",
-    textAlign: "center",
-    marginTop: 8,
-    marginBottom: 8,
-    fontSize: 13,
+  uneditableInput: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ccc',
   },
-  successText: {
-    color: PRIMARY_GREEN,
-    textAlign: "center",
-    marginTop: 8,
-    marginBottom: 8,
-    fontSize: 13,
-    fontWeight: "bold",
+  charCounter: {
+    fontSize: 10,
+    color: LIGHT_GRAY,
+    textAlign: 'right',
+    marginTop: 2,
   },
 });

@@ -15,8 +15,8 @@ import {
     RefreshControl
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker'; // Import DateTimePicker
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import Config from '../../config/config';
 
@@ -57,12 +57,11 @@ const ConsultasHistory = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
-    const [showDatePicker, setShowDatePicker] = useState(false); // State for date picker visibility
+    const [showDatePicker, setShowDatePicker] = useState(false);
 
     const fetchAllData = useCallback(async () => {
         try {
             setError(null);
-
             const consultasResponse = await fetch(`${API_URL}/ChequeoSemanal`);
             if (!consultasResponse.ok) {
                 throw new Error(`Error al cargar consultas: ${consultasResponse.status}`);
@@ -138,9 +137,14 @@ const ConsultasHistory = () => {
         }
     }, []);
 
-    useEffect(() => {
-        fetchAllData();
-    }, [fetchAllData]);
+    useFocusEffect(
+        useCallback(() => {
+            fetchAllData();
+            return () => {
+                // Opcional: limpiar si es necesario al desenfocar
+            };
+        }, [fetchAllData])
+    );
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
@@ -148,22 +152,20 @@ const ConsultasHistory = () => {
     }, [fetchAllData]);
 
     const handleDateChange = (event, selectedDateValue) => {
-        // This 'event.type' check is crucial for handling dismissals (e.g., tapping outside on Android,
-        // or cancelling on iOS, or pressing back button on Android).
-        // 'set' means a date was selected. 'dismissed' (Android) or 'neutralButton' (iOS, if configured)
-        // means the picker was closed without a new date selection.
         if (event.type === 'set') {
-            setSelectedDate(selectedDateValue.toISOString().split('T')[0]); // Format to YYYY-MM-DD
+            setSelectedDate(selectedDateValue.toISOString().split('T')[0]);
         }
-        // Always hide the picker after any interaction (selection or dismissal)
         setShowDatePicker(false);
     };
-
 
     const filteredConsultas = useMemo(() => {
         const normalizedSearchName = normalizeString(searchName);
 
-        return consultas.filter((c) => {
+        const sortedConsultas = [...consultas].sort((a, b) => {
+            return new Date(b.fechaChequeo) - new Date(a.fechaChequeo);
+        });
+
+        return sortedConsultas.filter((c) => {
             const residentInfo = residentsDataMap[c.residenteId];
             let residentFullName = '';
             if (residentInfo) {
@@ -195,7 +197,7 @@ const ConsultasHistory = () => {
         setSelectedDate('');
     };
 
-    const renderConsultaCard = ({ item, index }) => {
+    const renderConsultaCard = ({ item }) => {
         const residentInfo = residentsDataMap[item.residenteId];
         let residentName = `Residente ${item.residenteId}`;
         let residentPhoto = null;
@@ -384,8 +386,6 @@ const ConsultasHistory = () => {
                                 testID="dateTimePicker"
                                 value={selectedDate ? new Date(selectedDate) : new Date()}
                                 mode="date"
-                                // iOS uses 'spinner' for an inline picker, 'default' for a modal.
-                                // Android uses 'default' for a modal calendar, 'spinner' for a scrolling spinner.
                                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                                 onChange={handleDateChange}
                             />
@@ -558,7 +558,7 @@ const styles = StyleSheet.create({
         paddingVertical: 0,
         paddingHorizontal: 0,
         cursor: 'pointer',
-        fontFamily: Platform.select({ web: 'sans-serif', default: undefined }), // Ensures proper font rendering on web
+        fontFamily: Platform.select({ web: 'sans-serif', default: undefined }),
         ...Platform.select({
             web: { outlineStyle: 'none' },
         }),

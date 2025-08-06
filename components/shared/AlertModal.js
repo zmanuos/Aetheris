@@ -1,10 +1,14 @@
 // fileName: AlertModal.js
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, Platform, Image, Animated, Easing } from 'react-native';
+// Corrected import path and imported Config
+import Config from '../../config/config';
 
 // URL base de la nueva API para la ubicación.
-const RESIDENT_LOCATION_API_ENDPOINT_BASE = 'http://localhost:5214/LecturasUbicacion/residente';
-const residentPhotoBaseUrl = 'http://localhost:5214/images/residents'; 
+const RESIDENT_LOCATION_API_ENDPOINT_BASE = `${Config.API_BASE_URL.replace('/api', '')}/LecturasUbicacion/residente`;
+
+// Modified to remove '/api' from the base URL for images
+const residentPhotoBaseUrl = `${Config.API_BASE_URL.replace('/api', '')}/images/residents`; 
 
 // Función auxiliar para convertir a "Title Case"
 const toTitleCase = (str) => {

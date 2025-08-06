@@ -141,7 +141,7 @@ export default function WeeklyCheckupDetailScreen({ route, navigation }) {
             if (personalData.personal && personalData.personal.nombre && personalData.personal.apellido) {
               setPersonalName(`${personalData.personal.nombre} ${personalData.personal.apellido}`);
             } else {
-              setPersonalName('Desconocido');
+              setPersonalName('Administrador');
             }
           } else {
             console.warn(`No se pudieron obtener los detalles del personal para el ID: ${checkupData.personalId}`);
