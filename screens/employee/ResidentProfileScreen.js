@@ -479,7 +479,6 @@ const styles = StyleSheet.create({
   modernContainer: {
     flex: 1,
     backgroundColor: COLORS.pageBackground,
-    marginTop: 50,
 
   },
   modernBackButton: {

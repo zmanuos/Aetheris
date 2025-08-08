@@ -40,7 +40,7 @@ const API_BASE_URL = Config.API_BASE_URL;
 
 
 const url = new URL(Config.API_BASE_URL);
-const WS_IP = url.hostname;
+const WS_IP = "192.168.243.142";
 const WS_PORT = url.port;
 
 export default function CreateConsultaScreen({ route, navigation }) {
